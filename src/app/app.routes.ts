@@ -2,7 +2,9 @@ import { Routes } from '@angular/router';
 import { EditCompany } from './features/administrator/companies/pages/edit-company/edit-company';
 import { MyCompanies } from './features/administrator/companies/pages/my-companies/my-companies';
 import { RegisterCompany } from './features/administrator/companies/pages/register-company/register-company';
-import { Branches } from './features/administrator/companies/sections/branches/branches';
+import { Branches } from './features/administrator/companies/sections/branches/pages/branches/branches';
+import { EditBranch } from './features/administrator/companies/sections/branches/pages/edit-branch/edit-branch';
+import { ViewBranch } from './features/administrator/companies/sections/branches/pages/view-branch/view-branch';
 import { Products } from './features/administrator/companies/sections/products/products';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
@@ -36,6 +38,14 @@ export const routes: Routes = [
   {
     path: 'administrator/company/:id/branches',
     component: Branches,
+  },
+  {
+    path: 'administrator/company/:id/branch/:branchId/view-branch',
+    component: ViewBranch,
+  },
+  {
+    path: 'administrator/company/:id/branch/:branchId/edit-branch',
+    component: EditBranch,
   },
   {
     path: 'administrator/company/:id/products',
