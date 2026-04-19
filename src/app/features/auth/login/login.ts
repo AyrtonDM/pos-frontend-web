@@ -59,6 +59,11 @@ export class Login {
           return;
         }
 
+        if (rol === 'empleado') {
+          void this.router.navigate(['/employee/my-branches']);
+          return;
+        }
+
         void this.router.navigate(['/']);
       },
       error: () => {
