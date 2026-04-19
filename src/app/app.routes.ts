@@ -61,6 +61,10 @@ export const routes: Routes = [
 /*  */    canActivate: [authGuard],
   },
   {
+    path: 'administrator/company/:id/branch/:branchId/staff',
+    component: Staff,
+  },
+  {
     path: 'administrator/company/:id/products',
     component: Products,
     canActivate: [authGuard],
