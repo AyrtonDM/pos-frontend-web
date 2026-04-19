@@ -5,6 +5,7 @@ import { RegisterCompany } from './features/administrator/companies/pages/regist
 import { Branches } from './features/administrator/companies/sections/branches/pages/branches/branches';
 import { EditBranch } from './features/administrator/companies/sections/branches/pages/edit-branch/edit-branch';
 import { ViewBranch } from './features/administrator/companies/sections/branches/pages/view-branch/view-branch';
+import { Staff } from './features/administrator/companies/sections/branches/sections/staff/staff';
 import { Products } from './features/administrator/companies/sections/products/products';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
@@ -42,17 +43,26 @@ export const routes: Routes = [
   {
     path: 'administrator/company/:id/branches',
     component: Branches,
+    canActivate: [authGuard],
   },
   {
     path: 'administrator/company/:id/branch/:branchId/view-branch',
     component: ViewBranch,
+    canActivate: [authGuard],
   },
   {
     path: 'administrator/company/:id/branch/:branchId/edit-branch',
     component: EditBranch,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/branch/:branchId/staff',
+    component: Staff,
+/*  */    canActivate: [authGuard],
   },
   {
     path: 'administrator/company/:id/products',
     component: Products,
+    canActivate: [authGuard],
   },
 ];

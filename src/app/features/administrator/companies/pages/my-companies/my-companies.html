@@ -64,7 +64,11 @@
                 [routerLink]="['/administrator/edit-company', obtenerIdEmpresa(company)]"
                 >Editar</a
               >
-              <button class="btn btn-primary" type="button">Entrar</button>
+              <a
+                class="btn btn-primary"
+                [routerLink]="['/administrator/company', obtenerIdEmpresa(company), 'branches']"
+                >Entrar</a
+              >
             </div>
           </article>
         }
