@@ -17,14 +17,10 @@
   </a>
 
   <div class="nav-actions">
-    @if (sesionIniciada()) {
-      <button class="btn btn-danger" type="button" (click)="cerrarSesion()">
-        Cerrar sesion
-      </button>
+    @if (authService.isAuthenticated()) {
+      <button class="btn btn-danger" type="button" (click)="cerrarSesion()">Cerrar sesion</button>
     } @else {
-      <a class="btn btn-secondary" routerLink="/register">
-        Registrar
-      </a>
+      <a class="btn btn-secondary" routerLink="/register"> Registrar </a>
       <div class="login-menu">
         <button
           class="btn btn-primary login-trigger"

@@ -1,15 +1,8 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
 
-type Company = {
-  nombre: string;
-  razon_social: string;
-  nit: string;
-  correo: string;
-  fecha_registro: string;
-  activo: boolean;
-};
+import { Company, CompanyService } from '../../../../../core/services/company.service';
 
 @Component({
   selector: 'app-my-companies',
@@ -17,31 +10,42 @@ type Company = {
   templateUrl: './my-companies.html',
   styleUrl: './my-companies.css',
 })
-export class MyCompanies {
-  protected readonly companies: Company[] = [
-    {
-      nombre: 'Mercado Central POS',
-      razon_social: 'Mercado Central SRL',
-      nit: '1023456789',
-      correo: 'contacto@mercadocentral.com',
-      fecha_registro: '2026-04-10',
-      activo: true,
-    },
-    {
-      nombre: 'Cafe Norte',
-      razon_social: 'Cafe Norte Bolivia SA',
-      nit: '2045678912',
-      correo: 'admin@cafenorte.com',
-      fecha_registro: '2026-04-14',
-      activo: true,
-    },
-    {
-      nombre: 'Tienda Express',
-      razon_social: 'Tienda Express SRL',
-      nit: '3098765412',
-      correo: 'ventas@tiendaexpress.com',
-      fecha_registro: '2026-04-17',
-      activo: false,
-    },
-  ];
+export class MyCompanies implements OnInit {
+  protected companies: Company[] = [];
+  protected cargandoEmpresas = false;
+  protected errorEmpresas = '';
+
+  constructor(
+    private readonly companyService: CompanyService,
+    private readonly cdr: ChangeDetectorRef,
+  ) {}
+
+  ngOnInit(): void {
+    this.cargarMisEmpresas();
+  }
+
+  protected obtenerIdEmpresa(company: Company): string | number {
+    return (
+      company.idEmpresa ?? company.id_empresa ?? company.empresa_id ?? company.id ?? company.nit
+    );
+  }
+
+  private cargarMisEmpresas(): void {
+    this.cargandoEmpresas = true;
+    this.errorEmpresas = '';
+
+    this.companyService.getMisEmpresas().subscribe({
+      next: (companies) => {
+        this.companies = companies;
+        this.cargandoEmpresas = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.companies = [];
+        this.cargandoEmpresas = false;
+        this.errorEmpresas = 'No se pudieron cargar tus empresas. Intenta nuevamente.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
 }
