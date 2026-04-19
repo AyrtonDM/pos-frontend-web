@@ -223,4 +223,30 @@
       </section>
     }
   </div>
+
+  @if (mostrarModalEliminarProducto && productoPendienteEliminar) {
+    <div class="modal-backdrop" role="presentation" (click)="cancelarEliminarProducto()">
+      <section
+        class="confirm-modal panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirmDeleteProductTitle"
+        (click)="$event.stopPropagation()"
+      >
+        <header class="confirm-header">
+          <p class="badge badge-success">Confirmacion</p>
+          <h3 class="title-lg" id="confirmDeleteProductTitle">Eliminar producto</h3>
+          <p class="text-muted">
+            Esta accion eliminara el producto
+            <strong>{{ productoPendienteEliminar.nombre }}</strong>.
+          </p>
+        </header>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary" type="button" (click)="cancelarEliminarProducto()">Cancelar</button>
+          <button class="btn btn-danger" type="button" (click)="confirmarEliminarProducto()">Eliminar</button>
+        </div>
+      </section>
+    </div>
+  }
 </section>

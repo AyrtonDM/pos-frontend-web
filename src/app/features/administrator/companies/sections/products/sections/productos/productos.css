@@ -206,6 +206,28 @@
   fill: currentColor;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(45, 45, 45, 0.45);
+  padding: var(--space-md);
+  z-index: 30;
+}
+
+.confirm-modal {
+  display: grid;
+  width: min(460px, 100%);
+  gap: var(--space-md);
+  padding: var(--space-xl);
+}
+
+.confirm-header {
+  display: grid;
+  gap: var(--space-sm);
+}
+
 .detail-card {
   display: grid;
   gap: var(--space-md);
