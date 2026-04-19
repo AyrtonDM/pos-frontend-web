@@ -59,6 +59,36 @@
   gap: var(--space-sm);
 }
 
+.login-menu {
+  position: relative;
+}
+
+.login-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.login-dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-sm));
+  right: 0;
+  display: grid;
+  min-width: 180px;
+  padding: var(--space-sm);
+}
+
+.login-dropdown a {
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+  padding: 10px 12px;
+}
+
+.login-dropdown a:hover {
+  background: var(--color-surface-2);
+}
+
 @media (max-width: 640px) {
   .navbar {
     align-items: stretch;
@@ -68,6 +98,20 @@
   .nav-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
+  }
+
+  .login-menu,
+  .login-trigger {
+    width: 100%;
+  }
+
+  .login-trigger {
+    justify-content: center;
+  }
+
+  .login-dropdown {
+    left: 0;
+    right: 0;
   }
 
   .nav-actions .btn:only-child {

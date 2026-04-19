@@ -120,7 +120,7 @@ main {
 }
 
 .benefits article {
-  padding: var(--space-md) 0;
+  min-height: 180px;
 }
 
 .benefit-icon {
