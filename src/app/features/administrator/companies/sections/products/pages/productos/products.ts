@@ -1,9 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { CategoriasPanel } from './sections/categorias/categorias';
-import { Navbar } from '../../../../../shared/components/navbar/navbar';
-import { ProductosPanel } from './sections/productos/productos';
-import { Sidebar, SidebarItem } from '../../../../../shared/components/sidebar/sidebar';
+import { Navbar } from '../../../../../../../shared/components/navbar/navbar';
+import { Sidebar, SidebarItem } from '../../../../../../../shared/components/sidebar/sidebar';
+import { CategoriasPanel } from '../../sections/categorias/categorias';
+import { ProductosPanel } from '../../sections/productos/productos';
 
 @Component({
   selector: 'app-products',

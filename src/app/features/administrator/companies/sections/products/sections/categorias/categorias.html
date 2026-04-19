@@ -1,0 +1,168 @@
+<section class="tabs-panel panel">
+  <div class="tabs" role="tablist" aria-label="Secciones de categorias">
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'list'"
+      type="button"
+      role="tab"
+      [attr.aria-selected]="activeTab === 'list'"
+      (click)="setActiveTab('list')"
+    >
+      Lista de categorias
+    </button>
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'register'"
+      type="button"
+      role="tab"
+      [attr.aria-selected]="activeTab === 'register'"
+      (click)="setActiveTab('register')"
+    >
+      Registrar categoria
+    </button>
+  </div>
+
+  <div class="tab-content">
+    @if (errorGeneral) {
+      <p class="feedback feedback-error">{{ errorGeneral }}</p>
+    }
+
+    @if (mensajeGeneral) {
+      <p class="feedback feedback-success">{{ mensajeGeneral }}</p>
+    }
+
+    @if (activeTab === 'list') {
+      @if (cargandoDatos) {
+        <section class="products-state" aria-live="polite">
+          <p class="text-muted">Cargando categorias...</p>
+        </section>
+      } @else if (categorias.length === 0) {
+        <section class="products-state" aria-live="polite">
+          <p class="text-muted">Aun no hay categorias registradas.</p>
+        </section>
+      } @else {
+        <section class="simple-list" aria-label="Categorias registradas">
+          @for (categoria of categorias; track categoria.id_categoria_producto) {
+            <article class="list-item">
+              <div>
+                <h3 class="title-sm">{{ categoria.nombre }}</h3>
+                <p class="text-muted">{{ categoria.descripcion || 'Sin descripcion' }}</p>
+              </div>
+              <div class="row-actions">
+                <a
+                  class="btn btn-secondary"
+                  [routerLink]="['/administrator/company', companyId, 'category', categoria.id_categoria_producto, 'view-category']"
+                  >Ver</a
+                >
+                <a
+                  class="btn btn-primary"
+                  [routerLink]="['/administrator/company', companyId, 'category', categoria.id_categoria_producto, 'edit-category']"
+                  >Editar</a
+                >
+                <button
+                  class="btn-icon-danger"
+                  type="button"
+                  [disabled]="eliminandoCategoriaId === categoria.id_categoria_producto"
+                  [attr.aria-label]="'Eliminar categoria ' + categoria.nombre"
+                  (click)="eliminarCategoria(categoria.id_categoria_producto)"
+                >
+                  <svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9z" />
+                  </svg>
+                </button>
+              </div>
+            </article>
+          }
+        </section>
+      }
+    } @else {
+      <section class="card card-wide">
+        <h2 class="title-md">Registrar categoria con subcategorias</h2>
+        <form class="entity-form" (submit)="registrarCategoria($event)">
+          <div class="form-group">
+            <label class="label" for="categoria_nombre">Nombre</label>
+            <input
+              class="input"
+              id="categoria_nombre"
+              name="categoria_nombre"
+              required
+              [(ngModel)]="categoriaForm.nombre"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="categoria_descripcion">Descripcion</label>
+            <input
+              class="input"
+              id="categoria_descripcion"
+              name="categoria_descripcion"
+              [(ngModel)]="categoriaForm.descripcion"
+            />
+          </div>
+
+          <h3 class="title-sm">Subcategorias</h3>
+          <p class="text-muted">Agrega varias subcategorias y luego registra la categoria.</p>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="label" for="subcategoria_nombre">Nombre de subcategoria</label>
+              <input
+                class="input"
+                id="subcategoria_nombre"
+                name="subcategoria_nombre"
+                [(ngModel)]="subcategoriaForm.nombre"
+              />
+            </div>
+            <div class="form-group">
+              <label class="label" for="subcategoria_descripcion">Descripcion</label>
+              <input
+                class="input"
+                id="subcategoria_descripcion"
+                name="subcategoria_descripcion"
+                [(ngModel)]="subcategoriaForm.descripcion"
+              />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-secondary" type="button" (click)="registrarSubcategoriaTemporal()">
+              Agregar subcategoria
+            </button>
+          </div>
+
+          @if (subcategoriasTemporales.length > 0) {
+            <div class="subcategorias-list">
+              <h4 class="title-sm">Subcategorias a crear ({{ subcategoriasTemporales.length }})</h4>
+              <div class="simple-list">
+                @for (subcategoria of subcategoriasTemporales; track $index) {
+                  <article class="list-item">
+                    <div>
+                      <p class="title-sm">{{ subcategoria.nombre }}</p>
+                      <p class="text-muted">{{ subcategoria.descripcion || 'Sin descripcion' }}</p>
+                    </div>
+                    <button
+                      class="btn btn-danger btn-small"
+                      type="button"
+                      (click)="eliminarSubcategoriaTemporal($index)"
+                    >
+                      Eliminar
+                    </button>
+                  </article>
+                }
+              </div>
+            </div>
+          }
+
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" [disabled]="guardandoCategoria">
+              {{ guardandoCategoria ? 'Guardando...' : 'Registrar categoria y subcategorias' }}
+            </button>
+            <button class="btn btn-secondary" type="button" (click)="setActiveTab('list')" [disabled]="guardandoCategoria">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+  </div>
+</section>

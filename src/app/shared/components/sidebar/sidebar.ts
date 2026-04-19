@@ -1,10 +1,13 @@
-import { Component, Input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Params, RouterLink } from '@angular/router';
 
 export type SidebarItem = {
   label: string;
   link?: string | unknown[];
+  queryParams?: Params;
   active?: boolean;
+  expanded?: boolean;
+  children?: SidebarItem[];
 };
 
 @Component({
@@ -15,4 +18,29 @@ export type SidebarItem = {
 })
 export class Sidebar {
   @Input() items: SidebarItem[] = [];
+
+  protected openGroups: Record<string, boolean> = {};
+
+  ngOnChanges(_changes: SimpleChanges): void {
+    this.syncOpenGroups();
+  }
+
+  protected toggleGroup(label: string): void {
+    this.openGroups[label] = !this.openGroups[label];
+  }
+
+  protected isGroupOpen(item: SidebarItem): boolean {
+    return this.openGroups[item.label] ?? false;
+  }
+
+  private syncOpenGroups(): void {
+    for (const item of this.items) {
+      if (!item.children?.length) {
+        continue;
+      }
+
+      const hasActiveChild = item.children.some((child) => child.active);
+      this.openGroups[item.label] = item.expanded ?? hasActiveChild;
+    }
+  }
 }

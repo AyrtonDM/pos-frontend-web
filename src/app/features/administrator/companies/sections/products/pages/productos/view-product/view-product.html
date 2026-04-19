@@ -1,0 +1,69 @@
+<div class="page-container view-product-page">
+  <app-navbar />
+
+  <main class="view-product-layout">
+    <app-sidebar [items]="sidebarItems" />
+
+    <section class="view-product-content">
+      <section class="view-product-panel panel">
+        <a class="back-link" [routerLink]="['/administrator/company', companyId, 'products']">Volver a Productos</a>
+
+        <header class="view-product-header">
+          <p class="badge badge-success">Producto {{ productId }}</p>
+          <h1 class="title-xl">Detalle de Producto</h1>
+          <p class="text-muted">Consulta los datos registrados de este producto.</p>
+        </header>
+
+        @if (cargandoProducto) {
+          <p class="feedback feedback-info">Cargando datos del producto...</p>
+        } @else if (errorProducto) {
+          <p class="feedback feedback-error">{{ errorProducto }}</p>
+        } @else if (producto) {
+          <dl class="product-detail">
+            <div>
+              <dt>Nombre</dt>
+              <dd>{{ producto.nombre }}</dd>
+            </div>
+            <div>
+              <dt>Subcategoria</dt>
+              <dd>{{ subcategoriaDelProducto()?.nombre || 'Sin subcategoria' }}</dd>
+            </div>
+            <div>
+              <dt>Costo</dt>
+              <dd>Bs {{ producto.costo }}</dd>
+            </div>
+            <div>
+              <dt>Precio</dt>
+              <dd>Bs {{ producto.precio }}</dd>
+            </div>
+            <div>
+              <dt>Stock</dt>
+              <dd>{{ producto.stock.cantidad }} unidades</dd>
+            </div>
+            <div>
+              <dt>Stock minimo</dt>
+              <dd>{{ producto.stock.stock_min }}</dd>
+            </div>
+            <div>
+              <dt>Stock maximo</dt>
+              <dd>{{ producto.stock.stock_max }}</dd>
+            </div>
+            <div>
+              <dt>Imagen</dt>
+              <dd>{{ producto.imagen || 'Sin imagen' }}</dd>
+            </div>
+          </dl>
+        }
+
+        <div class="view-actions">
+          <a class="btn btn-secondary" [routerLink]="['/administrator/company', companyId, 'products']">Cerrar</a>
+          <a
+            class="btn btn-primary"
+            [routerLink]="['/administrator/company', companyId, 'product', productId, 'edit-product']"
+            >Editar</a
+          >
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
