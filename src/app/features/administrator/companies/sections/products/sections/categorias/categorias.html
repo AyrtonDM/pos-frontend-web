@@ -165,4 +165,30 @@
       </section>
     }
   </div>
+
+  @if (mostrarModalEliminarCategoria && categoriaPendienteEliminar) {
+    <div class="modal-backdrop" role="presentation" (click)="cancelarEliminarCategoria()">
+      <section
+        class="confirm-modal panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirmDeleteCategoryTitle"
+        (click)="$event.stopPropagation()"
+      >
+        <header class="confirm-header">
+          <p class="badge badge-success">Confirmacion</p>
+          <h3 class="title-lg" id="confirmDeleteCategoryTitle">Eliminar categoria</h3>
+          <p class="text-muted">
+            Esta accion eliminara la categoria
+            <strong>{{ categoriaPendienteEliminar.nombre }}</strong>.
+          </p>
+        </header>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary" type="button" (click)="cancelarEliminarCategoria()">Cancelar</button>
+          <button class="btn btn-danger" type="button" (click)="confirmarEliminarCategoria()">Eliminar</button>
+        </div>
+      </section>
+    </div>
+  }
 </section>

@@ -44,6 +44,8 @@ export class CategoriasPanel implements OnInit {
   protected cargandoDatos = false;
   protected guardandoCategoria = false;
   protected eliminandoCategoriaId: number | null = null;
+  protected mostrarModalEliminarCategoria = false;
+  protected categoriaPendienteEliminar: CategoriaProducto | null = null;
 
   protected errorGeneral = '';
   protected mensajeGeneral = '';
@@ -115,21 +117,41 @@ export class CategoriasPanel implements OnInit {
 
   protected eliminarCategoria(idCategoriaProducto: number): void {
     this.limpiarMensajes();
-
-    const confirmar = window.confirm('Estas seguro de eliminar esta categoria?');
-    if (!confirmar) {
+    const categoria = this.categorias.find((item) => item.id_categoria_producto === idCategoriaProducto);
+    if (!categoria) {
+      this.errorGeneral = 'No se encontro la categoria seleccionada.';
       return;
     }
+
+    this.categoriaPendienteEliminar = categoria;
+    this.mostrarModalEliminarCategoria = true;
+  }
+
+  protected cancelarEliminarCategoria(): void {
+    this.mostrarModalEliminarCategoria = false;
+    this.categoriaPendienteEliminar = null;
+  }
+
+  protected confirmarEliminarCategoria(): void {
+    if (!this.categoriaPendienteEliminar) {
+      this.cancelarEliminarCategoria();
+      return;
+    }
+
+    const idCategoriaProducto = this.categoriaPendienteEliminar.id_categoria_producto;
+    this.mostrarModalEliminarCategoria = false;
 
     this.eliminandoCategoriaId = idCategoriaProducto;
     this.productService.eliminarCategoria(idCategoriaProducto).subscribe({
       next: () => {
         this.eliminandoCategoriaId = null;
+        this.categoriaPendienteEliminar = null;
         this.mensajeGeneral = 'Categoria eliminada correctamente.';
         this.cargarDatos();
       },
       error: () => {
         this.eliminandoCategoriaId = null;
+        this.categoriaPendienteEliminar = null;
         this.errorGeneral = 'No se pudo eliminar la categoria.';
         this.cdr.detectChanges();
       },

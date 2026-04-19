@@ -41,6 +41,8 @@ export class ProductosPanel implements OnChanges {
   protected cargandoDatos = false;
   protected guardandoProducto = false;
   protected eliminandoProductoId: number | null = null;
+  protected mostrarModalEliminarProducto = false;
+  protected productoPendienteEliminar: Producto | null = null;
 
   protected errorGeneral = '';
   protected mensajeGeneral = '';
@@ -139,20 +141,41 @@ export class ProductosPanel implements OnChanges {
   protected eliminarProducto(idProducto: number, nombreProducto: string): void {
     this.limpiarMensajes();
 
-    const confirmar = window.confirm(`Estas seguro de eliminar el producto "${nombreProducto}"?`);
-    if (!confirmar) {
+    const producto = this.productos.find((item) => item.id_producto === idProducto);
+    if (!producto) {
+      this.errorGeneral = 'No se encontro el producto seleccionado.';
       return;
     }
+
+    this.productoPendienteEliminar = producto;
+    this.mostrarModalEliminarProducto = true;
+  }
+
+  protected cancelarEliminarProducto(): void {
+    this.mostrarModalEliminarProducto = false;
+    this.productoPendienteEliminar = null;
+  }
+
+  protected confirmarEliminarProducto(): void {
+    if (!this.productoPendienteEliminar) {
+      this.cancelarEliminarProducto();
+      return;
+    }
+
+    const idProducto = this.productoPendienteEliminar.id_producto;
+    this.mostrarModalEliminarProducto = false;
 
     this.eliminandoProductoId = idProducto;
     this.productService.eliminarProducto(idProducto).subscribe({
       next: () => {
         this.eliminandoProductoId = null;
+        this.productoPendienteEliminar = null;
         this.mensajeGeneral = 'Producto eliminado correctamente.';
         this.cargarProductos();
       },
       error: () => {
         this.eliminandoProductoId = null;
+        this.productoPendienteEliminar = null;
         this.errorGeneral = 'No se pudo eliminar el producto.';
         this.cdr.detectChanges();
       },
