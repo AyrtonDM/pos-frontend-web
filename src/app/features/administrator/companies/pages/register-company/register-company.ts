@@ -2,8 +2,8 @@ import { ChangeDetectorRef, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
-import { CompanyService, CreateCompanyRequest } from '../../../core/services/company.service';
-import { Navbar } from '../../../shared/components/navbar/navbar';
+import { CompanyService, CreateCompanyRequest } from '../../../../../core/services/company.service';
+import { Navbar } from '../../../../../shared/components/navbar/navbar';
 
 @Component({
   selector: 'app-register-company',

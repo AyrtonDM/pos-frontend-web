@@ -6,8 +6,8 @@ import {
   Company,
   CompanyService,
   UpdateCompanyRequest,
-} from '../../../core/services/company.service';
-import { Navbar } from '../../../shared/components/navbar/navbar';
+} from '../../../../../core/services/company.service';
+import { Navbar } from '../../../../../shared/components/navbar/navbar';
 
 @Component({
   selector: 'app-edit-company',

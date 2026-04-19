@@ -1,0 +1,91 @@
+<div class="page-container branches-page">
+  <app-navbar />
+
+  <main class="branches-layout">
+    <app-sidebar [items]="sidebarItems" />
+
+    <section class="branches-content">
+      <header class="branches-header panel">
+        <div>
+          <p class="badge badge-success">Empresa {{ companyId }}</p>
+          <h1 class="title-xl">Sucursales</h1>
+          <p class="text-muted">Administra las sucursales asociadas a esta empresa.</p>
+        </div>
+      </header>
+
+      <section class="tabs-panel panel">
+        <div class="tabs" role="tablist" aria-label="Secciones de sucursales">
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'register'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'register'"
+            (click)="setActiveTab('register')"
+          >
+            Registrar Nueva Sucursal
+          </button>
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'list'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'list'"
+            (click)="setActiveTab('list')"
+          >
+            Mis Sucursales
+          </button>
+        </div>
+
+        <div class="tab-content">
+          @if (activeTab === 'register') {
+            <form class="branch-form" aria-label="Formulario de registro de sucursal">
+              <div class="form-group">
+                <label class="label" for="nombre">Nombre</label>
+                <input class="input" id="nombre" name="nombre" type="text" placeholder="Sucursal Central" />
+              </div>
+
+              <div class="form-group">
+                <label class="label" for="direccion">Direccion</label>
+                <input class="input" id="direccion" name="direccion" type="text" placeholder="Av. Principal 1245" />
+              </div>
+
+              <div class="form-group">
+                <label class="label" for="telefono">Telefono</label>
+                <input class="input" id="telefono" name="telefono" type="tel" placeholder="61524977" />
+              </div>
+
+              <div class="form-group">
+                <label class="label" for="ciudad">Ciudad</label>
+                <input class="input" id="ciudad" name="ciudad" type="text" placeholder="La Paz" />
+              </div>
+
+              <button class="btn btn-primary submit-button" type="submit">Registrar</button>
+            </form>
+          } @else {
+            <section class="branches-list" aria-label="Sucursales registradas">
+              @for (branch of branches; track branch.nombre) {
+                <article class="card branch-row">
+                  <div>
+                    <h2 class="title-md">{{ branch.nombre }}</h2>
+                    @if (branch.activo) {
+                      <span class="badge badge-success">Activo</span>
+                    } @else {
+                      <span class="badge badge-danger">Inactivo</span>
+                    }
+                  </div>
+
+                  <div class="branch-actions">
+                    <button class="btn btn-secondary" type="button">Ver</button>
+                    <button class="btn btn-secondary" type="button">Editar</button>
+                    <button class="btn btn-primary" type="button">Entrar</button>
+                  </div>
+                </article>
+              }
+            </section>
+          }
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
