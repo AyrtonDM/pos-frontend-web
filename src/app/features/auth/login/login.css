@@ -1,0 +1,103 @@
+.login-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-bg), var(--color-bg-soft));
+  padding: var(--space-lg);
+}
+
+.login-shell {
+  display: grid;
+  min-height: calc(100vh - (var(--space-lg) * 2));
+  place-items: center;
+}
+
+.login-panel {
+  display: flex;
+  width: min(440px, 100%);
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-xl);
+}
+
+.login-brand {
+  width: fit-content;
+  color: var(--color-text);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.02em;
+}
+
+.login-header {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-sm);
+}
+
+.login-form {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.login-form .label {
+  color: var(--color-text-soft);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.login-form .input {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.login-form .input::placeholder {
+  color: var(--color-text-soft);
+  opacity: 0.55;
+}
+
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  color: var(--color-text-soft);
+  font-size: var(--font-size-sm);
+}
+
+.remember-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.remember-option input {
+  accent-color: var(--color-primary);
+}
+
+.login-options a,
+.register-link a {
+  color: var(--color-primary-hover);
+  font-weight: var(--font-weight-semibold);
+}
+
+.submit-button {
+  min-height: 44px;
+  margin-top: var(--space-sm);
+}
+
+.register-link {
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .login-page {
+    padding: var(--space-md);
+  }
+
+  .login-panel {
+    padding: var(--space-lg);
+  }
+
+  .login-options {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

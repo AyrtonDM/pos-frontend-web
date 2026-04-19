@@ -1,0 +1,80 @@
+<div class="page-container edit-company-page">
+  <app-navbar />
+
+  <main class="edit-company-shell">
+    <section class="edit-company-panel panel">
+      <a class="back-link" routerLink="/administrator/my-companies">Volver a Mis empresas</a>
+
+      <header class="edit-company-header">
+        <p class="badge badge-success">Administrador</p>
+        <h1 class="title-xl">Editar Empresa</h1>
+        <p class="text-muted">Actualiza los datos principales de la empresa.</p>
+      </header>
+
+      <form class="company-form" aria-label="Formulario de edicion de empresa">
+        <div class="form-group">
+          <label class="label" for="nombre">Nombre</label>
+          <input
+            class="input"
+            id="nombre"
+            name="nombre"
+            type="text"
+            placeholder="Cafe Norte"
+            autocomplete="organization"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="label" for="razon_social">Razon social</label>
+          <input
+            class="input"
+            id="razon_social"
+            name="razon_social"
+            type="text"
+            placeholder="Cafe Norte Bolivia SA"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="label" for="nit">NIT</label>
+          <input
+            class="input"
+            id="nit"
+            name="nit"
+            type="text"
+            placeholder="2045678912"
+            inputmode="numeric"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="label" for="correo">Correo</label>
+          <input
+            class="input"
+            id="correo"
+            name="correo"
+            type="email"
+            placeholder="admin@empresa.com"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group status-field">
+          <span class="label">Activo</span>
+          <label class="switch">
+            <input type="checkbox" name="activo" checked />
+            <span class="switch-track" aria-hidden="true">
+              <span class="switch-thumb"></span>
+            </span>
+            <span class="switch-text">Empresa activa</span>
+          </label>
+        </div>
+
+        <div class="company-form-actions">
+          <a class="btn btn-secondary" routerLink="/administrator/my-companies">Cancelar</a>
+          <button class="btn btn-primary" type="submit">Guardar cambios</button>
+        </div>
+      </form>
+    </section>
+  </main>
+</div>

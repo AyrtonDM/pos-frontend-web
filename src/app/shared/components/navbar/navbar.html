@@ -1,0 +1,63 @@
+<nav class="navbar panel" aria-label="Navegacion principal">
+  <a class="brand" href="/" aria-label="Inicio POS">
+    <span class="brand-icon" aria-hidden="true">
+      <svg viewBox="0 0 48 48" role="img">
+        <rect x="8" y="7" width="32" height="34" rx="7" />
+        <path d="M15 17h18" />
+        <path d="M15 24h18" />
+        <path d="M16 32h6" />
+        <path d="M27 32h5" />
+        <circle cx="35" cy="13" r="5" />
+      </svg>
+    </span>
+    <span>
+      <strong>POS</strong>
+      <small>Punto de venta</small>
+    </span>
+  </a>
+
+  <div class="nav-actions">
+    @if (sesionIniciada()) {
+      <button class="btn btn-danger" type="button" (click)="cerrarSesion()">
+        Cerrar sesion
+      </button>
+    } @else {
+      <a class="btn btn-secondary" routerLink="/register">
+        Registrar
+      </a>
+      <div class="login-menu">
+        <button
+          class="btn btn-primary login-trigger"
+          type="button"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="menuLoginAbierto()"
+          (click)="alternarMenuLogin()"
+        >
+          Iniciar sesion
+          <span aria-hidden="true">▾</span>
+        </button>
+
+        @if (menuLoginAbierto()) {
+          <div class="login-dropdown panel" role="menu">
+            <a
+              routerLink="/login"
+              [queryParams]="{ rol: 'administrador' }"
+              role="menuitem"
+              (click)="cerrarMenuLogin()"
+            >
+              Administrador
+            </a>
+            <a
+              routerLink="/login"
+              [queryParams]="{ rol: 'empleado' }"
+              role="menuitem"
+              (click)="cerrarMenuLogin()"
+            >
+              Empleado
+            </a>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</nav>
