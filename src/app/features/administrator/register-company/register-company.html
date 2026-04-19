@@ -11,7 +11,19 @@
         <p class="text-muted">Completa los datos principales de la empresa.</p>
       </header>
 
-      <form class="company-form" aria-label="Formulario de registro de empresa">
+      @if (errorRegistro) {
+        <p class="feedback feedback-error">{{ errorRegistro }}</p>
+      }
+
+      @if (mensajeRegistro) {
+        <p class="feedback feedback-success">{{ mensajeRegistro }}</p>
+      }
+
+      <form
+        class="company-form"
+        aria-label="Formulario de registro de empresa"
+        (submit)="registrarEmpresa($event)"
+      >
         <div class="form-group">
           <label class="label" for="nombre">Nombre</label>
           <input
@@ -21,6 +33,8 @@
             type="text"
             placeholder="Cafe Norte"
             autocomplete="organization"
+            required
+            [(ngModel)]="form.nombre"
           />
         </div>
 
@@ -32,6 +46,8 @@
             name="razon_social"
             type="text"
             placeholder="Cafe Norte Bolivia SA"
+            required
+            [(ngModel)]="form.razon_social"
           />
         </div>
 
@@ -44,6 +60,8 @@
             type="text"
             placeholder="2045678912"
             inputmode="numeric"
+            required
+            [(ngModel)]="form.nit"
           />
         </div>
 
@@ -56,12 +74,16 @@
             type="email"
             placeholder="admin@empresa.com"
             autocomplete="email"
+            required
+            [(ngModel)]="form.correo"
           />
         </div>
 
         <div class="company-form-actions">
           <a class="btn btn-secondary" routerLink="/administrator/my-companies">Cancelar</a>
-          <button class="btn btn-primary" type="submit">Registrar empresa</button>
+          <button class="btn btn-primary" type="submit" [disabled]="cargandoRegistro">
+            {{ cargandoRegistro ? 'Registrando...' : 'Registrar empresa' }}
+          </button>
         </div>
       </form>
     </section>
