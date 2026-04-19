@@ -1,0 +1,56 @@
+<div class="login-page">
+  <main class="login-shell">
+    <section class="login-panel panel">
+      <a class="login-brand" href="/" aria-label="Volver al inicio">POS</a>
+
+      <header class="login-header">
+        <p class="badge badge-success">Acceso al sistema</p>
+        <h1 class="title-xl">Iniciar sesion</h1>
+        <p class="text-muted">Ingresa tus credenciales para continuar.</p>
+      </header>
+
+      <form class="login-form" aria-label="Formulario de inicio de sesion">
+        <div class="form-group">
+          <label class="label" for="correo">Correo electronico</label>
+          <input
+            class="input"
+            id="correo"
+            name="correo"
+            type="email"
+            placeholder="ayrton.daza.1230@gmail.com"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="label" for="contrasena">Contrasena</label>
+          <input
+            class="input"
+            id="contrasena"
+            name="contrasena"
+            type="password"
+            placeholder="Ingresa tu contrasena"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="login-options">
+          <label class="remember-option">
+            <input type="checkbox" name="recordarme" />
+            <span>Recordarme</span>
+          </label>
+          <a href="/">Olvide mi contrasena</a>
+        </div>
+
+        <button class="btn btn-primary submit-button" type="submit">
+          Iniciar sesion
+        </button>
+      </form>
+
+      <p class="register-link text-muted">
+        No tienes cuenta?
+        <a routerLink="/register">Registrate</a>
+      </p>
+    </section>
+  </main>
+</div>

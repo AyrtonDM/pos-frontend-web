@@ -10,10 +10,6 @@ import { RouterLink } from '@angular/router';
 export class Navbar {
   protected readonly sesionIniciada = signal(false);
 
-  protected iniciarSesion(): void {
-    this.sesionIniciada.set(true);
-  }
-
   protected cerrarSesion(): void {
     this.sesionIniciada.set(false);
   }

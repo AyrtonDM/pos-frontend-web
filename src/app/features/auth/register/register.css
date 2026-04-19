@@ -1,20 +1,22 @@
 .register-page {
   min-height: 100vh;
-  background: linear-gradient(90deg, var(--color-surface-2) 0 25%, var(--color-bg-soft) 25% 75%, var(--color-surface-2) 75% 100%);
+  background: linear-gradient(135deg, var(--color-bg), var(--color-bg-soft));
+  padding: var(--space-lg);
 }
 
 .register-shell {
-  width: min(680px, 100%);
-  min-height: 100vh;
+  display: grid;
+  min-height: calc(100vh - (var(--space-lg) * 2));
   margin: 0 auto;
-  padding: var(--space-lg) var(--space-xl);
-  background: rgba(255, 255, 255, 0.32);
+  place-items: center;
 }
 
 .register-panel {
   display: flex;
+  width: min(680px, 100%);
   flex-direction: column;
   gap: var(--space-lg);
+  padding: var(--space-xl);
 }
 
 .register-brand {
@@ -26,7 +28,8 @@
 
 .register-header {
   display: grid;
-  gap: var(--space-xs);
+  justify-items: start;
+  gap: var(--space-sm);
 }
 
 .register-header h1 {
@@ -71,12 +74,21 @@
   background: var(--color-primary-hover);
 }
 
+.login-link {
+  text-align: center;
+}
+
+.login-link a {
+  color: var(--color-primary-hover);
+  font-weight: var(--font-weight-semibold);
+}
+
 @media (max-width: 720px) {
   .register-page {
-    background: var(--color-bg-soft);
+    padding: var(--space-md);
   }
 
-  .register-shell {
+  .register-panel {
     padding: var(--space-lg);
   }
 
