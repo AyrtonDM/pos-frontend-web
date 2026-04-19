@@ -7,6 +7,7 @@ import { EditBranch } from './features/administrator/companies/sections/branches
 import { ViewBranch } from './features/administrator/companies/sections/branches/pages/view-branch/view-branch';
 import { Staff } from './features/administrator/companies/sections/branches/sections/staff/staff';
 import { Products } from './features/administrator/companies/sections/products/products';
+import { EmployeeBranches } from './features/employee/branches/pages/employee-branches/employee-branches';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
 import { HomePage } from './features/landing/home_page/home_page';
@@ -67,6 +68,11 @@ export const routes: Routes = [
   {
     path: 'administrator/company/:id/products',
     component: Products,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee/my-branches',
+    component: EmployeeBranches,
     canActivate: [authGuard],
   },
 ];
