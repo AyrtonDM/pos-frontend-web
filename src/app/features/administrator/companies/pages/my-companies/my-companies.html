@@ -47,7 +47,7 @@
 
           <div class="company-actions">
             <a class="btn btn-secondary" [routerLink]="['/administrator/edit-company', company.nit]">Editar</a>
-            <button class="btn btn-primary" type="button">Entrar</button>
+            <a class="btn btn-primary" [routerLink]="['/administrator/company', company.nit, 'branches']">Entrar</a>
           </div>
         </article>
       }
