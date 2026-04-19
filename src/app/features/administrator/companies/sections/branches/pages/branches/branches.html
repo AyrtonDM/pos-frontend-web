@@ -39,50 +39,147 @@
 
         <div class="tab-content">
           @if (activeTab === 'register') {
-            <form class="branch-form" aria-label="Formulario de registro de sucursal">
+            @if (errorRegistro) {
+              <p class="feedback feedback-error">{{ errorRegistro }}</p>
+            }
+
+            @if (mensajeRegistro) {
+              <p class="feedback feedback-success">{{ mensajeRegistro }}</p>
+            }
+
+            <form
+              class="branch-form"
+              aria-label="Formulario de registro de sucursal"
+              (submit)="registrarSucursal($event)"
+            >
               <div class="form-group">
                 <label class="label" for="nombre">Nombre</label>
-                <input class="input" id="nombre" name="nombre" type="text" placeholder="Sucursal Central" />
+                <input
+                  class="input"
+                  id="nombre"
+                  name="nombre"
+                  type="text"
+                  placeholder="Sucursal Central"
+                  required
+                  [(ngModel)]="branchForm.nombre"
+                />
               </div>
 
               <div class="form-group">
                 <label class="label" for="direccion">Direccion</label>
-                <input class="input" id="direccion" name="direccion" type="text" placeholder="Av. Principal 1245" />
+                <input
+                  class="input"
+                  id="direccion"
+                  name="direccion"
+                  type="text"
+                  placeholder="Av. Principal 1245"
+                  required
+                  [(ngModel)]="branchForm.direccion"
+                />
               </div>
 
               <div class="form-group">
                 <label class="label" for="telefono">Telefono</label>
-                <input class="input" id="telefono" name="telefono" type="tel" placeholder="61524977" />
+                <input
+                  class="input"
+                  id="telefono"
+                  name="telefono"
+                  type="tel"
+                  placeholder="61524977"
+                  required
+                  [(ngModel)]="branchForm.telefono"
+                />
               </div>
 
               <div class="form-group">
                 <label class="label" for="ciudad">Ciudad</label>
-                <input class="input" id="ciudad" name="ciudad" type="text" placeholder="La Paz" />
+                <input
+                  class="input"
+                  id="ciudad"
+                  name="ciudad"
+                  type="text"
+                  placeholder="La Paz"
+                  required
+                  [(ngModel)]="branchForm.ciudad"
+                />
               </div>
 
-              <button class="btn btn-primary submit-button" type="submit">Registrar</button>
+              <button
+                class="btn btn-primary submit-button"
+                type="submit"
+                [disabled]="cargandoRegistro"
+              >
+                {{ cargandoRegistro ? 'Registrando...' : 'Registrar' }}
+              </button>
             </form>
           } @else {
-            <section class="branches-list" aria-label="Sucursales registradas">
-              @for (branch of branches; track branch.nombre) {
-                <article class="card branch-row">
-                  <div>
-                    <h2 class="title-md">{{ branch.nombre }}</h2>
-                    @if (branch.activo) {
-                      <span class="badge badge-success">Activo</span>
-                    } @else {
-                      <span class="badge badge-danger">Inactivo</span>
-                    }
-                  </div>
+            @if (cargandoSucursales) {
+              <section class="branches-state" aria-live="polite">
+                <p class="text-muted">Cargando sucursales...</p>
+              </section>
+            } @else if (errorSucursales) {
+              <section class="branches-state" aria-live="polite">
+                <p class="feedback feedback-error">{{ errorSucursales }}</p>
+              </section>
+            } @else if (branches.length === 0) {
+              <section class="branches-state" aria-live="polite">
+                <p class="text-muted">Aun no tienes sucursales registradas.</p>
+              </section>
+            } @else {
+              <section class="branches-list" aria-label="Sucursales registradas">
+                @for (branch of branches; track obtenerIdSucursal(branch)) {
+                  <article class="card branch-row">
+                    <div>
+                      <h2 class="title-md">{{ branch.nombre }}</h2>
+                      @if (branch.activo ?? true) {
+                        <span class="badge badge-success">Activo</span>
+                      } @else {
+                        <span class="badge badge-danger">Inactivo</span>
+                      }
+                      @if (branch.ciudad) {
+                        <p class="text-muted">{{ branch.ciudad }}</p>
+                      }
+                    </div>
 
-                  <div class="branch-actions">
-                    <a class="btn btn-secondary" [routerLink]="['/administrator/company', companyId, 'branch', branch.id, 'view-branch']">Ver</a>
-                    <a class="btn btn-secondary" [routerLink]="['/administrator/company', companyId, 'branch', branch.id, 'edit-branch']">Editar</a>
-                    <a class="btn btn-primary" [routerLink]="['/administrator/company', companyId, 'branch', branch.id, 'staff']">Entrar</a>
-                  </div>
-                </article>
-              }
-            </section>
+                    <div class="branch-actions">
+                      <a
+                        class="btn btn-secondary"
+                        [routerLink]="[
+                          '/administrator/company',
+                          companyId,
+                          'branch',
+                          obtenerIdSucursal(branch),
+                          'view-branch',
+                        ]"
+                        >Ver</a
+                      >
+                      <a
+                        class="btn btn-secondary"
+                        [routerLink]="[
+                          '/administrator/company',
+                          companyId,
+                          'branch',
+                          obtenerIdSucursal(branch),
+                          'edit-branch',
+                        ]"
+                        >Editar</a
+                      >
+                      <a
+                        class="btn btn-primary"
+                        [routerLink]="[
+                          '/administrator/company',
+                          companyId,
+                          'branch',
+                          obtenerIdSucursal(branch),
+                          'staff',
+                        ]"
+                        >Entrar</a
+                      >
+                    </div>
+                  </article>
+                }
+              </section>
+            }
           }
         </div>
       </section>

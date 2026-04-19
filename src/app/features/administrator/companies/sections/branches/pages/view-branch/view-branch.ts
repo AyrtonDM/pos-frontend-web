@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Branch, CompanyService } from '../../../../../../../core/services/company.service';
 import { Navbar } from '../../../../../../../shared/components/navbar/navbar';
 import { Sidebar, SidebarItem } from '../../../../../../../shared/components/sidebar/sidebar';
 
@@ -9,11 +10,23 @@ import { Sidebar, SidebarItem } from '../../../../../../../shared/components/sid
   templateUrl: './view-branch.html',
   styleUrl: './view-branch.css',
 })
-export class ViewBranch {
+export class ViewBranch implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly companyService = inject(CompanyService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
   protected readonly branchId = this.route.snapshot.paramMap.get('branchId') ?? '';
+  protected cargandoSucursal = false;
+  protected errorSucursal = '';
+  protected branch: Branch = {
+    nombre: '',
+    direccion: '',
+    telefono: '',
+    ciudad: '',
+    activo: true,
+    fecha_registro: '',
+  };
 
   protected readonly sidebarItems: SidebarItem[] = [
     {
@@ -27,12 +40,31 @@ export class ViewBranch {
     },
   ];
 
-  protected readonly branch = {
-    nombre: 'Sucursal Central',
-    direccion: 'Av. Principal 1245',
-    telefono: '61524977',
-    ciudad: 'La Paz',
-    activo: true,
-    fecha_registro: '2026-04-18',
-  };
+  ngOnInit(): void {
+    this.cargarSucursal();
+  }
+
+  private cargarSucursal(): void {
+    this.errorSucursal = '';
+
+    if (!this.companyId || !this.branchId) {
+      this.errorSucursal = 'No se encontro la sucursal solicitada.';
+      return;
+    }
+
+    this.cargandoSucursal = true;
+
+    this.companyService.obtenerSucursal(this.companyId, this.branchId).subscribe({
+      next: (branch) => {
+        this.branch = branch;
+        this.cargandoSucursal = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cargandoSucursal = false;
+        this.errorSucursal = 'No se pudieron cargar los datos de la sucursal.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
 }

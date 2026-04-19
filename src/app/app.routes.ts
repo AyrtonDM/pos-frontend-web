@@ -43,14 +43,22 @@ export const routes: Routes = [
   {
     path: 'administrator/company/:id/branches',
     component: Branches,
+    canActivate: [authGuard],
   },
   {
     path: 'administrator/company/:id/branch/:branchId/view-branch',
     component: ViewBranch,
+    canActivate: [authGuard],
   },
   {
     path: 'administrator/company/:id/branch/:branchId/edit-branch',
     component: EditBranch,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/branch/:branchId/staff',
+    component: Staff,
+/*  */    canActivate: [authGuard],
   },
   {
     path: 'administrator/company/:id/branch/:branchId/staff',
@@ -59,5 +67,6 @@ export const routes: Routes = [
   {
     path: 'administrator/company/:id/products',
     component: Products,
+    canActivate: [authGuard],
   },
 ];
