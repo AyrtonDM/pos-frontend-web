@@ -1,0 +1,226 @@
+<section class="tabs-panel panel">
+  <div class="tabs" role="tablist" aria-label="Secciones de productos">
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'list'"
+      type="button"
+      role="tab"
+      [attr.aria-selected]="activeTab === 'list'"
+      (click)="setActiveTab('list')"
+    >
+      Lista de productos
+    </button>
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'register'"
+      type="button"
+      role="tab"
+      [attr.aria-selected]="activeTab === 'register'"
+      (click)="setActiveTab('register')"
+    >
+      Registrar producto
+    </button>
+  </div>
+
+  <div class="tab-content">
+    @if (errorGeneral) {
+      <p class="feedback feedback-error">{{ errorGeneral }}</p>
+    }
+
+    @if (mensajeGeneral) {
+      <p class="feedback feedback-success">{{ mensajeGeneral }}</p>
+    }
+
+    @if (activeTab === 'list') {
+      @if (cargandoDatos) {
+        <section class="products-state" aria-live="polite">
+          <p class="text-muted">Cargando productos...</p>
+        </section>
+      } @else if (productos.length === 0) {
+        <section class="products-state" aria-live="polite">
+          <p class="text-muted">Aun no tienes productos registrados para esta empresa.</p>
+        </section>
+      } @else {
+        <section class="products-grid" aria-label="Productos registrados">
+          @for (product of productos; track product.id_producto) {
+            <article class="card card-hover product-card">
+              @if (product.imagen) {
+                <img
+                  class="product-image"
+                  [src]="resolverImagenUrl(product)"
+                  [alt]="'Imagen de ' + product.nombre"
+                />
+              }
+
+              <div class="product-card-header">
+                <div>
+                  <h3 class="title-md">{{ product.nombre }}</h3>
+                  <p class="text-muted">Subcategoria: {{ product.subcategoria.nombre }}</p>
+                </div>
+                <span class="badge badge-success">Activo</span>
+              </div>
+
+              <dl class="product-data">
+                <div>
+                  <dt>Precio</dt>
+                  <dd>Bs {{ product.precio }}</dd>
+                </div>
+                <div>
+                  <dt>Stock</dt>
+                  <dd>{{ product.stock.cantidad }} unidades</dd>
+                </div>
+              </dl>
+
+              <div class="row-actions">
+                <a
+                  class="btn btn-secondary"
+                  [routerLink]="['/administrator/company', companyId, 'product', product.id_producto, 'view-product']"
+                  >Ver</a
+                >
+                <a
+                  class="btn btn-primary"
+                  [routerLink]="['/administrator/company', companyId, 'product', product.id_producto, 'edit-product']"
+                  >Editar</a
+                >
+                <button
+                  class="btn-icon-danger"
+                  type="button"
+                  [disabled]="eliminandoProductoId === product.id_producto"
+                  [attr.aria-label]="'Eliminar producto ' + product.nombre"
+                  (click)="eliminarProducto(product.id_producto, product.nombre)"
+                >
+                  <svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9z" />
+                  </svg>
+                </button>
+              </div>
+
+            </article>
+          }
+        </section>
+      }
+    } @else {
+      <section class="card card-wide">
+        <h2 class="title-md">Registrar Producto</h2>
+        <form class="entity-form" (submit)="registrarProducto($event)">
+          <div class="form-group">
+            <label class="label">Empresa</label>
+            <input class="input" [value]="companyId" disabled />
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="producto_subcategoria">Subcategoria</label>
+            <select
+              class="select"
+              id="producto_subcategoria"
+              name="producto_subcategoria"
+              [(ngModel)]="productoForm.id_subcategoria"
+              required
+            >
+              <option [ngValue]="0">Selecciona una subcategoria</option>
+              @for (subcategoria of subcategorias; track subcategoria.id_subcategoria) {
+                <option [ngValue]="subcategoria.id_subcategoria">{{ subcategoria.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="producto_nombre">Nombre</label>
+            <input
+              class="input"
+              id="producto_nombre"
+              name="producto_nombre"
+              required
+              [(ngModel)]="productoForm.nombre"
+            />
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="label" for="producto_costo">Costo</label>
+              <input
+                class="input"
+                id="producto_costo"
+                name="producto_costo"
+                type="number"
+                min="0"
+                step="0.01"
+                [(ngModel)]="productoForm.costo"
+              />
+            </div>
+            <div class="form-group">
+              <label class="label" for="producto_precio">Precio</label>
+              <input
+                class="input"
+                id="producto_precio"
+                name="producto_precio"
+                type="number"
+                min="0"
+                step="0.01"
+                [(ngModel)]="productoForm.precio"
+              />
+            </div>
+          </div>
+
+          <h3 class="title-sm">Stock inicial</h3>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="label" for="stock_cantidad">Cantidad</label>
+              <input
+                class="input"
+                id="stock_cantidad"
+                name="stock_cantidad"
+                type="number"
+                min="0"
+                [(ngModel)]="productoForm.stock.cantidad"
+              />
+            </div>
+            <div class="form-group">
+              <label class="label" for="stock_min">Stock min</label>
+              <input
+                class="input"
+                id="stock_min"
+                name="stock_min"
+                type="number"
+                min="0"
+                [(ngModel)]="productoForm.stock.stock_min"
+              />
+            </div>
+            <div class="form-group">
+              <label class="label" for="stock_max">Stock max</label>
+              <input
+                class="input"
+                id="stock_max"
+                name="stock_max"
+                type="number"
+                min="0"
+                [(ngModel)]="productoForm.stock.stock_max"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="producto_imagen">Imagen del producto</label>
+            <input
+              class="input"
+              id="producto_imagen"
+              name="producto_imagen"
+              type="file"
+              accept="image/*"
+              (change)="onImagenProductoSeleccionada($event)"
+            />
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" [disabled]="guardandoProducto">
+              {{ guardandoProducto ? 'Guardando...' : 'Registrar producto' }}
+            </button>
+            <button class="btn btn-secondary" type="button" (click)="cancelarRegistroProducto()" [disabled]="guardandoProducto">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+  </div>
+</section>

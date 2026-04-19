@@ -22,6 +22,10 @@ export class ApiService {
     return this.http.put<TResponse>(this.buildUrl(endpoint), body);
   }
 
+  delete<TResponse>(endpoint: string): Observable<TResponse> {
+    return this.http.delete<TResponse>(this.buildUrl(endpoint));
+  }
+
   private buildUrl(endpoint: string): string {
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
 
