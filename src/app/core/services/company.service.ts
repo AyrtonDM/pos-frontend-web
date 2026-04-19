@@ -50,6 +50,38 @@ export interface Branch {
   fecha_registro?: string;
 }
 
+export interface InviteEmployeeRequest {
+  email: string;
+}
+
+export interface InviteEmployeeResponse {
+  mensaje?: string;
+  message?: string;
+  [key: string]: unknown;
+}
+
+export interface EmployeeRole {
+  id_usuario_rol: number;
+  id_usuario: number;
+  id_rol: number;
+  id_empresa: number;
+  id_sucursal: number;
+  activo: boolean;
+  usuario: {
+    id_usuario: number;
+    email: string;
+    activo: boolean;
+    persona?: {
+      id_persona: number;
+      nombre_completo: string;
+      fecha_nacimiento: string;
+      genero: string;
+      telefono: string;
+      documento: string;
+    };
+  };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -94,6 +126,23 @@ export class CompanyService {
     return this.apiService.put<Branch, UpdateBranchRequest>(
       `/api/sucursales/${idSucursal}`,
       payload,
+    );
+  }
+
+  invitarEmpleado(
+    idEmpresa: string,
+    idSucursal: string,
+    payload: InviteEmployeeRequest,
+  ): Observable<InviteEmployeeResponse> {
+    return this.apiService.post<InviteEmployeeResponse, InviteEmployeeRequest>(
+      `/api/empresas/${idEmpresa}/sucursales/${idSucursal}/invitar-empleado`,
+      payload,
+    );
+  }
+
+  getEmpleadosSucursal(idEmpresa: string, idSucursal: string): Observable<EmployeeRole[]> {
+    return this.apiService.get<EmployeeRole[]>(
+      `/api/empresas/${idEmpresa}/sucursales/${idSucursal}/empleados`,
     );
   }
 }
