@@ -14,43 +14,61 @@
       </a>
     </section>
 
-    <section class="companies-grid" aria-label="Empresas registradas">
-      @for (company of companies; track company.nit) {
-        <article class="card card-hover company-card">
-          <div class="company-card-header">
-            <div>
-              <h2 class="title-md">{{ company.nombre }}</h2>
-              <p class="text-muted">{{ company.razon_social }}</p>
+    @if (cargandoEmpresas) {
+      <section class="companies-state panel" aria-live="polite">
+        <p class="text-muted">Cargando empresas...</p>
+      </section>
+    } @else if (errorEmpresas) {
+      <section class="companies-state panel" aria-live="polite">
+        <p class="feedback feedback-error">{{ errorEmpresas }}</p>
+      </section>
+    } @else if (companies.length === 0) {
+      <section class="companies-state panel" aria-live="polite">
+        <p class="text-muted">Aun no tienes empresas registradas.</p>
+      </section>
+    } @else {
+      <section class="companies-grid" aria-label="Empresas registradas">
+        @for (company of companies; track obtenerIdEmpresa(company)) {
+          <article class="card card-hover company-card">
+            <div class="company-card-header">
+              <div>
+                <h2 class="title-md">{{ company.nombre }}</h2>
+                <p class="text-muted">{{ company.razon_social }}</p>
+              </div>
+
+              @if (company.activo) {
+                <span class="badge badge-success">Activo</span>
+              } @else {
+                <span class="badge badge-danger">Inactivo</span>
+              }
             </div>
 
-            @if (company.activo) {
-              <span class="badge badge-success">Activo</span>
-            } @else {
-              <span class="badge badge-danger">Inactivo</span>
-            }
-          </div>
+            <dl class="company-data">
+              <div>
+                <dt>NIT</dt>
+                <dd>{{ company.nit }}</dd>
+              </div>
+              <div>
+                <dt>Correo</dt>
+                <dd>{{ company.correo }}</dd>
+              </div>
+              <div>
+                <dt>Fecha de registro</dt>
+                <dd>{{ company.fecha_registro }}</dd>
+              </div>
+            </dl>
 
-          <dl class="company-data">
-            <div>
-              <dt>NIT</dt>
-              <dd>{{ company.nit }}</dd>
+            <div class="company-actions">
+              <a
+                class="btn btn-secondary"
+                [routerLink]="['/administrator/edit-company', obtenerIdEmpresa(company)]"
+                >Editar</a
+              >
+              <button class="btn btn-primary" type="button">Entrar</button>
             </div>
-            <div>
-              <dt>Correo</dt>
-              <dd>{{ company.correo }}</dd>
-            </div>
-            <div>
-              <dt>Fecha de registro</dt>
-              <dd>{{ company.fecha_registro }}</dd>
-            </div>
-          </dl>
-
-          <div class="company-actions">
-            <a class="btn btn-secondary" [routerLink]="['/administrator/edit-company', company.nit]">Editar</a>
-            <button class="btn btn-primary" type="button">Entrar</button>
-          </div>
-        </article>
-      }
-    </section>
+          </article>
+        }
+      </section>
+    }
   </main>
 </div>

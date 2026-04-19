@@ -5,6 +5,7 @@ import { RegisterCompany } from './features/administrator/register-company/regis
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
 import { HomePage } from './features/landing/home_page/home_page';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -22,13 +23,16 @@ export const routes: Routes = [
   {
     path: 'administrator/my-companies',
     component: MyCompanies,
+    canActivate: [authGuard],
   },
   {
     path: 'administrator/register-company',
     component: RegisterCompany,
+    canActivate: [authGuard],
   },
   {
-    path: 'administrator/edit-company/:nit',
+    path: 'administrator/edit-company/:idEmpresa',
     component: EditCompany,
+    canActivate: [authGuard],
   },
 ];
