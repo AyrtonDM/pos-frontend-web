@@ -1,0 +1,19 @@
+<aside class="sidebar panel" aria-label="Menu lateral">
+  <nav class="sidebar-nav">
+    @for (item of items; track item.label) {
+      @if (item.link) {
+        <a
+          class="sidebar-link"
+          [class.active]="item.active"
+          [routerLink]="item.link"
+        >
+          {{ item.label }}
+        </a>
+      } @else {
+        <button class="sidebar-link" [class.active]="item.active" type="button">
+          {{ item.label }}
+        </button>
+      }
+    }
+  </nav>
+</aside>
