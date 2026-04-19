@@ -32,6 +32,26 @@
   gap: var(--space-md);
 }
 
+.companies-state {
+  display: grid;
+  min-height: 120px;
+  place-items: center;
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.feedback {
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  padding: 10px 12px;
+}
+
+.feedback-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+}
+
 .company-card {
   display: flex;
   min-height: 320px;
