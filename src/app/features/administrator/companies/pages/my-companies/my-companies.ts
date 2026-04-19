@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Navbar } from '../../../../../shared/components/navbar/navbar';
 
-import { Company, CompanyService } from '../../../core/services/company.service';
-import { Navbar } from '../../../shared/components/navbar/navbar';
+import { Company, CompanyService } from '../../../../../core/services/company.service';
 
 @Component({
   selector: 'app-my-companies',

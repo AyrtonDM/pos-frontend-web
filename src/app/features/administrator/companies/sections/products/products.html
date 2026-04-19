@@ -1,0 +1,54 @@
+<div class="page-container products-page">
+  <app-navbar />
+
+  <main class="products-layout">
+    <app-sidebar [items]="sidebarItems" />
+
+    <section class="products-content">
+      <header class="products-header panel">
+        <div>
+          <p class="badge badge-success">Empresa {{ companyId }}</p>
+          <h1 class="title-xl">Productos</h1>
+          <p class="text-muted">Administra los productos asociados a esta empresa.</p>
+        </div>
+
+        <button class="btn btn-primary" type="button">Registrar Producto</button>
+      </header>
+
+      <section class="products-grid" aria-label="Productos registrados">
+        @for (product of products; track product.codigo) {
+          <article class="card card-hover product-card">
+            <div class="product-card-header">
+              <div>
+                <h2 class="title-md">{{ product.nombre }}</h2>
+                <p class="text-muted">{{ product.codigo }}</p>
+              </div>
+
+              @if (product.activo) {
+                <span class="badge badge-success">Activo</span>
+              } @else {
+                <span class="badge badge-danger">Inactivo</span>
+              }
+            </div>
+
+            <dl class="product-data">
+              <div>
+                <dt>Precio</dt>
+                <dd>{{ product.precio }}</dd>
+              </div>
+              <div>
+                <dt>Stock</dt>
+                <dd>{{ product.stock }} unidades</dd>
+              </div>
+            </dl>
+
+            <div class="product-actions">
+              <button class="btn btn-secondary" type="button">Editar</button>
+              <button class="btn btn-primary" type="button">Ver detalle</button>
+            </div>
+          </article>
+        }
+      </section>
+    </section>
+  </main>
+</div>
