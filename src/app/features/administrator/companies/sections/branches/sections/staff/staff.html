@@ -1,0 +1,73 @@
+<div class="page-container staff-page">
+  <app-navbar />
+
+  <main class="staff-layout">
+    <app-sidebar [items]="sidebarItems" />
+
+    <section class="staff-content">
+      <header class="staff-header panel">
+        <div>
+          <p class="badge badge-success">Sucursal {{ branchId }}</p>
+          <h1 class="title-xl">Personal</h1>
+          <p class="text-muted">Administra el personal asignado a esta sucursal.</p>
+        </div>
+      </header>
+
+      <section class="tabs-panel panel">
+        <div class="tabs" role="tablist" aria-label="Secciones de personal">
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'invite'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'invite'"
+            (click)="setActiveTab('invite')"
+          >
+            Invitar personal
+          </button>
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'list'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'list'"
+            (click)="setActiveTab('list')"
+          >
+            Lista de personal
+          </button>
+        </div>
+
+        <div class="tab-content">
+          @if (activeTab === 'invite') {
+            <form class="invite-form" aria-label="Formulario para invitar personal">
+              <div class="form-group">
+                <label class="label" for="gmail">Gmail</label>
+                <input
+                  class="input"
+                  id="gmail"
+                  name="gmail"
+                  type="email"
+                  placeholder="persona@gmail.com"
+                  autocomplete="email"
+                />
+              </div>
+
+              <button class="btn btn-primary submit-button" type="submit">Enviar</button>
+            </form>
+          } @else {
+            <section class="staff-list" aria-label="Personal registrado">
+              @for (member of staffMembers; track member.telefono) {
+                <article class="card staff-row">
+                  <div>
+                    <h2 class="title-md">{{ member.nombre }}</h2>
+                    <p class="text-muted app-text-sm">{{ member.telefono }}</p>
+                  </div>
+                </article>
+              }
+            </section>
+          }
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
