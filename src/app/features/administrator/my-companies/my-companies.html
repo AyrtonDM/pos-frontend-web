@@ -1,0 +1,56 @@
+<div class="page-container companies-page">
+  <app-navbar />
+
+  <main class="companies-shell">
+    <section class="companies-header panel">
+      <div>
+        <p class="badge badge-success">Administrador</p>
+        <h1 class="title-xl">Mis empresas</h1>
+        <p class="text-muted">Gestiona las empresas registradas en tu cuenta.</p>
+      </div>
+
+      <a class="btn btn-primary" routerLink="/administrator/register-company">
+        Registrar Nueva Empresa
+      </a>
+    </section>
+
+    <section class="companies-grid" aria-label="Empresas registradas">
+      @for (company of companies; track company.nit) {
+        <article class="card card-hover company-card">
+          <div class="company-card-header">
+            <div>
+              <h2 class="title-md">{{ company.nombre }}</h2>
+              <p class="text-muted">{{ company.razon_social }}</p>
+            </div>
+
+            @if (company.activo) {
+              <span class="badge badge-success">Activo</span>
+            } @else {
+              <span class="badge badge-danger">Inactivo</span>
+            }
+          </div>
+
+          <dl class="company-data">
+            <div>
+              <dt>NIT</dt>
+              <dd>{{ company.nit }}</dd>
+            </div>
+            <div>
+              <dt>Correo</dt>
+              <dd>{{ company.correo }}</dd>
+            </div>
+            <div>
+              <dt>Fecha de registro</dt>
+              <dd>{{ company.fecha_registro }}</dd>
+            </div>
+          </dl>
+
+          <div class="company-actions">
+            <a class="btn btn-secondary" [routerLink]="['/administrator/edit-company', company.nit]">Editar</a>
+            <button class="btn btn-primary" type="button">Entrar</button>
+          </div>
+        </article>
+      }
+    </section>
+  </main>
+</div>

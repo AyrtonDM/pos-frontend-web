@@ -9,7 +9,7 @@
         <p class="text-muted">Ingresa tus credenciales para continuar.</p>
       </header>
 
-      <form class="login-form" aria-label="Formulario de inicio de sesion">
+      <form class="login-form" aria-label="Formulario de inicio de sesion" (submit)="iniciarSesion($event)">
         <div class="form-group">
           <label class="label" for="correo">Correo electronico</label>
           <input
