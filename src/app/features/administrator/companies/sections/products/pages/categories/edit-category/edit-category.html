@@ -8,10 +8,8 @@
       <section class="edit-category-panel panel">
         <a
           class="back-link"
-          [routerLink]="['/administrator/company', companyId, 'products']"
-          [queryParams]="{ view: 'categorias' }"
-          >Volver al listado de categorias</a
-        >
+          [routerLink]="['/administrator/company', companyId, 'products', 'categories']"
+        >Cancelar</a>
 
         <header class="edit-category-header">
           <p class="badge badge-success">Categoria {{ categoryId }}</p>
@@ -31,7 +29,7 @@
           <p class="feedback feedback-info">Cargando datos de la categoria...</p>
         }
 
-        <form class="category-form" (submit)="guardarCategoria($event)">
+        <form id="category-edit-form" class="category-form" (submit)="guardarCategoria($event)">
           <div class="form-group">
             <label class="label" for="categoria_nombre">Nombre</label>
             <input class="input" id="categoria_nombre" name="categoria_nombre" required [(ngModel)]="form.nombre" />
@@ -42,15 +40,13 @@
             <input class="input" id="categoria_descripcion" name="categoria_descripcion" [(ngModel)]="form.descripcion" />
           </div>
 
-          <div class="form-group checkbox-row">
-            <input id="categoria_activo" name="categoria_activo" type="checkbox" [(ngModel)]="form.activo" />
-            <label for="categoria_activo">Categoria activa</label>
-          </div>
-
-          <div class="form-actions">
-            <button class="btn btn-primary" type="submit" [disabled]="cargandoCategoria || guardandoCategoria">
-              {{ guardandoCategoria ? 'Guardando...' : 'Guardar categoria' }}
-            </button>
+          <div class="form-group status-field">
+            <span class="label">Estado</span>
+            <label class="toggle-switch" for="categoria_activo">
+              <input id="categoria_activo" name="categoria_activo" type="checkbox" [(ngModel)]="form.activo" />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-text">{{ form.activo ? 'Categoria activa' : 'Categoria inactiva' }}</span>
+            </label>
           </div>
         </form>
 
@@ -91,9 +87,13 @@
                 </div>
               </div>
 
-              <div class="form-group checkbox-row">
-                <input id="subcategoria_activo" name="subcategoria_activo" type="checkbox" [(ngModel)]="subcategoriaForm.activo" />
-                <label for="subcategoria_activo">Subcategoria activa</label>
+              <div class="form-group status-field">
+                <span class="label">Estado</span>
+                <label class="toggle-switch" for="subcategoria_activo">
+                  <input id="subcategoria_activo" name="subcategoria_activo" type="checkbox" [(ngModel)]="subcategoriaForm.activo" />
+                  <span class="toggle-track" aria-hidden="true"></span>
+                  <span class="toggle-text">{{ subcategoriaForm.activo ? 'Subcategoria activa' : 'Subcategoria inactiva' }}</span>
+                </label>
               </div>
 
               <div class="form-actions">
@@ -133,9 +133,13 @@
               </div>
             </div>
 
-            <div class="form-group checkbox-row">
-              <input id="nueva_subcategoria_activo" name="nueva_subcategoria_activo" type="checkbox" [(ngModel)]="nuevaSubcategoriaForm.activo" />
-              <label for="nueva_subcategoria_activo">Subcategoria activa</label>
+            <div class="form-group status-field">
+              <span class="label">Estado</span>
+              <label class="toggle-switch" for="nueva_subcategoria_activo">
+                <input id="nueva_subcategoria_activo" name="nueva_subcategoria_activo" type="checkbox" [(ngModel)]="nuevaSubcategoriaForm.activo" />
+                <span class="toggle-track" aria-hidden="true"></span>
+                <span class="toggle-text">{{ nuevaSubcategoriaForm.activo ? 'Subcategoria activa' : 'Subcategoria inactiva' }}</span>
+              </label>
             </div>
 
             <div class="form-actions">
@@ -162,7 +166,15 @@
         </section>
 
         <div class="form-actions">
-          <button class="btn btn-secondary" type="button" (click)="volverListado()">Volver al listado de categorias</button>
+          <button
+            class="btn btn-primary"
+            type="submit"
+            form="category-edit-form"
+            [disabled]="cargandoCategoria || guardandoCategoria"
+          >
+            {{ guardandoCategoria ? 'Guardando...' : 'Guardar categoria' }}
+          </button>
+          <button class="btn btn-secondary" type="button" (click)="volverListado()">Cancelar</button>
         </div>
       </section>
     </section>

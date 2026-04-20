@@ -25,28 +25,24 @@
               <dd>{{ producto.nombre }}</dd>
             </div>
             <div>
-              <dt>Subcategoria</dt>
-              <dd>{{ subcategoriaDelProducto()?.nombre || 'Sin subcategoria' }}</dd>
+              <dt>Descripcion</dt>
+              <dd>{{ producto.descripcion || 'Sin descripcion' }}</dd>
             </div>
             <div>
-              <dt>Costo</dt>
-              <dd>Bs {{ producto.costo }}</dd>
+              <dt>Subcategoria</dt>
+              <dd>{{ producto.subcategoria?.nombre || 'Sin subcategoria' }}</dd>
+            </div>
+            <div>
+              <dt>Unidad de medida</dt>
+              <dd>{{ producto.unidad_medida }}</dd>
             </div>
             <div>
               <dt>Precio</dt>
               <dd>Bs {{ producto.precio }}</dd>
             </div>
             <div>
-              <dt>Stock</dt>
-              <dd>{{ producto.stock.cantidad }} unidades</dd>
-            </div>
-            <div>
-              <dt>Stock minimo</dt>
-              <dd>{{ producto.stock.stock_min }}</dd>
-            </div>
-            <div>
-              <dt>Stock maximo</dt>
-              <dd>{{ producto.stock.stock_max }}</dd>
+              <dt>Estado</dt>
+              <dd>{{ producto.activo ? 'Activo' : 'Inactivo' }}</dd>
             </div>
             <div>
               <dt>Imagen</dt>

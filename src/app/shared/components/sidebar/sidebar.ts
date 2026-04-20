@@ -19,17 +19,21 @@ export type SidebarItem = {
 export class Sidebar {
   @Input() items: SidebarItem[] = [];
 
-  protected openGroups: Record<string, boolean> = {};
+  openGroups: Record<string, boolean> = {};
 
   ngOnChanges(_changes: SimpleChanges): void {
     this.syncOpenGroups();
   }
 
-  protected toggleGroup(label: string): void {
+  toggleGroup(label: string): void {
     this.openGroups[label] = !this.openGroups[label];
   }
 
-  protected isGroupOpen(item: SidebarItem): boolean {
+  openGroup(label: string): void {
+    this.openGroups[label] = true;
+  }
+
+  isGroupOpen(item: SidebarItem): boolean {
     return this.openGroups[item.label] ?? false;
   }
 
