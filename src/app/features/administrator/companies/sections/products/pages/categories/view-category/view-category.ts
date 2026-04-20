@@ -36,6 +36,18 @@ export class ViewCategory implements OnInit {
       label: 'Productos',
       link: ['/administrator/company', this.companyId, 'products'],
       active: true,
+      expanded: true,
+      children: [
+        {
+          label: 'Catalogo de Productos',
+          link: ['/administrator/company', this.companyId, 'products'],
+        },
+        {
+          label: 'Categoria',
+          link: ['/administrator/company', this.companyId, 'products', 'categories'],
+          active: true,
+        },
+      ],
     },
   ];
 

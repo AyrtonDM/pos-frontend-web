@@ -1,27 +1,33 @@
-import { ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { CompanyService } from '../../../../../../../../core/services/company.service';
 import {
   CrearProductoRequest,
   ProductService,
   Producto,
   SubcategoriaProducto,
-} from '../../../../../../../core/services/product.service';
+} from '../../../../../../../../core/services/product.service';
+import { Navbar } from '../../../../../../../../shared/components/navbar/navbar';
+import { Sidebar, SidebarItem } from '../../../../../../../../shared/components/sidebar/sidebar';
 
 @Component({
-  selector: 'app-productos-panel',
+  selector: 'app-productos-catalog',
   standalone: true,
-  imports: [FormsModule, RouterLink],
-  templateUrl: './productos.html',
-  styleUrl: './productos.css',
+  imports: [FormsModule, Navbar, RouterLink, Sidebar],
+  templateUrl: './my-catalog.html',
+  styleUrl: './my-catalog.css',
 })
-export class ProductosPanel implements OnChanges {
+export class ProductosPanel implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly companyService = inject(CompanyService);
   private readonly productService = inject(ProductService);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  @Input({ required: true }) companyId = '';
-  @Input() companyName = '';
-  protected activeTab: 'list' | 'register' = 'list';
+  protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
+  protected companyName = 'Empresa';
+  protected activeTab: 'register' | 'list' = 'register';
+  protected sidebarItems: SidebarItem[] = [];
 
   protected readonly productoForm: CrearProductoRequest = {
     id_subcategoria: 0,
@@ -37,21 +43,18 @@ export class ProductosPanel implements OnChanges {
 
   protected cargandoDatos = false;
   protected guardandoProducto = false;
-  protected eliminandoProductoId: number | null = null;
-  protected mostrarModalEliminarProducto = false;
-  protected productoPendienteEliminar: Producto | null = null;
 
   protected errorGeneral = '';
   protected mensajeGeneral = '';
   protected imagenProductoSeleccionada: File | null = null;
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['companyId'] && this.companyId) {
-      this.cargarDatos();
-    }
+  ngOnInit(): void {
+    this.sidebarItems = this.buildSidebarItems();
+    this.cargarNombreEmpresa();
+    this.cargarDatos();
   }
 
-  protected setActiveTab(tab: 'list' | 'register'): void {
+  protected setActiveTab(tab: 'register' | 'list'): void {
     this.activeTab = tab;
     this.limpiarMensajes();
 
@@ -88,13 +91,7 @@ export class ProductosPanel implements OnChanges {
       next: () => {
         this.guardandoProducto = false;
         this.mensajeGeneral = 'Producto registrado correctamente.';
-        this.productoForm.id_subcategoria = 0;
-        this.productoForm.nombre = '';
-        this.productoForm.descripcion = '';
-        this.productoForm.unidad_medida = '';
-        this.productoForm.precio = 0;
-        this.productoForm.activo = true;
-        this.imagenProductoSeleccionada = null;
+        this.limpiarFormularioProducto();
         this.activeTab = 'list';
         this.cargarProductos();
       },
@@ -106,17 +103,10 @@ export class ProductosPanel implements OnChanges {
     });
   }
 
-
   protected cancelarRegistroProducto(): void {
     this.activeTab = 'list';
     this.limpiarMensajes();
-    this.productoForm.id_subcategoria = 0;
-    this.productoForm.nombre = '';
-    this.productoForm.descripcion = '';
-    this.productoForm.unidad_medida = '';
-    this.productoForm.precio = 0;
-    this.productoForm.activo = true;
-    this.imagenProductoSeleccionada = null;
+    this.limpiarFormularioProducto();
   }
 
   protected onImagenProductoSeleccionada(event: Event): void {
@@ -124,49 +114,18 @@ export class ProductosPanel implements OnChanges {
     this.imagenProductoSeleccionada = input.files?.[0] ?? null;
   }
 
-  protected resolverImagenUrl(producto: Producto): string {
-    return producto.imagen ?? '';
-  }
-
-  protected eliminarProducto(idProducto: number, nombreProducto: string): void {
-    this.limpiarMensajes();
-
-    const producto = this.productos.find((item) => item.id_producto === idProducto);
-    if (!producto) {
-      this.errorGeneral = 'No se encontro el producto seleccionado.';
+  private cargarNombreEmpresa(): void {
+    if (!this.companyId) {
       return;
     }
 
-    this.productoPendienteEliminar = producto;
-    this.mostrarModalEliminarProducto = true;
-  }
-
-  protected cancelarEliminarProducto(): void {
-    this.mostrarModalEliminarProducto = false;
-    this.productoPendienteEliminar = null;
-  }
-
-  protected confirmarEliminarProducto(): void {
-    if (!this.productoPendienteEliminar) {
-      this.cancelarEliminarProducto();
-      return;
-    }
-
-    const idProducto = this.productoPendienteEliminar.id_producto;
-    this.mostrarModalEliminarProducto = false;
-
-    this.eliminandoProductoId = idProducto;
-    this.productService.eliminarProducto(idProducto).subscribe({
-      next: () => {
-        this.eliminandoProductoId = null;
-        this.productoPendienteEliminar = null;
-        this.mensajeGeneral = 'Producto eliminado correctamente.';
-        this.cargarProductos();
+    this.companyService.obtenerEmpresa(this.companyId).subscribe({
+      next: (empresa) => {
+        this.companyName = empresa.nombre;
+        this.cdr.detectChanges();
       },
       error: () => {
-        this.eliminandoProductoId = null;
-        this.productoPendienteEliminar = null;
-        this.errorGeneral = 'No se pudo eliminar el producto.';
+        this.companyName = 'Empresa';
         this.cdr.detectChanges();
       },
     });
@@ -209,6 +168,16 @@ export class ProductosPanel implements OnChanges {
     });
   }
 
+  private limpiarFormularioProducto(): void {
+    this.productoForm.id_subcategoria = 0;
+    this.productoForm.nombre = '';
+    this.productoForm.descripcion = '';
+    this.productoForm.unidad_medida = '';
+    this.productoForm.precio = 0;
+    this.productoForm.activo = true;
+    this.imagenProductoSeleccionada = null;
+  }
+
   private limpiarMensajes(): void {
     this.errorGeneral = '';
     this.mensajeGeneral = '';
@@ -224,5 +193,31 @@ export class ProductosPanel implements OnChanges {
     formData.append('activo', 'true');
     formData.append('imagen', imagen);
     return formData;
+  }
+
+  private buildSidebarItems(): SidebarItem[] {
+    return [
+      {
+        label: 'Sucursales',
+        link: ['/administrator/company', this.companyId, 'branches'],
+      },
+      {
+        label: 'Productos',
+        link: ['/administrator/company', this.companyId, 'products'],
+        active: true,
+        expanded: true,
+        children: [
+          {
+            label: 'Catalogo de Productos',
+            link: ['/administrator/company', this.companyId, 'products'],
+            active: true,
+          },
+          {
+            label: 'Categoria',
+            link: ['/administrator/company', this.companyId, 'products', 'categories'],
+          },
+        ],
+      },
+    ];
   }
 }

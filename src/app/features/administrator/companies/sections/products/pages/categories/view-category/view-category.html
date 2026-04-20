@@ -8,8 +8,7 @@
       <section class="view-category-panel panel">
         <a
           class="back-link"
-          [routerLink]="['/administrator/company', companyId, 'products']"
-          [queryParams]="{ view: 'categorias' }"
+          [routerLink]="['/administrator/company', companyId, 'products', 'categories']"
           >Volver al listado de categorias</a
         >
 
@@ -59,8 +58,7 @@
         <div class="view-actions">
           <a
             class="btn btn-secondary"
-            [routerLink]="['/administrator/company', companyId, 'products']"
-            [queryParams]="{ view: 'categorias' }"
+            [routerLink]="['/administrator/company', companyId, 'products', 'categories']"
             >Cerrar</a
           >
           <a

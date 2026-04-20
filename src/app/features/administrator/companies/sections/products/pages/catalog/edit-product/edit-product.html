@@ -64,9 +64,13 @@
             </div>
           </div>
 
-          <div class="form-group checkbox-row">
-            <input id="producto_activo" name="producto_activo" type="checkbox" [(ngModel)]="form.activo" />
-            <label for="producto_activo">Producto activo</label>
+          <div class="form-group status-field">
+            <span class="label">Estado</span>
+            <label class="toggle-switch" for="producto_activo">
+              <input id="producto_activo" name="producto_activo" type="checkbox" [(ngModel)]="form.activo" />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-text">{{ form.activo ? 'Producto activo' : 'Producto inactivo' }}</span>
+            </label>
           </div>
 
           <div class="form-group">

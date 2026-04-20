@@ -8,8 +8,7 @@
       <section class="edit-category-panel panel">
         <a
           class="back-link"
-          [routerLink]="['/administrator/company', companyId, 'products']"
-          [queryParams]="{ view: 'categorias' }"
+          [routerLink]="['/administrator/company', companyId, 'products', 'categories']"
         >Cancelar</a>
 
         <header class="edit-category-header">
@@ -41,9 +40,13 @@
             <input class="input" id="categoria_descripcion" name="categoria_descripcion" [(ngModel)]="form.descripcion" />
           </div>
 
-          <div class="form-group checkbox-row">
-            <input id="categoria_activo" name="categoria_activo" type="checkbox" [(ngModel)]="form.activo" />
-            <label for="categoria_activo">Categoria activa</label>
+          <div class="form-group status-field">
+            <span class="label">Estado</span>
+            <label class="toggle-switch" for="categoria_activo">
+              <input id="categoria_activo" name="categoria_activo" type="checkbox" [(ngModel)]="form.activo" />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-text">{{ form.activo ? 'Categoria activa' : 'Categoria inactiva' }}</span>
+            </label>
           </div>
         </form>
 
@@ -84,9 +87,13 @@
                 </div>
               </div>
 
-              <div class="form-group checkbox-row">
-                <input id="subcategoria_activo" name="subcategoria_activo" type="checkbox" [(ngModel)]="subcategoriaForm.activo" />
-                <label for="subcategoria_activo">Subcategoria activa</label>
+              <div class="form-group status-field">
+                <span class="label">Estado</span>
+                <label class="toggle-switch" for="subcategoria_activo">
+                  <input id="subcategoria_activo" name="subcategoria_activo" type="checkbox" [(ngModel)]="subcategoriaForm.activo" />
+                  <span class="toggle-track" aria-hidden="true"></span>
+                  <span class="toggle-text">{{ subcategoriaForm.activo ? 'Subcategoria activa' : 'Subcategoria inactiva' }}</span>
+                </label>
               </div>
 
               <div class="form-actions">
@@ -126,9 +133,13 @@
               </div>
             </div>
 
-            <div class="form-group checkbox-row">
-              <input id="nueva_subcategoria_activo" name="nueva_subcategoria_activo" type="checkbox" [(ngModel)]="nuevaSubcategoriaForm.activo" />
-              <label for="nueva_subcategoria_activo">Subcategoria activa</label>
+            <div class="form-group status-field">
+              <span class="label">Estado</span>
+              <label class="toggle-switch" for="nueva_subcategoria_activo">
+                <input id="nueva_subcategoria_activo" name="nueva_subcategoria_activo" type="checkbox" [(ngModel)]="nuevaSubcategoriaForm.activo" />
+                <span class="toggle-track" aria-hidden="true"></span>
+                <span class="toggle-text">{{ nuevaSubcategoriaForm.activo ? 'Subcategoria activa' : 'Subcategoria inactiva' }}</span>
+              </label>
             </div>
 
             <div class="form-actions">
