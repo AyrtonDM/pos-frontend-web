@@ -1,0 +1,73 @@
+<div class="page-container view-category-page">
+  <app-navbar />
+
+  <main class="view-category-layout">
+    <app-sidebar [items]="sidebarItems" />
+
+    <section class="view-category-content">
+      <section class="view-category-panel panel">
+        <a
+          class="back-link"
+          [routerLink]="['/administrator/company', companyId, 'products', 'categories']"
+          >Volver al listado de categorias</a
+        >
+
+        <header class="view-category-header">
+          <p class="badge badge-success">Categoria {{ categoryId }}</p>
+          <h1 class="title-xl">Detalle de Categoria</h1>
+          <p class="text-muted">Consulta los datos registrados de esta categoria y sus subcategorias.</p>
+        </header>
+
+        @if (cargandoCategoria) {
+          <p class="feedback feedback-info">Cargando datos de la categoria...</p>
+        } @else if (errorCategoria) {
+          <p class="feedback feedback-error">{{ errorCategoria }}</p>
+        } @else if (categoria) {
+          <dl class="category-detail">
+            <div>
+              <dt>Nombre</dt>
+              <dd>{{ categoria.nombre }}</dd>
+            </div>
+            <div>
+              <dt>Descripcion</dt>
+              <dd>{{ categoria.descripcion || 'Sin descripcion' }}</dd>
+            </div>
+            <div>
+              <dt>Activo</dt>
+              <dd>{{ categoria.activo ? 'Si' : 'No' }}</dd>
+            </div>
+          </dl>
+
+          <section class="subcategory-block">
+            <h3 class="title-md">Subcategorias</h3>
+            @if (subcategoriasDeCategoria().length === 0) {
+              <p class="text-muted">No hay subcategorias registradas en esta categoria.</p>
+            } @else {
+              <div class="subcategory-list">
+                @for (subcategoria of subcategoriasDeCategoria(); track subcategoria.id_subcategoria) {
+                  <article class="subcategory-item">
+                    <p class="title-sm">{{ subcategoria.nombre }}</p>
+                    <p class="text-muted">{{ subcategoria.descripcion || 'Sin descripcion' }}</p>
+                  </article>
+                }
+              </div>
+            }
+          </section>
+        }
+
+        <div class="view-actions">
+          <a
+            class="btn btn-secondary"
+            [routerLink]="['/administrator/company', companyId, 'products', 'categories']"
+            >Cerrar</a
+          >
+          <a
+            class="btn btn-primary"
+            [routerLink]="['/administrator/company', companyId, 'category', categoryId, 'edit-category']"
+            >Editar</a
+          >
+        </div>
+      </section>
+    </section>
+  </main>
+</div>

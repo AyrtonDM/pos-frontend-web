@@ -6,7 +6,12 @@ import { Branches } from './features/administrator/companies/sections/branches/p
 import { EditBranch } from './features/administrator/companies/sections/branches/pages/edit-branch/edit-branch';
 import { ViewBranch } from './features/administrator/companies/sections/branches/pages/view-branch/view-branch';
 import { Staff } from './features/administrator/companies/sections/branches/sections/staff/staff';
-import { Products } from './features/administrator/companies/sections/products/products';
+import { CategoriasPanel } from './features/administrator/companies/sections/products/pages/categories/my-categories/my-categories';
+import { EditCategory } from './features/administrator/companies/sections/products/pages/categories/edit-category/edit-category';
+import { EditProduct } from './features/administrator/companies/sections/products/pages/catalog/edit-product/edit-product';
+import { ProductosPanel } from './features/administrator/companies/sections/products/pages/catalog/my-catalog/my-catalog';
+import { ViewCategory } from './features/administrator/companies/sections/products/pages/categories/view-category/view-category';
+import { ViewProduct } from './features/administrator/companies/sections/products/pages/catalog/view-product/view-product';
 import { EmployeeBranches } from './features/employee/branches/pages/employee-branches/employee-branches';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
@@ -66,8 +71,33 @@ export const routes: Routes = [
     component: Staff,
   },
   {
+    path: 'administrator/company/:id/products/categories',
+    component: CategoriasPanel,
+    canActivate: [authGuard],
+  },
+  {
     path: 'administrator/company/:id/products',
-    component: Products,
+    component: ProductosPanel,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/product/:productId/view-product',
+    component: ViewProduct,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/product/:productId/edit-product',
+    component: EditProduct,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/category/:categoryId/view-category',
+    component: ViewCategory,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/category/:categoryId/edit-category',
+    component: EditCategory,
     canActivate: [authGuard],
   },
   {
