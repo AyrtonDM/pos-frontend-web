@@ -1,0 +1,188 @@
+<div class="page-container inventory-page">
+  <app-navbar />
+
+  <main class="inventory-layout">
+    <app-sidebar [items]="sidebarItems" />
+
+    <section class="inventory-content">
+      <header class="inventory-header panel">
+        <div>
+          <p class="badge badge-success">Sucursal {{ branchId }}</p>
+          <h1 class="title-xl">Inventario</h1>
+          <p class="text-muted">Gestiona el stock y realiza movimientos en esta sucursal.</p>
+        </div>
+      </header>
+
+      <section class="tabs-panel panel">
+        <div class="tabs" role="tablist" aria-label="Secciones de inventario">
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'stock'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'stock'"
+            (click)="setActiveTab('stock')"
+          >
+            Ver stock
+          </button>
+
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'movements'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'movements'"
+            (click)="setActiveTab('movements')"
+          >
+            Movimientos
+          </button>
+        </div>
+
+        <div class="tab-content">
+          @if (activeTab === 'stock') {
+            @if (cargandoStock) {
+              <section class="inventory-state" aria-live="polite">
+                <p class="text-muted">Cargando stock...</p>
+              </section>
+            } @else if (errorStock) {
+              <section class="inventory-state" aria-live="polite">
+                <p class="feedback feedback-error">{{ errorStock }}</p>
+              </section>
+            } @else if (stockItems.length === 0) {
+              <section class="inventory-state" aria-live="polite">
+                <p class="text-muted">No hay productos en stock en esta sucursal.</p>
+              </section>
+            } @else {
+              <section class="stock-list" aria-label="Productos en stock">
+                @for (item of stockItems; track item.id) {
+                  <article class="card stock-row">
+                    <div>
+                      <h2 class="title-md">{{ item.nombre }}</h2>
+                      <p class="text-muted app-text-sm">Cantidad: {{ item.cantidad }}</p>
+                    </div>
+
+                    <div class="stock-actions">
+                      <button class="btn btn-secondary" type="button" (click)="setActiveTab('movements')">
+                        Registrar movimiento
+                      </button>
+                    </div>
+                  </article>
+                }
+              </section>
+            }
+          } @else {
+            @if (cargandoMovimientos) {
+              <section class="inventory-state" aria-live="polite">
+                <p class="text-muted">Cargando movimientos...</p>
+              </section>
+            } @else if (errorMovimientos) {
+              <section class="inventory-state" aria-live="polite">
+                <p class="feedback feedback-error">{{ errorMovimientos }}</p>
+              </section>
+            } @else {
+              <section class="movement-panel">
+                <div class="inner-tabs" role="tablist" aria-label="Acciones de movimientos">
+                  <button
+                    class="tab-button"
+                    [class.active]="movementsView === 'register'"
+                    type="button"
+                    (click)="setMovementsView('register')"
+                  >
+                    Registrar movimientos
+                  </button>
+                  <button
+                    class="tab-button"
+                    [class.active]="movementsView === 'list'"
+                    type="button"
+                    (click)="setMovementsView('list')"
+                  >
+                    Lista de movimientos realizados
+                  </button>
+                </div>
+
+                <div class="tab-content">
+                  @if (movementsView === 'register') {
+                    @if (errorMovimiento) {
+                      <p class="feedback feedback-error">{{ errorMovimiento }}</p>
+                    }
+
+                    @if (mensajeMovimiento) {
+                      <p class="feedback feedback-success">{{ mensajeMovimiento }}</p>
+                    }
+
+                    <form class="movement-form" aria-label="Registrar movimiento" (submit)="realizarMovimiento($event)">
+                      <div class="form-group">
+                        <label class="label" for="producto">Producto</label>
+                        <input
+                          class="input"
+                          id="producto"
+                          name="producto"
+                          type="text"
+                          placeholder="Nombre del producto"
+                          required
+                          [(ngModel)]="movimientoProducto"
+                        />
+                      </div>
+
+                      <div class="form-row">
+                        <div class="form-group">
+                          <label class="label" for="tipo">Tipo de movimiento</label>
+                          <select id="tipo" name="tipo" class="input" [(ngModel)]="movimientoTipo">
+                            @for (t of movementTypes; track t.id) {
+                              <option value="{{ t.code }}">{{ t.nombre }}</option>
+                            }
+                          </select>
+                        </div>
+
+                        <div class="form-group">
+                          <label class="label" for="cantidad">Cantidad</label>
+                          <input
+                            class="input"
+                            id="cantidad"
+                            name="cantidad"
+                            type="number"
+                            min="1"
+                            required
+                            [(ngModel)]="movimientoCantidad"
+                          />
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="label" for="observacion">Observación</label>
+                        <textarea id="observacion" name="observacion" class="input" rows="3" [(ngModel)]="movimientoObservacion"></textarea>
+                      </div>
+
+                      <button class="btn btn-primary" type="submit">Registrar</button>
+                    </form>
+                  } @else {
+                    @if (movements.length === 0) {
+                      <section class="inventory-state" aria-live="polite">
+                        <p class="text-muted">Aun no hay movimientos registrados.</p>
+                      </section>
+                    } @else {
+                      <section class="movement-list" aria-label="Movimientos recientes">
+                        @for (m of movements; track m.id) {
+                          <article class="card movement-row">
+                            <div>
+                              <h3 class="title-sm">{{ m.producto }}</h3>
+                              <p class="text-muted app-text-sm">{{ m.tipo }} — {{ m.cantidad }} — {{ m.fecha }}</p>
+                              @if (m.observacion) {
+                                <p class="app-text-sm">{{ m.observacion }}</p>
+                              }
+                            </div>
+                            <span class="badge" [class.badge-success]="m.tipo==='entrada'" [class.badge-danger]="m.tipo!=='entrada'">{{ m.tipo }}</span>
+                          </article>
+                        }
+                      </section>
+                    }
+                  }
+                </div>
+              </section>
+            }
+          }
+        </div>
+      </section>
+    </section>
+  </main>
+</div>

@@ -35,6 +35,7 @@ export class Staff implements OnInit {
     },
     {
       label: 'Inventario',
+      link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'inventario'],
     },
     {
       label: 'Ventas',
