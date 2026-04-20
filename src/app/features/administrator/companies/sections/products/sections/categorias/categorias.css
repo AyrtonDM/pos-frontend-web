@@ -98,15 +98,16 @@
 
 .simple-list {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--space-sm);
 }
 
 .list-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-sm);
-  padding: var(--space-sm);
+  padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
 }
@@ -250,6 +251,10 @@
   .tabs {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .simple-list {
+    grid-template-columns: 1fr;
   }
 
   .tab-button,

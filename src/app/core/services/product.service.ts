@@ -18,24 +18,16 @@ export interface SubcategoriaProducto {
   activo: boolean;
 }
 
-export interface StockProducto {
-  id_stock: number;
-  cantidad: number;
-  stock_min: number;
-  stock_max: number;
-  fecha_actualizacion: string;
-}
-
 export interface Producto {
   id_producto: number;
-  id_empresa: number;
-  id_subcategoria: number;
+  id_subcategoria: number | null;
   nombre: string;
-  costo: number;
+  descripcion?: string | null;
+  unidad_medida: string;
   precio: number;
   imagen?: string | null;
-  subcategoria: SubcategoriaProducto;
-  stock: StockProducto;
+  activo: boolean;
+  subcategoria?: SubcategoriaProducto | null;
 }
 
 export interface CrearCategoriaRequest {
@@ -52,16 +44,12 @@ export interface CrearSubcategoriaRequest {
 }
 
 export interface CrearProductoRequest {
-  id_empresa: number;
   id_subcategoria: number;
   nombre: string;
-  costo: number;
+  descripcion?: string;
+  unidad_medida: string;
   precio: number;
-  stock: {
-    cantidad: number;
-    stock_min: number;
-    stock_max: number;
-  };
+  activo: boolean;
 }
 
 export interface ActualizarCategoriaRequest {
@@ -78,22 +66,12 @@ export interface ActualizarSubcategoriaRequest {
 }
 
 export interface ActualizarProductoRequest {
-  id_empresa?: number;
   id_subcategoria?: number;
   nombre?: string;
-  costo?: number;
+  descripcion?: string;
+  unidad_medida?: string;
   precio?: number;
-  stock?: {
-    cantidad?: number;
-    stock_min?: number;
-    stock_max?: number;
-  };
-}
-
-export interface ActualizarStockRequest {
-  cantidad?: number;
-  stock_min?: number;
-  stock_max?: number;
+  activo?: boolean;
 }
 
 @Injectable({
@@ -156,8 +134,8 @@ export class ProductService {
     );
   }
 
-  getProductosPorEmpresa(idEmpresa: number): Observable<Producto[]> {
-    return this.apiService.get<Producto[]>(`/api/productos?id_empresa=${idEmpresa}`);
+  getProductos(): Observable<Producto[]> {
+    return this.apiService.get<Producto[]>('/api/productos');
   }
 
   crearProducto(payload: CrearProductoRequest): Observable<Producto> {
@@ -189,10 +167,4 @@ export class ProductService {
     return this.apiService.post<Producto, FormData>('/api/productos/con-imagen', formData);
   }
 
-  actualizarStock(idProducto: number, payload: ActualizarStockRequest): Observable<StockProducto> {
-    return this.apiService.put<StockProducto, ActualizarStockRequest>(
-      `/api/productos/${idProducto}/stock`,
-      payload,
-    );
-  }
 }
