@@ -3,7 +3,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   ProductService,
   Producto,
-  SubcategoriaProducto,
 } from '../../../../../../../../core/services/product.service';
 import { Navbar } from '../../../../../../../../shared/components/navbar/navbar';
 import { Sidebar, SidebarItem } from '../../../../../../../../shared/components/sidebar/sidebar';
@@ -25,7 +24,6 @@ export class ViewProduct implements OnInit {
   protected cargandoProducto = false;
   protected errorProducto = '';
   protected producto: Producto | null = null;
-  protected subcategorias: SubcategoriaProducto[] = [];
 
   protected readonly sidebarItems: SidebarItem[] = [
     {
@@ -41,15 +39,6 @@ export class ViewProduct implements OnInit {
 
   ngOnInit(): void {
     this.cargarProducto();
-    this.cargarSubcategorias();
-  }
-
-  protected subcategoriaDelProducto(): SubcategoriaProducto | null {
-    if (!this.producto) {
-      return null;
-    }
-
-    return this.subcategorias.find((item) => item.id_subcategoria === this.producto?.id_subcategoria) ?? null;
   }
 
   private cargarProducto(): void {
@@ -76,15 +65,4 @@ export class ViewProduct implements OnInit {
     });
   }
 
-  private cargarSubcategorias(): void {
-    this.productService.getSubcategorias().subscribe({
-      next: (subcategorias) => {
-        this.subcategorias = subcategorias;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.cdr.detectChanges();
-      },
-    });
-  }
 }

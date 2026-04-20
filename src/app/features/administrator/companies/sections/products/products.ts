@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { CompanyService } from '../../../../../core/services/company.service';
 import { CategoriasPanel } from './sections/categorias/categorias';
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
 import { ProductosPanel } from './sections/productos/productos';
@@ -14,16 +15,36 @@ import { Sidebar, SidebarItem } from '../../../../../shared/components/sidebar/s
 })
 export class Products implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly companyService = inject(CompanyService);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
+  protected companyName = '';
   protected activeView: 'categorias' | 'productos' = 'productos';
 
   protected sidebarItems: SidebarItem[] = [];
 
   ngOnInit(): void {
+    this.cargarNombreEmpresa();
+
     this.route.queryParamMap.subscribe((params) => {
       this.activeView = this.resolveView(params.get('view'));
       this.sidebarItems = this.buildSidebarItems();
+    });
+  }
+
+  private cargarNombreEmpresa(): void {
+    if (!this.companyId) {
+      this.companyName = 'Empresa';
+      return;
+    }
+
+    this.companyService.obtenerEmpresa(this.companyId).subscribe({
+      next: (empresa) => {
+        this.companyName = empresa.nombre;
+      },
+      error: () => {
+        this.companyName = 'Empresa';
+      },
     });
   }
 
@@ -47,13 +68,13 @@ export class Products implements OnInit {
         expanded: true,
         children: [
           {
-            label: 'Productos',
+            label: 'Catálogo de Productos',
             link: ['/administrator/company', this.companyId, 'products'],
             queryParams: { view: 'productos' },
             active: this.activeView === 'productos',
           },
           {
-            label: 'Categorias',
+            label: 'Categoría',
             link: ['/administrator/company', this.companyId, 'products'],
             queryParams: { view: 'categorias' },
             active: this.activeView === 'categorias',

@@ -7,10 +7,10 @@
     <section class="products-content">
       <header class="products-header panel">
         <div>
-          <p class="badge badge-success">Empresa {{ companyId }}</p>
-          <h1 class="title-xl">Productos</h1>
+          <p class="badge badge-success">Empresa {{ companyName }}</p>
+          <h1 class="title-xl">Catálogo de Productos</h1>
           <p class="text-muted">
-            Gestiona categorias, subcategorias, productos y stock asociados a esta empresa.
+            Gestiona categorías, subcategorías y productos asociados a esta empresa.
           </p>
         </div>
       </header>
@@ -20,36 +20,7 @@
           @if (activeView === 'categorias') {
             <app-categorias-panel />
           } @else {
-            <app-productos-panel [companyId]="companyId" />
-          }
-        </div>
-      </section>
-    </section>
-  </main>
-</div>
-<div class="page-container products-page">
-  <app-navbar />
-
-  <main class="products-layout">
-    <app-sidebar [items]="sidebarItems" />
-
-    <section class="products-content">
-      <header class="products-header panel">
-        <div>
-          <p class="badge badge-success">Empresa {{ companyId }}</p>
-          <h1 class="title-xl">Productos</h1>
-          <p class="text-muted">
-            Gestiona categorias, subcategorias, productos y stock asociados a esta empresa.
-          </p>
-        </div>
-      </header>
-
-      <section class="tabs-panel panel">
-        <div class="tab-content">
-          @if (activeView === 'categorias') {
-            <app-categorias-panel />
-          } @else {
-            <app-productos-panel [companyId]="companyId" />
+            <app-productos-panel [companyId]="companyId" [companyName]="companyName" />
           }
         </div>
       </section>

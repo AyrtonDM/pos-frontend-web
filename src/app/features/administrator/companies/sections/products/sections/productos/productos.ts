@@ -20,23 +20,20 @@ export class ProductosPanel implements OnChanges {
   private readonly cdr = inject(ChangeDetectorRef);
 
   @Input({ required: true }) companyId = '';
+  @Input() companyName = '';
   protected activeTab: 'list' | 'register' = 'list';
 
   protected readonly productoForm: CrearProductoRequest = {
-    id_empresa: 0,
     id_subcategoria: 0,
     nombre: '',
-    costo: 0,
+    descripcion: '',
+    unidad_medida: '',
     precio: 0,
-    stock: {
-      cantidad: 0,
-      stock_min: 0,
-      stock_max: 0,
-    },
+    activo: true,
   };
 
-  protected subcategorias: SubcategoriaProducto[] = [];
   protected productos: Producto[] = [];
+  protected subcategorias: SubcategoriaProducto[] = [];
 
   protected cargandoDatos = false;
   protected guardandoProducto = false;
@@ -50,7 +47,6 @@ export class ProductosPanel implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['companyId'] && this.companyId) {
-      this.productoForm.id_empresa = this.obtenerIdEmpresaNumerico();
       this.cargarDatos();
     }
   }
@@ -69,20 +65,16 @@ export class ProductosPanel implements OnChanges {
     this.limpiarMensajes();
 
     const payload: CrearProductoRequest = {
-      id_empresa: this.obtenerIdEmpresaNumerico(),
       id_subcategoria: Number(this.productoForm.id_subcategoria),
       nombre: this.productoForm.nombre.trim(),
-      costo: Number(this.productoForm.costo),
+      descripcion: this.productoForm.descripcion?.trim() || '',
+      unidad_medida: this.productoForm.unidad_medida.trim(),
       precio: Math.round(Number(this.productoForm.precio) * 100) / 100,
-      stock: {
-        cantidad: Number(this.productoForm.stock.cantidad),
-        stock_min: Number(this.productoForm.stock.stock_min),
-        stock_max: Number(this.productoForm.stock.stock_max),
-      },
+      activo: true,
     };
 
-    if (!payload.id_empresa || !payload.id_subcategoria || !payload.nombre) {
-      this.errorGeneral = 'Completa empresa, subcategoria y nombre del producto.';
+    if (!payload.id_subcategoria || !payload.nombre || !payload.unidad_medida) {
+      this.errorGeneral = 'Completa subcategoria, nombre y unidad de medida del producto.';
       return;
     }
 
@@ -98,11 +90,10 @@ export class ProductosPanel implements OnChanges {
         this.mensajeGeneral = 'Producto registrado correctamente.';
         this.productoForm.id_subcategoria = 0;
         this.productoForm.nombre = '';
-        this.productoForm.costo = 0;
+        this.productoForm.descripcion = '';
+        this.productoForm.unidad_medida = '';
         this.productoForm.precio = 0;
-        this.productoForm.stock.cantidad = 0;
-        this.productoForm.stock.stock_min = 0;
-        this.productoForm.stock.stock_max = 0;
+        this.productoForm.activo = true;
         this.imagenProductoSeleccionada = null;
         this.activeTab = 'list';
         this.cargarProductos();
@@ -121,11 +112,10 @@ export class ProductosPanel implements OnChanges {
     this.limpiarMensajes();
     this.productoForm.id_subcategoria = 0;
     this.productoForm.nombre = '';
-    this.productoForm.costo = 0;
+    this.productoForm.descripcion = '';
+    this.productoForm.unidad_medida = '';
     this.productoForm.precio = 0;
-    this.productoForm.stock.cantidad = 0;
-    this.productoForm.stock.stock_min = 0;
-    this.productoForm.stock.stock_max = 0;
+    this.productoForm.activo = true;
     this.imagenProductoSeleccionada = null;
   }
 
@@ -185,52 +175,38 @@ export class ProductosPanel implements OnChanges {
   private cargarDatos(): void {
     this.cargandoDatos = true;
     this.limpiarMensajes();
-
-    this.cargarSubcategorias();
-    this.cargarProductos(() => {
-      this.cargandoDatos = false;
-    });
-  }
-
-  private cargarSubcategorias(): void {
     this.productService.getSubcategorias().subscribe({
       next: (subcategorias) => {
         this.subcategorias = subcategorias;
-        this.cdr.detectChanges();
+        this.cargarProductos(() => {
+          this.cargandoDatos = false;
+        });
       },
       error: () => {
+        this.subcategorias = [];
         this.errorGeneral = 'No se pudieron cargar las subcategorias.';
-        this.cdr.detectChanges();
+        this.cargarProductos(() => {
+          this.cargandoDatos = false;
+        });
       },
     });
   }
 
   private cargarProductos(onDone?: () => void): void {
-    const idEmpresa = this.obtenerIdEmpresaNumerico();
-    if (!idEmpresa) {
-      this.errorGeneral = 'No se encontro el id de empresa para cargar productos.';
-      onDone?.();
-      return;
-    }
-
-    this.productService.getProductosPorEmpresa(idEmpresa).subscribe({
+    this.productService.getProductos().subscribe({
       next: (productos) => {
         this.productos = productos;
+        this.errorGeneral = '';
         onDone?.();
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (error) => {
         this.productos = [];
-        this.errorGeneral = 'No se pudieron cargar los productos.';
+        this.errorGeneral = error?.error?.detail ?? 'No se pudieron cargar los productos.';
         onDone?.();
         this.cdr.detectChanges();
       },
     });
-  }
-
-  private obtenerIdEmpresaNumerico(): number {
-    const parsed = Number(this.companyId);
-    return Number.isNaN(parsed) ? 0 : parsed;
   }
 
   private limpiarMensajes(): void {
@@ -240,14 +216,12 @@ export class ProductosPanel implements OnChanges {
 
   private construirFormDataProducto(payload: CrearProductoRequest, imagen: File): FormData {
     const formData = new FormData();
-    formData.append('id_empresa', String(payload.id_empresa));
     formData.append('id_subcategoria', String(payload.id_subcategoria));
     formData.append('nombre', payload.nombre);
-    formData.append('costo', String(payload.costo));
+    formData.append('descripcion', payload.descripcion ?? '');
+    formData.append('unidad_medida', payload.unidad_medida);
     formData.append('precio', String(payload.precio));
-    formData.append('cantidad', String(payload.stock.cantidad));
-    formData.append('stock_min', String(payload.stock.stock_min));
-    formData.append('stock_max', String(payload.stock.stock_max));
+    formData.append('activo', 'true');
     formData.append('imagen', imagen);
     return formData;
   }
