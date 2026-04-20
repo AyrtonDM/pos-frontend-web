@@ -30,21 +30,17 @@ export class EditProduct implements OnInit {
   protected guardandoImagen = false;
   protected errorEdicion = '';
   protected mensajeEdicion = '';
-  protected subcategorias: SubcategoriaProducto[] = [];
   protected imagenActual: string | null = null;
   protected imagenSeleccionada: File | null = null;
+  protected subcategorias: SubcategoriaProducto[] = [];
 
   protected readonly form: ActualizarProductoRequest = {
-    id_empresa: 0,
     id_subcategoria: 0,
     nombre: '',
-    costo: 0,
+    descripcion: '',
+    unidad_medida: '',
     precio: 0,
-    stock: {
-      cantidad: 0,
-      stock_min: 0,
-      stock_max: 0,
-    },
+    activo: true,
   };
 
   protected readonly sidebarItems: SidebarItem[] = [
@@ -60,8 +56,8 @@ export class EditProduct implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.cargarProducto();
     this.cargarSubcategorias();
+    this.cargarProducto();
   }
 
   protected guardarProducto(event: SubmitEvent): void {
@@ -75,16 +71,16 @@ export class EditProduct implements OnInit {
     }
 
     const payload: ActualizarProductoRequest = {
-      id_empresa: Number(this.companyId),
       id_subcategoria: Number(this.form.id_subcategoria),
       nombre: this.form.nombre?.trim(),
-      costo: this.form.costo,
+      descripcion: this.form.descripcion?.trim(),
+      unidad_medida: this.form.unidad_medida?.trim(),
       precio: this.form.precio,
-      stock: this.form.stock,
+      activo: this.form.activo,
     };
 
-    if (!payload.id_empresa || !payload.id_subcategoria || !payload.nombre) {
-      this.errorEdicion = 'Completa empresa, subcategoria y nombre del producto.';
+    if (!payload.id_subcategoria || !payload.nombre || !payload.unidad_medida) {
+      this.errorEdicion = 'Completa subcategoria, nombre y unidad de medida del producto.';
       return;
     }
 
@@ -132,33 +128,17 @@ export class EditProduct implements OnInit {
       next: (producto: Producto) => {
         this.cargandoProducto = false;
         this.imagenActual = producto.imagen ?? null;
-        this.form.id_empresa = producto.id_empresa;
-        this.form.id_subcategoria = producto.id_subcategoria;
         this.form.nombre = producto.nombre;
-        this.form.costo = producto.costo;
+        this.form.descripcion = producto.descripcion ?? '';
+        this.form.id_subcategoria = producto.id_subcategoria ?? 0;
+        this.form.unidad_medida = producto.unidad_medida;
         this.form.precio = producto.precio;
-        this.form.stock = {
-          cantidad: producto.stock.cantidad,
-          stock_min: producto.stock.stock_min,
-          stock_max: producto.stock.stock_max,
-        };
+        this.form.activo = producto.activo;
         this.cdr.detectChanges();
       },
       error: () => {
         this.cargandoProducto = false;
         this.errorEdicion = 'No se pudieron cargar los datos del producto.';
-        this.cdr.detectChanges();
-      },
-    });
-  }
-
-  private cargarSubcategorias(): void {
-    this.productService.getSubcategorias().subscribe({
-      next: (subcategorias) => {
-        this.subcategorias = subcategorias;
-        this.cdr.detectChanges();
-      },
-      error: () => {
         this.cdr.detectChanges();
       },
     });
@@ -189,4 +169,17 @@ export class EditProduct implements OnInit {
       },
     });
   }
+
+  private cargarSubcategorias(): void {
+    this.productService.getSubcategorias().subscribe({
+      next: (subcategorias) => {
+        this.subcategorias = subcategorias;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.subcategorias = [];
+      },
+    });
+  }
+
 }

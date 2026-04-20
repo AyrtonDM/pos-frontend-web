@@ -1,3 +1,18 @@
+<div class="page-container categories-page">
+  <app-navbar />
+
+  <main class="categories-layout">
+    <app-sidebar [items]="sidebarItems" />
+
+    <section class="categories-content">
+      <header class="categories-header panel">
+        <div>
+          <p class="badge badge-success">Empresa {{ companyName }}</p>
+          <h1 class="title-xl">Categoria</h1>
+          <p class="text-muted">Administra categorias y subcategorias para el catalogo.</p>
+        </div>
+      </header>
+
 <section class="tabs-panel panel">
   <div class="tabs" role="tablist" aria-label="Secciones de categorias">
     <button
@@ -59,17 +74,6 @@
                   [routerLink]="['/administrator/company', companyId, 'category', categoria.id_categoria_producto, 'edit-category']"
                   >Editar</a
                 >
-                <button
-                  class="btn-icon-danger"
-                  type="button"
-                  [disabled]="eliminandoCategoriaId === categoria.id_categoria_producto"
-                  [attr.aria-label]="'Eliminar categoria ' + categoria.nombre"
-                  (click)="eliminarCategoria(categoria.id_categoria_producto)"
-                >
-                  <svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                    <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9z" />
-                  </svg>
-                </button>
               </div>
             </article>
           }
@@ -166,29 +170,7 @@
     }
   </div>
 
-  @if (mostrarModalEliminarCategoria && categoriaPendienteEliminar) {
-    <div class="modal-backdrop" role="presentation" (click)="cancelarEliminarCategoria()">
-      <section
-        class="confirm-modal panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="confirmDeleteCategoryTitle"
-        (click)="$event.stopPropagation()"
-      >
-        <header class="confirm-header">
-          <p class="badge badge-success">Confirmacion</p>
-          <h3 class="title-lg" id="confirmDeleteCategoryTitle">Eliminar categoria</h3>
-          <p class="text-muted">
-            Esta accion eliminara la categoria
-            <strong>{{ categoriaPendienteEliminar.nombre }}</strong>.
-          </p>
-        </header>
-
-        <div class="form-actions">
-          <button class="btn btn-secondary" type="button" (click)="cancelarEliminarCategoria()">Cancelar</button>
-          <button class="btn btn-danger" type="button" (click)="confirmarEliminarCategoria()">Eliminar</button>
-        </div>
-      </section>
-    </div>
-  }
 </section>
+</section>
+  </main>
+</div>
