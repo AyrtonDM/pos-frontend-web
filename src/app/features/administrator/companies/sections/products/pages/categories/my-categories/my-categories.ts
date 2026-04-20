@@ -1,26 +1,32 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { CompanyService } from '../../../../../../../../core/services/company.service';
 import {
   CategoriaProducto,
   CrearCategoriaRequest,
   CrearSubcategoriaRequest,
   ProductService,
   SubcategoriaProducto,
-} from '../../../../../../../core/services/product.service';
+} from '../../../../../../../../core/services/product.service';
+import { Navbar } from '../../../../../../../../shared/components/navbar/navbar';
+import { Sidebar, SidebarItem } from '../../../../../../../../shared/components/sidebar/sidebar';
 
 @Component({
   selector: 'app-categorias-panel',
   standalone: true,
-  imports: [FormsModule, RouterLink],
-  templateUrl: './categorias.html',
-  styleUrl: './categorias.css',
+  imports: [FormsModule, Navbar, RouterLink, Sidebar],
+  templateUrl: './my-categories.html',
+  styleUrl: './my-categories.css',
 })
 export class CategoriasPanel implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly companyService = inject(CompanyService);
   private readonly productService = inject(ProductService);
   private readonly cdr = inject(ChangeDetectorRef);
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
+  protected companyName = 'Empresa';
+  protected sidebarItems: SidebarItem[] = [];
 
   protected activeTab: 'list' | 'register' = 'list';
 
@@ -48,6 +54,8 @@ export class CategoriasPanel implements OnInit {
   protected mensajeGeneral = '';
 
   ngOnInit(): void {
+    this.sidebarItems = this.buildSidebarItems();
+    this.cargarNombreEmpresa();
     this.cargarDatos();
   }
 
@@ -206,5 +214,48 @@ export class CategoriasPanel implements OnInit {
   protected limpiarMensajes(): void {
     this.errorGeneral = '';
     this.mensajeGeneral = '';
+  }
+
+  private cargarNombreEmpresa(): void {
+    if (!this.companyId) {
+      return;
+    }
+
+    this.companyService.obtenerEmpresa(this.companyId).subscribe({
+      next: (empresa) => {
+        this.companyName = empresa.nombre;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.companyName = 'Empresa';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private buildSidebarItems(): SidebarItem[] {
+    return [
+      {
+        label: 'Sucursales',
+        link: ['/administrator/company', this.companyId, 'branches'],
+      },
+      {
+        label: 'Productos',
+        link: ['/administrator/company', this.companyId, 'products'],
+        active: true,
+        expanded: true,
+        children: [
+          {
+            label: 'Catalogo de Productos',
+            link: ['/administrator/company', this.companyId, 'products'],
+          },
+          {
+            label: 'Categoria',
+            link: ['/administrator/company', this.companyId, 'products', 'categories'],
+            active: true,
+          },
+        ],
+      },
+    ];
   }
 }

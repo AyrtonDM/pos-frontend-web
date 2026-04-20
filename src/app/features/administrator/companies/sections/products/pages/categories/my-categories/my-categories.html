@@ -1,3 +1,18 @@
+<div class="page-container categories-page">
+  <app-navbar />
+
+  <main class="categories-layout">
+    <app-sidebar [items]="sidebarItems" />
+
+    <section class="categories-content">
+      <header class="categories-header panel">
+        <div>
+          <p class="badge badge-success">Empresa {{ companyName }}</p>
+          <h1 class="title-xl">Categoria</h1>
+          <p class="text-muted">Administra categorias y subcategorias para el catalogo.</p>
+        </div>
+      </header>
+
 <section class="tabs-panel panel">
   <div class="tabs" role="tablist" aria-label="Secciones de categorias">
     <button
@@ -156,3 +171,6 @@
   </div>
 
 </section>
+</section>
+  </main>
+</div>
