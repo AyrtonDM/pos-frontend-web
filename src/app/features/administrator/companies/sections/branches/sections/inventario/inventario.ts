@@ -96,15 +96,10 @@ export class Inventario implements OnInit {
 
     this.cargandoStock = true;
 
-    // Simulación de carga local (reemplazar por llamada al servicio)
-    setTimeout(() => {
-      this.stockItems = [
-        { id: 1, nombre: 'Producto A', cantidad: 20 },
-        { id: 2, nombre: 'Producto B', cantidad: 5 },
-      ];
-      this.cargandoStock = false;
-      this.cdr.detectChanges();
-    }, 250);
+    // No cargar stock simulado: dejar la lista vacía hasta que el backend provea datos
+    this.stockItems = [];
+    this.cargandoStock = false;
+    this.cdr.detectChanges();
   }
 
   private cargarMovimientos(): void {

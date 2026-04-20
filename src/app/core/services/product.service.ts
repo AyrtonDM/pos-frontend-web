@@ -195,4 +195,20 @@ export class ProductService {
       payload,
     );
   }
+
+  getStockProducto(idProducto: number): Observable<StockProducto> {
+    return this.apiService.get<StockProducto>(`/api/productos/${idProducto}/stock`);
+  }
+
+  getMovimientosProducto(idProducto: number): Observable<any[]> {
+    return this.apiService.get<any[]>(`/api/productos/${idProducto}/movimientos`);
+  }
+
+  crearMovimientoProducto(idProducto: number, payload: { cantidad: number; observacion?: string; id_tipo_movimiento: number }): Observable<any> {
+    return this.apiService.post<any, typeof payload>(`/api/productos/${idProducto}/movimientos`, payload);
+  }
+
+  getResumenInventario(): Observable<any> {
+    return this.apiService.get<any>('/api/inventario/estado');
+  }
 }
