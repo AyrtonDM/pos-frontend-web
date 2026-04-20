@@ -6,6 +6,7 @@ import { Branches } from './features/administrator/companies/sections/branches/p
 import { EditBranch } from './features/administrator/companies/sections/branches/pages/edit-branch/edit-branch';
 import { ViewBranch } from './features/administrator/companies/sections/branches/pages/view-branch/view-branch';
 import { Staff } from './features/administrator/companies/sections/branches/sections/staff/staff';
+import { Inventario } from './features/administrator/companies/sections/branches/sections/inventario/inventario';
 import { EditCategory } from './features/administrator/companies/sections/products/pages/categorias/edit-category/edit-category';
 import { EditProduct } from './features/administrator/companies/sections/products/pages/productos/edit-product/edit-product';
 import { Products } from './features/administrator/companies/sections/products/pages/productos/products';
@@ -66,8 +67,9 @@ export const routes: Routes = [
 /*  */    canActivate: [authGuard],
   },
   {
-    path: 'administrator/company/:id/branch/:branchId/staff',
-    component: Staff,
+    path: 'administrator/company/:id/branch/:branchId/inventario',
+    component: Inventario,
+    canActivate: [authGuard],
   },
   {
     path: 'administrator/company/:id/products',
