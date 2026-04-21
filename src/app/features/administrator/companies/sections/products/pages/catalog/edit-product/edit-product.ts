@@ -171,7 +171,12 @@ export class EditProduct implements OnInit {
   }
 
   private cargarSubcategorias(): void {
-    this.productService.getSubcategorias().subscribe({
+    if (!this.companyId) {
+      this.subcategorias = [];
+      return;
+    }
+
+    this.productService.getSubcategorias(this.companyId).subscribe({
       next: (subcategorias) => {
         this.subcategorias = subcategorias;
         this.cdr.detectChanges();
