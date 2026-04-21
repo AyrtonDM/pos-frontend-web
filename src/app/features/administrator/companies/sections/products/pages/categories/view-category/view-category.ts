@@ -88,7 +88,13 @@ export class ViewCategory implements OnInit {
   }
 
   private cargarSubcategorias(): void {
-    this.productService.getSubcategorias().subscribe({
+    if (!this.companyId) {
+      this.subcategorias = [];
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.productService.getSubcategorias(this.companyId).subscribe({
       next: (subcategorias) => {
         this.subcategorias = subcategorias;
         this.cdr.detectChanges();

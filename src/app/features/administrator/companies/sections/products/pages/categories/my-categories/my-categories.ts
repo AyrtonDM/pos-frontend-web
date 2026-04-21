@@ -72,6 +72,11 @@ export class CategoriasPanel implements OnInit {
     event.preventDefault();
     this.limpiarMensajes();
 
+    if (!this.companyId) {
+      this.errorGeneral = 'No se encontro la empresa para registrar la categoria.';
+      return;
+    }
+
     const payload: CrearCategoriaRequest = {
       nombre: this.categoriaForm.nombre.trim(),
       descripcion: this.categoriaForm.descripcion?.trim() ?? '',
@@ -84,7 +89,7 @@ export class CategoriasPanel implements OnInit {
     }
 
     this.guardandoCategoria = true;
-    this.productService.crearCategoria(payload).subscribe({
+    this.productService.crearCategoria(this.companyId, payload).subscribe({
       next: (nuevaCategoria) => {
         this.crearSubcategoriasDespuesDeCategoria(nuevaCategoria.id_categoria_producto);
       },
@@ -187,7 +192,15 @@ export class CategoriasPanel implements OnInit {
   }
 
   private cargarSubcategorias(onDone?: () => void): void {
-    this.productService.getSubcategorias().subscribe({
+    if (!this.companyId) {
+      this.errorGeneral = 'No se encontro la empresa para cargar subcategorias.';
+      this.subcategorias = [];
+      onDone?.();
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.productService.getSubcategorias(this.companyId).subscribe({
       next: (subcategorias) => {
         this.subcategorias = subcategorias;
         onDone?.();
