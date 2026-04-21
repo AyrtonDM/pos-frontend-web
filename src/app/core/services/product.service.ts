@@ -83,6 +83,28 @@ export interface StockProducto {
   fecha_actualizacion?: string | null;
 }
 
+export interface StockSucursalProducto {
+  id_stock: number;
+  id_producto: number;
+  id_sucursal: number;
+  cantidad: number;
+  stock_minimo: number;
+  stock_maximo: number;
+  fecha_actualizacion?: string | null;
+  nombre_producto: string;
+  unidad_medida: string;
+  precio: number;
+  imagen?: string | null;
+  activo: boolean;
+}
+
+export interface TipoMovimiento {
+  id_tipo_movimiento: number;
+  nombre: string;
+  descripcion?: string | null;
+  direccion?: 'ENTRADA' | 'SALIDA' | string;
+}
+
 export interface ActualizarStockRequest {
   cantidad?: number;
   stock_min?: number;
@@ -99,9 +121,9 @@ export class ProductService {
     return this.apiService.get<CategoriaProducto[]>('/api/productos/categorias');
   }
 
-  crearCategoria(payload: CrearCategoriaRequest): Observable<CategoriaProducto> {
+  crearCategoria(idEmpresa: string, payload: CrearCategoriaRequest): Observable<CategoriaProducto> {
     return this.apiService.post<CategoriaProducto, CrearCategoriaRequest>(
-      '/api/productos/categorias',
+      `/api/empresas/${idEmpresa}/categorias`,
       payload,
     );
   }
@@ -124,8 +146,8 @@ export class ProductService {
     return this.apiService.delete<{ mensaje: string }>(`/api/productos/categorias/${idCategoriaProducto}`);
   }
 
-  getSubcategorias(): Observable<SubcategoriaProducto[]> {
-    return this.apiService.get<SubcategoriaProducto[]>('/api/productos/subcategorias');
+  getSubcategorias(idEmpresa: string): Observable<SubcategoriaProducto[]> {
+    return this.apiService.get<SubcategoriaProducto[]>(`/api/empresas/${idEmpresa}/subcategorias`);
   }
 
   crearSubcategoria(payload: CrearSubcategoriaRequest): Observable<SubcategoriaProducto> {
@@ -153,8 +175,8 @@ export class ProductService {
     return this.apiService.get<Producto[]>('/api/productos');
   }
 
-  crearProducto(payload: CrearProductoRequest): Observable<Producto> {
-    return this.apiService.post<Producto, CrearProductoRequest>('/api/productos', payload);
+  crearProducto(idEmpresa: string, payload: CrearProductoRequest): Observable<Producto> {
+    return this.apiService.post<Producto, CrearProductoRequest>(`/api/empresas/${idEmpresa}/productos`, payload);
   }
 
   obtenerProducto(idProducto: number): Observable<Producto> {
@@ -178,8 +200,8 @@ export class ProductService {
     return this.apiService.put<Producto, FormData>(`/api/productos/${idProducto}/imagen`, formData);
   }
 
-  crearProductoConImagen(formData: FormData): Observable<Producto> {
-    return this.apiService.post<Producto, FormData>('/api/productos/con-imagen', formData);
+  crearProductoConImagen(idEmpresa: string, formData: FormData): Observable<Producto> {
+    return this.apiService.post<Producto, FormData>(`/api/empresas/${idEmpresa}/productos/con-imagen`, formData);
   }
 
 
@@ -194,12 +216,29 @@ export class ProductService {
     return this.apiService.get<StockProducto>(`/api/productos/${idProducto}/stock`);
   }
 
+  getStockSucursal(idEmpresa: string, idSucursal: string): Observable<StockSucursalProducto[]> {
+    return this.apiService.get<StockSucursalProducto[]>(
+      `/api/inventario/empresas/${idEmpresa}/sucursales/${idSucursal}/stock`,
+    );
+  }
+
+  getTiposMovimiento(): Observable<TipoMovimiento[]> {
+    return this.apiService.get<TipoMovimiento[]>('/api/inventario/tipos-movimiento');
+  }
+
   getMovimientosProducto(idProducto: number): Observable<any[]> {
     return this.apiService.get<any[]>(`/api/productos/${idProducto}/movimientos`);
   }
 
-  crearMovimientoProducto(idProducto: number, payload: { cantidad: number; observacion?: string; id_tipo_movimiento: number }): Observable<any> {
-    return this.apiService.post<any, typeof payload>(`/api/productos/${idProducto}/movimientos`, payload);
+  crearMovimientoProducto(
+    idEmpresa: string,
+    idSucursal: string,
+    payload: { id_producto: number; id_tipo_movimiento: number; cantidad: number; observacion?: string },
+  ): Observable<any> {
+    return this.apiService.post<any, typeof payload>(
+      `/api/inventario/empresas/${idEmpresa}/sucursales/${idSucursal}/movimientos`,
+      payload,
+    );
   }
 
   getResumenInventario(): Observable<any> {

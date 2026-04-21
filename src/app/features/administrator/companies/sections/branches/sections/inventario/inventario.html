@@ -144,11 +144,15 @@
                         name="tipoMovimiento"
                         required
                         [(ngModel)]="movimientoTipoId"
+                        [disabled]="movementTypes.length === 0"
                       >
-                        @for (type of movementTypes; track type.id) {
-                          <option [ngValue]="type.id">{{ type.nombre }}</option>
+                        @for (type of movementTypes; track type.id_tipo_movimiento) {
+                          <option [ngValue]="type.id_tipo_movimiento">{{ type.nombre }}</option>
                         }
                       </select>
+                      @if (errorTiposMovimiento) {
+                        <p class="feedback feedback-error">{{ errorTiposMovimiento }}</p>
+                      }
                     </div>
 
                     <div class="form-group form-group-full">

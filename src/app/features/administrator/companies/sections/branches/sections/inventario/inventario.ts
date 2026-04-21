@@ -3,7 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
 
-import { Producto, ProductService, StockProducto } from '../../../../../../../core/services/product.service';
+import {
+  Producto,
+  ProductService,
+  StockSucursalProducto,
+  TipoMovimiento,
+} from '../../../../../../../core/services/product.service';
 import { Navbar } from '../../../../../../../shared/components/navbar/navbar';
 import { Sidebar, SidebarItem } from '../../../../../../../shared/components/sidebar/sidebar';
 
@@ -51,24 +56,17 @@ export class Inventario implements OnInit {
   protected errorMovimientos = '';
   protected errorMovimiento = '';
   protected mensajeMovimiento = '';
+  protected errorTiposMovimiento = '';
 
   protected productos: Producto[] = [];
   protected stockItems: StockItemRow[] = [];
   protected movements: MovementRow[] = [];
+  protected movementTypes: TipoMovimiento[] = [];
 
   protected movimientoProductoId: number | null = null;
   protected movimientoCantidad = 1;
   protected movimientoTipoId: number | null = null;
   protected movimientoObservacion = '';
-
-  protected readonly movementTypes: Array<{ id: number; nombre: string }> = [
-    { id: 1, nombre: 'Entrada manual' },
-    { id: 2, nombre: 'Salida manual' },
-    { id: 3, nombre: 'Venta' },
-    { id: 4, nombre: 'Ajuste positivo' },
-    { id: 5, nombre: 'Ajuste negativo' },
-    { id: 6, nombre: 'Merma' },
-  ];
 
   protected readonly sidebarItems: SidebarItem[] = [
     {
@@ -85,7 +83,7 @@ export class Inventario implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.movimientoTipoId = this.movementTypes[0]?.id ?? null;
+    this.cargarTiposMovimiento();
     this.cargarInventario();
   }
 
@@ -121,6 +119,11 @@ export class Inventario implements OnInit {
     event.preventDefault();
     this.limpiarMensajesMovimiento();
 
+    if (!this.companyId || !this.branchId) {
+      this.errorMovimiento = 'No se encontro la empresa o sucursal para registrar el movimiento.';
+      return;
+    }
+
     const idProducto = Number(this.movimientoProductoId);
     const cantidad = Number(this.movimientoCantidad);
     const idTipoMovimiento = Number(this.movimientoTipoId);
@@ -133,7 +136,8 @@ export class Inventario implements OnInit {
     this.guardandoMovimiento = true;
 
     this.productService
-      .crearMovimientoProducto(idProducto, {
+      .crearMovimientoProducto(this.companyId, this.branchId, {
+        id_producto: idProducto,
         cantidad,
         id_tipo_movimiento: idTipoMovimiento,
         observacion: this.movimientoObservacion.trim() || undefined,
@@ -159,58 +163,81 @@ export class Inventario implements OnInit {
     this.cargarMovimientos();
   }
 
+  private cargarTiposMovimiento(): void {
+    this.errorTiposMovimiento = '';
+
+    this.productService.getTiposMovimiento().subscribe({
+      next: (tiposMovimiento) => {
+        this.movementTypes = tiposMovimiento;
+
+        if (tiposMovimiento.length > 0) {
+          const tipoSeleccionadoExiste = tiposMovimiento.some(
+            (tipo) => tipo.id_tipo_movimiento === this.movimientoTipoId,
+          );
+
+          if (!tipoSeleccionadoExiste) {
+            this.movimientoTipoId = tiposMovimiento[0].id_tipo_movimiento;
+          }
+        } else {
+          this.movimientoTipoId = null;
+        }
+
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.movementTypes = [];
+        this.movimientoTipoId = null;
+        this.errorTiposMovimiento = 'No se pudieron cargar los tipos de movimiento.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
   private cargarStock(): void {
     this.errorStock = '';
     this.cargandoStock = true;
 
-    this.productService.getProductos().subscribe({
-      next: (productos) => {
-        this.productos = productos;
-        this.movimientoProductoId = this.movimientoProductoId ?? productos[0]?.id_producto ?? null;
+    if (!this.companyId || !this.branchId) {
+      this.productos = [];
+      this.stockItems = [];
+      this.movimientoProductoId = null;
+      this.cargandoStock = false;
+      this.errorStock = 'No se encontro la empresa o sucursal para cargar el stock.';
+      this.cdr.detectChanges();
+      return;
+    }
 
-        if (productos.length === 0) {
-          this.stockItems = [];
-          this.cargandoStock = false;
-          this.cdr.detectChanges();
-          return;
-        }
+    this.productService.getStockSucursal(this.companyId, this.branchId).subscribe({
+      next: (stocks: StockSucursalProducto[]) => {
+        this.stockItems = stocks.map((stock) => ({
+          idProducto: stock.id_producto,
+          nombre: stock.nombre_producto,
+          cantidad: Number(stock.cantidad ?? 0),
+          stockMin: stock.stock_minimo ?? null,
+          stockMax: stock.stock_maximo ?? null,
+        }));
 
-        forkJoin(
-          productos.map((producto) =>
-            this.productService.getStockProducto(producto.id_producto).pipe(
-              catchError(() => of(null as StockProducto | null)),
-            ),
-          ),
-        ).subscribe({
-          next: (stocks) => {
-            this.stockItems = productos.map((producto, index) => {
-              const stock = stocks[index];
+        this.productos = stocks.map((stock) => ({
+          id_producto: stock.id_producto,
+          id_subcategoria: null,
+          nombre: stock.nombre_producto,
+          descripcion: null,
+          unidad_medida: stock.unidad_medida,
+          precio: stock.precio,
+          imagen: stock.imagen ?? null,
+          activo: stock.activo,
+        }));
 
-              return {
-                idProducto: producto.id_producto,
-                nombre: producto.nombre,
-                cantidad: stock?.cantidad ?? 0,
-                stockMin: stock?.stock_min ?? null,
-                stockMax: stock?.stock_max ?? null,
-              };
-            });
-
-            this.cargandoStock = false;
-            this.cdr.detectChanges();
-          },
-          error: () => {
-            this.stockItems = [];
-            this.cargandoStock = false;
-            this.errorStock = 'No se pudo cargar el stock de los productos.';
-            this.cdr.detectChanges();
-          },
-        });
+        this.movimientoProductoId = this.movimientoProductoId ?? this.productos[0]?.id_producto ?? null;
+        this.cargandoStock = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.productos = [];
         this.stockItems = [];
+        this.movimientoProductoId = null;
         this.cargandoStock = false;
-        this.errorStock = 'No se pudieron cargar los productos del inventario.';
+        this.errorStock = 'No se pudo cargar el stock de la sucursal.';
         this.cdr.detectChanges();
       },
     });
@@ -289,7 +316,7 @@ export class Inventario implements OnInit {
 
   private resetMovimientoForm(): void {
     this.movimientoCantidad = 1;
-    this.movimientoTipoId = this.movementTypes[0]?.id ?? null;
+    this.movimientoTipoId = this.movementTypes[0]?.id_tipo_movimiento ?? null;
     this.movimientoObservacion = '';
     this.movimientoProductoId = this.productos[0]?.id_producto ?? null;
   }

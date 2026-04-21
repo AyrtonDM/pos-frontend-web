@@ -67,6 +67,11 @@ export class ProductosPanel implements OnInit {
     event.preventDefault();
     this.limpiarMensajes();
 
+    if (!this.companyId) {
+      this.errorGeneral = 'No se encontro la empresa para registrar el producto.';
+      return;
+    }
+
     const payload: CrearProductoRequest = {
       id_subcategoria: Number(this.productoForm.id_subcategoria),
       nombre: this.productoForm.nombre.trim(),
@@ -84,8 +89,11 @@ export class ProductosPanel implements OnInit {
     this.guardandoProducto = true;
 
     const request$ = this.imagenProductoSeleccionada
-      ? this.productService.crearProductoConImagen(this.construirFormDataProducto(payload, this.imagenProductoSeleccionada))
-      : this.productService.crearProducto(payload);
+      ? this.productService.crearProductoConImagen(
+          this.companyId,
+          this.construirFormDataProducto(payload, this.imagenProductoSeleccionada),
+        )
+      : this.productService.crearProducto(this.companyId, payload);
 
     request$.subscribe({
       next: () => {
@@ -134,7 +142,17 @@ export class ProductosPanel implements OnInit {
   private cargarDatos(): void {
     this.cargandoDatos = true;
     this.limpiarMensajes();
-    this.productService.getSubcategorias().subscribe({
+
+    if (!this.companyId) {
+      this.subcategorias = [];
+      this.errorGeneral = 'No se encontro la empresa para cargar subcategorias.';
+      this.cargarProductos(() => {
+        this.cargandoDatos = false;
+      });
+      return;
+    }
+
+    this.productService.getSubcategorias(this.companyId).subscribe({
       next: (subcategorias) => {
         this.subcategorias = subcategorias;
         this.cargarProductos(() => {
