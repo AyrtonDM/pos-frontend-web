@@ -30,6 +30,8 @@
         }
 
         <form id="category-edit-form" class="category-form" (submit)="guardarCategoria($event)">
+          <h3 class="title-md">Categoria</h3>
+
           <div class="form-group">
             <label class="label" for="categoria_nombre">Nombre</label>
             <input class="input" id="categoria_nombre" name="categoria_nombre" required [(ngModel)]="form.nombre" />

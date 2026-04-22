@@ -37,6 +37,11 @@
   gap: var(--space-sm);
 }
 
+.subcategory-block {
+  display: grid;
+  gap: var(--space-sm);
+}
+
 .category-detail div,
 .subcategory-item {
   display: grid;

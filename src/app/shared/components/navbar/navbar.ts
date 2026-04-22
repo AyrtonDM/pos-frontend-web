@@ -28,6 +28,6 @@ export class Navbar {
   protected cerrarSesion(): void {
     this.authService.logout();
     this.cerrarMenuLogin();
-    void this.router.navigate(['/login']);
+    void this.router.navigate(['/']);
   }
 }
