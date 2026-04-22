@@ -83,6 +83,7 @@
       <section class="card card-wide">
         <h2 class="title-md">Registrar categoria con subcategorias</h2>
         <form class="entity-form" (submit)="registrarCategoria($event)">
+          <h3 class="title-md">Categoria</h3>
           <div class="form-group">
             <label class="label" for="categoria_nombre">Nombre</label>
             <input
@@ -104,9 +105,7 @@
             />
           </div>
 
-          <h3 class="title-sm">Subcategorias</h3>
-          <p class="text-muted">Agrega varias subcategorias y luego registra la categoria.</p>
-
+          <h3 class="title-md">Subcategorias</h3>
           <div class="form-grid-2">
             <div class="form-group">
               <label class="label" for="subcategoria_nombre">Nombre de subcategoria</label>
