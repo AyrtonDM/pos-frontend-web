@@ -66,7 +66,7 @@ export interface LoginResponse {
 })
 export class AuthService {
   private readonly tokenKey = 'access_token';
-  readonly isAuthenticated = signal(Boolean(this.getAccessToken()));
+  readonly isAuthenticated = signal(this.hasValidStoredToken());
 
   constructor(private readonly apiService: ApiService) {}
 
@@ -93,16 +93,81 @@ export class AuthService {
   }
 
   saveSession(accessToken: string): void {
+    if (this.isTokenExpired(accessToken)) {
+      this.logout();
+      return;
+    }
+
     sessionStorage.setItem(this.tokenKey, accessToken);
     this.isAuthenticated.set(true);
   }
 
   getAccessToken(): string | null {
-    return sessionStorage.getItem(this.tokenKey);
+    const token = sessionStorage.getItem(this.tokenKey);
+
+    if (!token) {
+      this.isAuthenticated.set(false);
+      return null;
+    }
+
+    if (this.isTokenExpired(token)) {
+      this.logout();
+      return null;
+    }
+
+    this.isAuthenticated.set(true);
+    return token;
   }
 
   logout(): void {
     sessionStorage.removeItem(this.tokenKey);
     this.isAuthenticated.set(false);
+  }
+
+  private isTokenExpired(token: string): boolean {
+    const payload = this.decodeTokenPayload(token);
+    const exp = payload?.exp;
+
+    if (typeof exp !== 'number') {
+      return true;
+    }
+
+    const nowInSeconds = Math.floor(Date.now() / 1000);
+    return exp <= nowInSeconds;
+  }
+
+  private decodeTokenPayload(token: string): { exp?: number } | null {
+    const parts = token.split('.');
+
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    try {
+      const payload = parts[1]
+        .replace(/-/g, '+')
+        .replace(/_/g, '/')
+        .padEnd(Math.ceil(parts[1].length / 4) * 4, '=');
+
+      const decodedPayload = atob(payload);
+      return JSON.parse(decodedPayload) as { exp?: number };
+    } catch {
+      return null;
+    }
+  }
+
+  private hasValidStoredToken(): boolean {
+    const token = sessionStorage.getItem(this.tokenKey);
+
+    if (!token) {
+      return false;
+    }
+
+    if (this.isTokenExpired(token)) {
+      sessionStorage.removeItem(this.tokenKey);
+      return false;
+    }
+
+    return true;
   }
 }

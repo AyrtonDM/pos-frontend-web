@@ -79,11 +79,13 @@
   background: var(--color-primary-hover);
 }
 
-.login-link {
+.login-link,
+.home-link {
   text-align: center;
 }
 
-.login-link a {
+.login-link a,
+.home-link a {
   color: var(--color-primary-hover);
   font-weight: var(--font-weight-semibold);
 }

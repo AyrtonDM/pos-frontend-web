@@ -58,6 +58,7 @@
   /* Layout */
   --sidebar-width: 88px;
   --header-height: 72px;
+  --content-max-width: 1120px;
 }
 
 /* =========================
@@ -99,7 +100,7 @@ textarea {
 .page-container {
   min-height: 100vh;
   background: linear-gradient(135deg, var(--color-bg), var(--color-bg-soft));
-  padding: var(--space-lg);
+  padding: calc(var(--header-height) + (var(--space-lg) * 2)) var(--space-lg) var(--space-lg);
 }
 
 .panel {
@@ -130,11 +131,15 @@ textarea {
    BOTONES
 ========================= */
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   border-radius: var(--radius-sm);
   padding: 10px 16px;
   cursor: pointer;
   font-weight: var(--font-weight-semibold);
+  text-align: center;
   transition: all 0.2s ease;
 }
 

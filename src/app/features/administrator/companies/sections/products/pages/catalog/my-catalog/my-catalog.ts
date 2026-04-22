@@ -221,12 +221,11 @@ export class ProductosPanel implements OnInit {
       },
       {
         label: 'Productos',
-        link: ['/administrator/company', this.companyId, 'products'],
         active: true,
         expanded: true,
         children: [
           {
-            label: 'Catalogo de Productos',
+            label: 'Catalogo',
             link: ['/administrator/company', this.companyId, 'products'],
             active: true,
           },
