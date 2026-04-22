@@ -6,16 +6,10 @@
 
     <section class="view-category-content">
       <section class="view-category-panel panel">
-        <a
-          class="back-link"
-          [routerLink]="['/administrator/company', companyId, 'products', 'categories']"
-          >Volver al listado de categorias</a
-        >
 
         <header class="view-category-header">
           <p class="badge badge-success">Categoria {{ categoryId }}</p>
           <h1 class="title-xl">Detalle de Categoria</h1>
-          <p class="text-muted">Consulta los datos registrados de esta categoria y sus subcategorias.</p>
         </header>
 
         @if (cargandoCategoria) {
@@ -23,6 +17,7 @@
         } @else if (errorCategoria) {
           <p class="feedback feedback-error">{{ errorCategoria }}</p>
         } @else if (categoria) {
+          <h3 class="title-md">Categoria</h3>
           <dl class="category-detail">
             <div>
               <dt>Nombre</dt>
@@ -31,10 +26,6 @@
             <div>
               <dt>Descripcion</dt>
               <dd>{{ categoria.descripcion || 'Sin descripcion' }}</dd>
-            </div>
-            <div>
-              <dt>Activo</dt>
-              <dd>{{ categoria.activo ? 'Si' : 'No' }}</dd>
             </div>
           </dl>
 
@@ -67,6 +58,12 @@
             >Editar</a
           >
         </div>
+
+        <a
+          class="back-link"
+          [routerLink]="['/administrator/company', companyId, 'products', 'categories']"
+          >Volver al listado de categorias</a
+        >
       </section>
     </section>
   </main>

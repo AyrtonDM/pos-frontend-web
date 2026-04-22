@@ -169,8 +169,42 @@
   background: rgba(244, 166, 42, 0.06);
 }
 
+.inventory-table tbody tr.stock-warning-row {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.inventory-table tbody tr.stock-warning-row:hover {
+  background: rgba(245, 158, 11, 0.16);
+}
+
 .inventory-table td {
   color: var(--color-text);
+}
+
+.stock-warning-cell {
+  color: var(--color-warning);
+  font-weight: var(--font-weight-bold);
+}
+
+.inventory-actions-header,
+.inventory-actions-cell {
+  text-align: right;
+}
+
+.stock-input {
+  min-width: 96px;
+  padding: 8px 10px;
+}
+
+.stock-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+}
+
+.btn-sm {
+  min-height: 34px;
+  padding: 8px 12px;
 }
 
 @media (max-width: 780px) {
@@ -207,5 +241,10 @@
 
   .inventory-table {
     min-width: 100%;
+  }
+
+  .stock-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

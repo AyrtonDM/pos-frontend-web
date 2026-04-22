@@ -105,10 +105,42 @@ export interface TipoMovimiento {
   direccion?: 'ENTRADA' | 'SALIDA' | string;
 }
 
+export interface MovimientoInventario {
+  id_movimiento?: number;
+  id?: number;
+  id_producto: number;
+  cantidad: number;
+  observacion?: string | null;
+  tipo?: string | null;
+  producto?: {
+    id_producto?: number;
+    nombre?: string | null;
+  } | null;
+  tipo_movimiento?:
+    | {
+        id_tipo_movimiento?: number;
+        nombre?: string | null;
+      }
+    | string
+    | null;
+  tipoMovimiento?:
+    | {
+        id_tipo_movimiento?: number;
+        nombre?: string | null;
+      }
+    | string
+    | null;
+}
+
 export interface ActualizarStockRequest {
   cantidad?: number;
   stock_min?: number;
   stock_max?: number;
+}
+
+export interface ActualizarStockSucursalRequest {
+  stock_minimo?: number;
+  stock_maximo?: number;
 }
 
 @Injectable({
@@ -222,12 +254,26 @@ export class ProductService {
     );
   }
 
+  actualizarStockSucursal(
+    idEmpresa: string,
+    idSucursal: string,
+    idProducto: number,
+    payload: ActualizarStockSucursalRequest,
+  ): Observable<StockSucursalProducto> {
+    return this.apiService.put<StockSucursalProducto, ActualizarStockSucursalRequest>(
+      `/api/inventario/empresas/${idEmpresa}/sucursales/${idSucursal}/stock/${idProducto}`,
+      payload,
+    );
+  }
+
   getTiposMovimiento(): Observable<TipoMovimiento[]> {
     return this.apiService.get<TipoMovimiento[]>('/api/inventario/tipos-movimiento');
   }
 
-  getMovimientosProducto(idProducto: number): Observable<any[]> {
-    return this.apiService.get<any[]>(`/api/productos/${idProducto}/movimientos`);
+  getMovimientosSucursal(idEmpresa: string, idSucursal: string): Observable<MovimientoInventario[]> {
+    return this.apiService.get<MovimientoInventario[]>(
+      `/api/inventario/empresas/${idEmpresa}/sucursales/${idSucursal}/movimientos`,
+    );
   }
 
   crearMovimientoProducto(

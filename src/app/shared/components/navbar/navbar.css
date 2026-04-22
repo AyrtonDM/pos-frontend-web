@@ -1,6 +1,9 @@
 .navbar {
-  position: sticky;
+  position: fixed;
   top: var(--space-md);
+  left: 50%;
+  width: min(var(--content-max-width), calc(100vw - (var(--space-lg) * 2)));
+  transform: translateX(-50%);
   z-index: 10;
   display: flex;
   align-items: center;

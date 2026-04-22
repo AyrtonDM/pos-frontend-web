@@ -73,7 +73,8 @@
 }
 
 .login-options a,
-.register-link a {
+.register-link a,
+.home-link a {
   color: var(--color-primary-hover);
   font-weight: var(--font-weight-semibold);
 }
@@ -88,7 +89,8 @@
   opacity: 0.72;
 }
 
-.register-link {
+.register-link,
+.home-link {
   text-align: center;
 }
 

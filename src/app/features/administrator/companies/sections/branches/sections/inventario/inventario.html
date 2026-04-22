@@ -39,6 +39,10 @@
 
         <div class="tab-content">
           @if (activeTab === 'stock') {
+            @if (mensajeStock) {
+              <p class="feedback feedback-success">{{ mensajeStock }}</p>
+            }
+
             @if (cargandoStock) {
               <section class="inventory-state" aria-live="polite">
                 <p class="text-muted">Cargando stock...</p>
@@ -61,15 +65,61 @@
                         <th>Cantidad</th>
                         <th>Stock minimo</th>
                         <th>Stock maximo</th>
+                        <th class="inventory-actions-header">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
                       @for (item of stockItems; track item.idProducto) {
-                        <tr>
+                        <tr [class.stock-warning-row]="isStockWarning(item)">
                           <td>{{ item.nombre }}</td>
-                          <td>{{ item.cantidad }}</td>
-                          <td>{{ item.stockMin ?? '-' }}</td>
-                          <td>{{ item.stockMax ?? '-' }}</td>
+                          <td [class.stock-warning-cell]="isStockWarning(item)">{{ item.cantidad }}</td>
+                          <td [class.stock-warning-cell]="isStockNearMin(item)">
+                            @if (editandoStockProductoId === item.idProducto) {
+                              <input
+                                class="input stock-input"
+                                type="number"
+                                min="0"
+                                [(ngModel)]="stockEditForm.stockMin"
+                                [ngModelOptions]="{ standalone: true }"
+                              />
+                            } @else {
+                              {{ item.stockMin ?? '-' }}
+                            }
+                          </td>
+                          <td [class.stock-warning-cell]="isStockNearMax(item)">
+                            @if (editandoStockProductoId === item.idProducto) {
+                              <input
+                                class="input stock-input"
+                                type="number"
+                                min="0"
+                                [(ngModel)]="stockEditForm.stockMax"
+                                [ngModelOptions]="{ standalone: true }"
+                              />
+                            } @else {
+                              {{ item.stockMax ?? '-' }}
+                            }
+                          </td>
+                          <td class="inventory-actions-cell">
+                            @if (editandoStockProductoId === item.idProducto) {
+                              <div class="stock-actions">
+                                <button
+                                  class="btn btn-primary btn-sm"
+                                  type="button"
+                                  [disabled]="guardandoStock"
+                                  (click)="guardarStock(item)"
+                                >
+                                  {{ guardandoStock ? 'Guardando...' : 'Aceptar' }}
+                                </button>
+                                <button class="btn btn-secondary btn-sm" type="button" (click)="cancelarEdicionStock()">
+                                  Cancelar
+                                </button>
+                              </div>
+                            } @else {
+                              <button class="btn btn-primary btn-sm" type="button" (click)="iniciarEdicionStock(item)">
+                                Editar
+                              </button>
+                            }
+                          </td>
                         </tr>
                       }
                     </tbody>
