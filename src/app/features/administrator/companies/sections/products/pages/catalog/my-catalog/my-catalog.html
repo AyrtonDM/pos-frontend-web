@@ -159,6 +159,7 @@
                       <th>Subcategoria</th>
                       <th>Unidad</th>
                       <th>Precio</th>
+                      <th>Imagen</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -169,6 +170,13 @@
                         <td>{{ product.subcategoria ? product.subcategoria.nombre : 'Sin subcategoria' }}</td>
                         <td>{{ product.unidad_medida || 'Sin unidad' }}</td>
                         <td>Bs {{ product.precio }}</td>
+                        <td>
+                          @if (product.imagen) {
+                            <img class="product-image-thumb" [src]="product.imagen" [alt]="'Sin imagen'" loading="lazy" />
+                          } @else {
+                            <span class="text-muted">Sin imagen</span>
+                          }
+                        </td>
                         <td>
                           <div class="row-actions">
                             <a
