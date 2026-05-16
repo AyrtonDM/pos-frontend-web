@@ -5,6 +5,7 @@ import { RegisterCompany } from './features/administrator/companies/pages/regist
 import { Branches } from './features/administrator/companies/sections/branches/pages/branches/branches';
 import { EditBranch } from './features/administrator/companies/sections/branches/pages/edit-branch/edit-branch';
 import { ViewBranch } from './features/administrator/companies/sections/branches/pages/view-branch/view-branch';
+import { CashRegister } from './features/administrator/companies/sections/branches/sections/cash_register/cash_register';
 import { Staff } from './features/administrator/companies/sections/branches/sections/staff/staff';
 
 import { Inventario } from './features/administrator/companies/sections/branches/sections/inventario/inventario';
@@ -67,6 +68,11 @@ export const routes: Routes = [
     path: 'administrator/company/:id/branch/:branchId/staff',
     component: Staff,
 /*  */    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/branch/:branchId/cash-register',
+    component: CashRegister,
+    canActivate: [authGuard],
   },
   {
     path: 'administrator/company/:id/branch/:branchId/inventario',

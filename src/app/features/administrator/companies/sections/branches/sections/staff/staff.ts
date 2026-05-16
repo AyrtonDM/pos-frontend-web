@@ -34,6 +34,10 @@ export class Staff implements OnInit {
       active: true,
     },
     {
+      label: 'Cajas',
+      link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'cash-register'],
+    },
+    {
       label: 'Inventario',
       link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'inventario'],
     },
