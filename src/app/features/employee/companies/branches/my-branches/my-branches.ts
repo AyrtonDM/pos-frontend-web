@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
 
 import {
@@ -8,14 +9,16 @@ import {
 
 @Component({
   selector: 'app-employee-branches',
-  imports: [Navbar],
+  imports: [Navbar, RouterLink],
   templateUrl: './my-branches.html',
   styleUrl: './my-branches.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmployeeBranches implements OnInit {
+  private readonly route = inject(ActivatedRoute);
   private readonly employeeBranchService = inject(EmployeeBranchService);
   private readonly cdr = inject(ChangeDetectorRef);
+  protected readonly companyId = this.route.snapshot.paramMap.get('idEmpresa') ?? '';
 
   protected sucursales: EmployeeBranchAssignment[] = [];
   protected cargandoSucursales = false;
@@ -33,7 +36,14 @@ export class EmployeeBranches implements OnInit {
     this.cargandoSucursales = true;
     this.errorSucursales = '';
 
-    this.employeeBranchService.getMisSucursalesEmpleado().subscribe({
+    if (!this.companyId) {
+      this.sucursales = [];
+      this.cargandoSucursales = false;
+      this.errorSucursales = 'No se encontro la empresa para cargar tus sucursales.';
+      return;
+    }
+
+    this.employeeBranchService.getMisSucursalesEmpleado(this.companyId).subscribe({
       next: (sucursales) => {
         this.sucursales = sucursales;
         this.cargandoSucursales = false;
