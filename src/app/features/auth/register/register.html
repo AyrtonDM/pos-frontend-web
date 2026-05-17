@@ -135,6 +135,14 @@
         </button>
       </form>
 
+      <button
+        class="btn btn-secondary verification-entry-button"
+        type="button"
+        (click)="abrirIngresoCodigoVerificacion()"
+      >
+        Ingresar codigo de verificacion
+      </button>
+
       <p class="login-link text-muted">
         Ya tienes cuenta?
         <a routerLink="/login">Inicia sesion</a>
@@ -167,10 +175,24 @@
         <header class="verification-header">
           <p class="badge badge-success">Verificacion</p>
           <h2 class="title-lg" id="verificationTitle">Ingresa tu codigo</h2>
-          <p class="text-muted">Enviamos el codigo a {{ emailParaVerificar }}.</p>
+          <p class="text-muted">Ingresa el correo de tu cuenta y el codigo recibido.</p>
         </header>
 
         <form class="verification-form" (submit)="verificarCodigo($event)">
+          <div class="form-group">
+            <label class="label" for="emailVerificacion">Correo electronico</label>
+            <input
+              class="input"
+              id="emailVerificacion"
+              name="emailVerificacion"
+              type="email"
+              placeholder="usuario@email.com"
+              autocomplete="email"
+              required
+              [(ngModel)]="emailParaVerificar"
+            />
+          </div>
+
           <div class="form-group">
             <label class="label" for="codigo">Codigo</label>
             <input

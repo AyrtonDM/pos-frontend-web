@@ -26,6 +26,7 @@ export class Register {
   protected codigo = '';
   protected emailParaVerificar = '';
   protected mostrarModalVerificacion = false;
+  protected puedeIngresarCodigoVerificacion = false;
   protected cargandoRegistro = false;
   protected cargandoVerificacion = false;
   protected mensaje = '';
@@ -43,6 +44,7 @@ export class Register {
     event.preventDefault();
     this.error = '';
     this.mensaje = '';
+    this.puedeIngresarCodigoVerificacion = false;
 
     if (this.form.contrasena !== this.form.confirmarContrasena) {
       this.error = 'Las contrasenas no coinciden.';
@@ -68,7 +70,7 @@ export class Register {
         this.emailParaVerificar = response.email || payload.email;
 
         if (this.registroRequiereVerificacion(response)) {
-          this.abrirModalVerificacion(this.emailParaVerificar);
+          this.puedeIngresarCodigoVerificacion = true;
         } else {
           this.error = 'El registro respondio correctamente, pero no confirmo el envio del correo.';
         }
@@ -79,7 +81,8 @@ export class Register {
         this.cargandoRegistro = false;
 
         if (error.status === 200 && this.registroRequiereVerificacion(error.error)) {
-          this.abrirModalVerificacion(payload.email);
+          this.emailParaVerificar = payload.email;
+          this.puedeIngresarCodigoVerificacion = true;
           this.cdr.detectChanges();
           return;
         }
@@ -91,12 +94,22 @@ export class Register {
     });
   }
 
+  protected abrirIngresoCodigoVerificacion(): void {
+    this.abrirModalVerificacion(this.emailParaVerificar || this.form.email.trim());
+  }
+
   protected verificarCodigo(event: SubmitEvent): void {
     event.preventDefault();
     this.errorVerificacion = '';
     this.mensajeVerificacion = '';
 
     const codigo = this.codigo.trim();
+    const email = this.emailParaVerificar.trim();
+
+    if (!email) {
+      this.errorVerificacion = 'Ingresa el correo de la cuenta.';
+      return;
+    }
 
     if (!codigo) {
       this.errorVerificacion = 'Ingresa el codigo de verificacion.';
@@ -105,7 +118,7 @@ export class Register {
 
     this.cargandoVerificacion = true;
 
-    this.authService.verifyCode({ email: this.emailParaVerificar, codigo }).subscribe({
+    this.authService.verifyCode({ email, codigo }).subscribe({
       next: (response) => {
         this.cargandoVerificacion = false;
         this.mensajeVerificacion = response.mensaje ?? 'Cuenta verificada correctamente.';
