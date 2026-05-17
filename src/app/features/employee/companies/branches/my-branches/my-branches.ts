@@ -9,8 +9,8 @@ import {
 @Component({
   selector: 'app-employee-branches',
   imports: [Navbar],
-  templateUrl: './employee-branches.html',
-  styleUrl: './employee-branches.css',
+  templateUrl: './my-branches.html',
+  styleUrl: './my-branches.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmployeeBranches implements OnInit {

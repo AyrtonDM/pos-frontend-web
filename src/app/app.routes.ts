@@ -15,7 +15,7 @@ import { EditProduct } from './features/administrator/companies/sections/product
 import { ProductosPanel } from './features/administrator/companies/sections/products/pages/catalog/my-catalog/my-catalog';
 import { ViewCategory } from './features/administrator/companies/sections/products/pages/categories/view-category/view-category';
 import { ViewProduct } from './features/administrator/companies/sections/products/pages/catalog/view-product/view-product';
-import { EmployeeBranches } from './features/employee/branches/pages/employee-branches/employee-branches';
+import { EmployeeBranches } from './features/employee/companies/branches/my-branches/my-branches';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
 import { HomePage } from './features/landing/home_page/home_page';
