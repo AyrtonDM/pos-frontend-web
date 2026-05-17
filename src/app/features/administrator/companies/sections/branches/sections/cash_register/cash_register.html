@@ -60,7 +60,11 @@
           }
 
           @if (activeTab === 'list') {
-            @if (cashRegisters.length === 0) {
+            @if (cargandoCajas) {
+              <section class="cash-register-state" aria-live="polite">
+                <p class="text-muted">Cargando cajas registradoras...</p>
+              </section>
+            } @else if (cashRegisters.length === 0) {
               <section class="cash-register-state" aria-live="polite">
                 <p class="text-muted">Aun no hay cajas registradoras registradas en esta sucursal.</p>
               </section>
@@ -137,7 +141,9 @@
               </div>
 
               <div class="form-actions">
-                <button class="btn btn-primary" type="submit">Registrar</button>
+                <button class="btn btn-primary" type="submit" [disabled]="cargandoRegistro">
+                  {{ cargandoRegistro ? 'Registrando...' : 'Registrar' }}
+                </button>
               </div>
             </form>
           } @else {
@@ -178,13 +184,14 @@
                     <span class="switch-track" aria-hidden="true">
                       <span class="switch-thumb"></span>
                     </span>
-                    <span class="switch-text">Caja activa</span>
                   </label>
                 </div>
               </div>
 
               <div class="form-actions">
-                <button class="btn btn-primary" type="submit">Guardar cambios</button>
+                <button class="btn btn-primary" type="submit" [disabled]="cargandoEdicion">
+                  {{ cargandoEdicion ? 'Guardando...' : 'Guardar cambios' }}
+                </button>
               </div>
             </form>
           }
