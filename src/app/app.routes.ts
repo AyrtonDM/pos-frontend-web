@@ -16,6 +16,7 @@ import { ProductosPanel } from './features/administrator/companies/sections/prod
 import { ViewCategory } from './features/administrator/companies/sections/products/pages/categories/view-category/view-category';
 import { ViewProduct } from './features/administrator/companies/sections/products/pages/catalog/view-product/view-product';
 import { EmployeeBranches } from './features/employee/companies/branches/my-branches/my-branches';
+import { EmployeeMyCompanies } from './features/employee/companies/my-companies/my-companies';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
 import { HomePage } from './features/landing/home_page/home_page';
@@ -110,7 +111,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'employee/my-branches',
+    path: 'employee/my-companies',
+    component: EmployeeMyCompanies,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee/company/:idEmpresa/branches',
     component: EmployeeBranches,
     canActivate: [authGuard],
   },

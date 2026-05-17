@@ -13,6 +13,7 @@ export interface Company {
   nit: string;
   correo: string;
   fecha_registro?: string;
+  fecha_creacion?: string;
   activo?: boolean;
 }
 
@@ -90,6 +91,10 @@ export class CompanyService {
 
   getMisEmpresas(): Observable<Company[]> {
     return this.apiService.get<Company[]>('/api/empresas/mis-empresas');
+  }
+
+  getMisEmpresasEmpleado(): Observable<Company[]> {
+    return this.apiService.get<Company[]>('/api/empresas/mis-empresas-empleado');
   }
 
   obtenerEmpresa(idEmpresa: string): Observable<Company> {
