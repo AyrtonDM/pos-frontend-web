@@ -14,13 +14,13 @@ export interface UpdateCashRegisterRequest extends CreateCashRegisterRequest {
 
 export interface CashRegisterResponse {
   id?: number;
-  id_caja?: number;
-  id_sucursal?: number;
+  id_caja: number;
+  id_sucursal: number;
   codigo: string;
   nombre: string;
-  fecha_creacion?: string;
+  fecha_creacion: string;
   fecha_registro?: string;
-  activo?: boolean;
+  activo: boolean;
 }
 
 @Injectable({

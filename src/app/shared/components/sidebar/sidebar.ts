@@ -1,6 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { Params, Router, RouterLink } from '@angular/router';
 
+export type SidebarRole = 'administrator' | 'employee';
+
 export type SidebarItem = {
   label: string;
   link?: string | unknown[];
@@ -20,6 +22,10 @@ export class Sidebar {
   private readonly router = inject(Router);
 
   @Input() items: SidebarItem[] = [];
+  @Input() role?: SidebarRole;
+  @Input() companyId = '';
+  @Input() branchId = '';
+  @Input() activeItemLabel = '';
 
   openGroups: Record<string, boolean> = {};
 
@@ -39,32 +45,104 @@ export class Sidebar {
     return this.openGroups[item.label] ?? false;
   }
 
+  get displayedItems(): SidebarItem[] {
+    if (this.items.length > 0) {
+      return this.items;
+    }
+
+    if (!this.isBranchView()) {
+      return [];
+    }
+
+    return this.buildBranchItems();
+  }
+
   get backButtonLabel(): string {
     return this.isBranchView() ? 'Volver a Mis Sucursales' : 'Volver a Mis Empresas';
   }
 
   get backButtonLink(): string[] {
+    const role = this.getRole();
+
     if (this.isBranchView()) {
-      const companyId = this.getCompanyIdFromUrl();
-      return companyId
-        ? ['/administrator/company', companyId, 'branches']
-        : ['/administrator/my-companies'];
+      const companyId = this.companyId || this.getCompanyIdFromUrl(role);
+
+      if (role === 'employee') {
+        return companyId ? ['/employee/company', companyId, 'branches'] : ['/employee/my-companies'];
+      }
+
+      return companyId ? ['/administrator/company', companyId, 'branches'] : ['/administrator/my-companies'];
     }
 
-    return ['/administrator/my-companies'];
+    return role === 'employee' ? ['/employee/my-companies'] : ['/administrator/my-companies'];
   }
 
   private isBranchView(): boolean {
     return this.router.url.includes('/branch/');
   }
 
-  private getCompanyIdFromUrl(): string {
-    const match = this.router.url.match(/\/administrator\/company\/([^/]+)/);
+  private getRole(): SidebarRole {
+    if (this.role) {
+      return this.role;
+    }
+
+    return this.router.url.startsWith('/employee/') ? 'employee' : 'administrator';
+  }
+
+  private getCompanyIdFromUrl(role: SidebarRole): string {
+    const match = this.router.url.match(new RegExp(`/${role}/company/([^/]+)`));
     return match?.[1] ?? '';
   }
 
+  private buildBranchItems(): SidebarItem[] {
+    const role = this.getRole();
+    const companyId = this.companyId || this.getCompanyIdFromUrl(role);
+    const branchId = this.branchId || this.getBranchIdFromUrl();
+
+    if (role === 'employee') {
+      return [
+        {
+          label: 'Cajas',
+          link: ['/employee/company', companyId, 'branch', branchId, 'cash_registers'],
+          active: this.isActiveItem('Cajas'),
+        },
+      ];
+    }
+
+    return [
+      {
+        label: 'Personal',
+        link: ['/administrator/company', companyId, 'branch', branchId, 'staff'],
+        active: this.isActiveItem('Personal'),
+      },
+      {
+        label: 'Cajas',
+        link: ['/administrator/company', companyId, 'branch', branchId, 'cash-register'],
+        active: this.isActiveItem('Cajas'),
+      },
+      {
+        label: 'Inventario',
+        link: ['/administrator/company', companyId, 'branch', branchId, 'inventario'],
+        active: this.isActiveItem('Inventario'),
+      },
+      {
+        label: 'Ventas',
+        active: this.isActiveItem('Ventas'),
+      },
+    ];
+  }
+
+  private getBranchIdFromUrl(): string {
+    const match = this.router.url.match(/\/branch\/([^/]+)/);
+    return match?.[1] ?? '';
+  }
+
+  private isActiveItem(label: string): boolean {
+    return this.activeItemLabel.toLowerCase() === label.toLowerCase();
+  }
+
   private syncOpenGroups(): void {
-    for (const item of this.items) {
+    for (const item of this.displayedItems) {
       if (!item.children?.length) {
         continue;
       }
