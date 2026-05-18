@@ -18,6 +18,21 @@
 
   <div class="nav-actions">
     @if (authService.isAuthenticated()) {
+      @if (authService.isAdmin()) {
+        <div class="notifications-wrapper">
+          <button class="btn btn-icon notifications-button" aria-label="Notificaciones" type="button" (click)="toggleNotifs()">
+            <span class="notifications-icon" aria-hidden="true">🔔</span>
+            @if (unreadNotifications() > 0) {
+              <span class="notifications-badge">{{ unreadNotifications() }}</span>
+            }
+          </button>
+          @if (notifsOpen()) {
+            <div class="notifications-dropdown">
+              <app-notification-center (unreadCountChange)="updateUnreadNotifications($event)"></app-notification-center>
+            </div>
+          }
+        </div>
+      }
       <button class="btn btn-danger" type="button" (click)="cerrarSesion()">Cerrar sesion</button>
     } @else {
       <a class="btn btn-secondary" routerLink="/register"> Registrar </a>
