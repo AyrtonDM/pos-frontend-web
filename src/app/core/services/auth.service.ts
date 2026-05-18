@@ -119,6 +119,23 @@ export class AuthService {
     return token;
   }
 
+  getUserRoles(): string[] {
+    const token = sessionStorage.getItem(this.tokenKey);
+    if (!token) return [];
+    const payload = this.decodeTokenPayload(token) as any;
+    // possible claim names: role, rol, roles
+    if (payload?.roles && Array.isArray(payload.roles))
+      return payload.roles.map((r: any) => (typeof r === 'string' ? r.toLowerCase() : String(r).toLowerCase()));
+    if (payload?.role && typeof payload.role === 'string') return [payload.role.toLowerCase()];
+    if (payload?.rol && typeof payload.rol === 'string') return [payload.rol.toLowerCase()];
+    return [];
+  }
+
+  isAdmin(): boolean {
+    const roles = this.getUserRoles();
+    return roles.includes('administrador') || roles.includes('admin');
+  }
+
   logout(): void {
     sessionStorage.removeItem(this.tokenKey);
     this.isAuthenticated.set(false);
