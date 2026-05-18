@@ -1,6 +1,6 @@
 <aside class="sidebar panel" aria-label="Menu lateral">
   <nav class="sidebar-nav">
-    @for (item of items; track item.label) {
+    @for (item of displayedItems; track item.label) {
       @if (item.children?.length) {
         <section class="sidebar-group">
           @if (item.link) {

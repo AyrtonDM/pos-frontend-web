@@ -32,6 +32,10 @@ export class EmployeeBranches implements OnInit {
     return asignacion.id_usuario_rol;
   }
 
+  protected obtenerIdSucursal(asignacion: EmployeeBranchAssignment): number {
+    return asignacion.sucursal.id_sucursal ?? asignacion.id_sucursal;
+  }
+
   private cargarMisSucursales(): void {
     this.cargandoSucursales = true;
     this.errorSucursales = '';

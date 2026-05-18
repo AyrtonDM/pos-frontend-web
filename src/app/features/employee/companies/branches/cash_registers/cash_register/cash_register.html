@@ -1,0 +1,110 @@
+<div class="page-container employee-cash-register-page">
+  <app-navbar />
+
+  <main class="employee-cash-register-layout">
+    <app-sidebar
+      role="employee"
+      [companyId]="companyId"
+      [branchId]="branchId"
+      activeItemLabel="Cajas"
+    />
+
+    <section class="employee-cash-register-content">
+      <section class="employee-cash-register-panel panel">
+        <header class="employee-cash-register-header">
+          <p class="badge badge-success">Sucursal {{ branchId }}</p>
+          <h1 class="title-xl">Cajas</h1>
+          <p class="text-muted">Selecciona y gestiona las cajas disponibles para esta sucursal.</p>
+        </header>
+      </section>
+
+      <section class="tabs-panel panel">
+        <div class="tabs" role="tablist" aria-label="Secciones de cajas">
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'list'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'list'"
+          >
+            Cajas de la sucursal
+          </button>
+        </div>
+
+        <div class="tab-content">
+          @if (error) {
+            <p class="feedback feedback-error">{{ error }}</p>
+          }
+
+          @if (mensaje) {
+            <p class="feedback feedback-success">{{ mensaje }}</p>
+          }
+
+          @if (cargandoCajas) {
+            <section class="cash-register-state" aria-live="polite">
+              <p class="text-muted">Cargando cajas registradoras...</p>
+            </section>
+          } @else if (cashRegisters.length === 0) {
+            <section class="cash-register-state" aria-live="polite">
+              <p class="text-muted">Aun no hay cajas registradoras registradas en esta sucursal.</p>
+            </section>
+          } @else {
+            <section class="table-panel" aria-label="Listado de cajas registradoras">
+              <div class="table-shell">
+                <table class="table cash-register-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha creacion</th>
+                      <th>Codigo</th>
+                      <th>Nombre</th>
+                      <th>Estado</th>
+                      <th class="cash-register-actions-header">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (cashRegister of cashRegisters; track cashRegister.id) {
+                      <tr>
+                        <td>{{ cashRegister.fechaCreacion }}</td>
+                        <td>{{ cashRegister.codigo }}</td>
+                        <td>{{ cashRegister.nombre }}</td>
+                        <td>
+                          @if (cashRegister.activo) {
+                            <span class="badge badge-success">Activo</span>
+                          } @else {
+                            <span class="badge badge-danger">Inactivo</span>
+                          }
+                        </td>
+                        <td class="cash-register-actions-cell">
+                          <a
+                            class="btn btn-primary btn-sm"
+                            [class.disabled]="!cashRegister.activo"
+                            [attr.aria-disabled]="!cashRegister.activo"
+                            [routerLink]="
+                              cashRegister.activo
+                                ? [
+                                    '/employee/company',
+                                    companyId,
+                                    'branch',
+                                    branchId,
+                                    'cash_register',
+                                    cashRegister.id,
+                                    'open_cash_register',
+                                  ]
+                                : null
+                            "
+                          >
+                            Nueva sesion
+                          </a>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          }
+        </div>
+      </section>
+    </section>
+  </main>
+</div>

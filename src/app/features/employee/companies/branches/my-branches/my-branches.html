@@ -59,7 +59,18 @@
             </dl>
 
             <div class="employee-branch-actions">
-              <button class="btn btn-primary" type="button">Entrar</button>
+              <a
+                class="btn btn-primary"
+                [routerLink]="[
+                  '/employee/company',
+                  companyId,
+                  'branch',
+                  obtenerIdSucursal(asignacion),
+                  'cash_registers',
+                ]"
+              >
+                Entrar
+              </a>
             </div>
           </article>
         }
