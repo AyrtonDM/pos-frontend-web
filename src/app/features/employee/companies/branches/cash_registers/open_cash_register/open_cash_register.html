@@ -55,7 +55,20 @@
             >
               Cancelar
             </a>
-            <button class="btn btn-primary" type="button">Abrir caja</button>
+            <a
+              class="btn btn-primary"
+              [routerLink]="[
+                '/employee/company',
+                companyId,
+                'branch',
+                branchId,
+                'cash_register',
+                cashRegisterId,
+                'sales',
+              ]"
+            >
+              Abrir caja
+            </a>
           </div>
         </form>
       </section>
