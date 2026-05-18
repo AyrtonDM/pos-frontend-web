@@ -46,6 +46,20 @@ export class Branches implements OnInit {
       label: 'Productos',
       link: ['/administrator/company', this.companyId, 'products'],
     },
+    {
+      label: 'Clientes',
+      link: ['/administrator/company', this.companyId, 'clients'],
+      children: [
+        {
+          label: 'Catalogo',
+          link: ['/administrator/company', this.companyId, 'clients'],
+        },
+        {
+          label: 'Categorias',
+          link: ['/administrator/company', this.companyId, 'clients', 'categories'],
+        },
+      ],
+    },
   ];
 
   ngOnInit(): void {

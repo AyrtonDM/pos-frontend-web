@@ -61,6 +61,42 @@ export interface InviteEmployeeResponse {
   [key: string]: unknown;
 }
 
+export interface InviteClientRequest {
+  email: string;
+}
+
+export interface InviteClientResponse {
+  mensaje: string;
+  email: string;
+  link_invitacion: string;
+}
+
+export interface ClientPerson {
+  id_persona: number;
+  nombre_completo: string;
+  fecha_nacimiento: string;
+  genero: string;
+  telefono: string;
+  documento: string;
+}
+
+export interface ClientUser {
+  id_usuario: number;
+  email: string;
+  activo: boolean;
+  persona?: ClientPerson;
+}
+
+export interface ClientRole {
+  id_usuario_rol: number;
+  id_usuario: number;
+  id_rol: number;
+  id_empresa: number;
+  id_sucursal: number | null;
+  activo: boolean;
+  usuario: ClientUser;
+}
+
 export interface EmployeeRole {
   id_usuario_rol: number;
   id_usuario: number;
@@ -143,6 +179,17 @@ export class CompanyService {
       `/api/empresas/${idEmpresa}/sucursales/${idSucursal}/invitar-empleado`,
       payload,
     );
+  }
+
+  invitarCliente(idEmpresa: string, payload: InviteClientRequest): Observable<InviteClientResponse> {
+    return this.apiService.post<InviteClientResponse, InviteClientRequest>(
+      `/api/empresas/${idEmpresa}/invitar-cliente`,
+      payload,
+    );
+  }
+
+  getClientesEmpresa(idEmpresa: string): Observable<ClientRole[]> {
+    return this.apiService.get<ClientRole[]>(`/api/empresas/${idEmpresa}/clientes`);
   }
 
   getEmpleadosSucursal(idEmpresa: string, idSucursal: string): Observable<EmployeeRole[]> {

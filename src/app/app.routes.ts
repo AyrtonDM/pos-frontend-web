@@ -15,6 +15,8 @@ import { EditProduct } from './features/administrator/companies/sections/product
 import { ProductosPanel } from './features/administrator/companies/sections/products/pages/catalog/my-catalog/my-catalog';
 import { ViewCategory } from './features/administrator/companies/sections/products/pages/categories/view-category/view-category';
 import { ViewProduct } from './features/administrator/companies/sections/products/pages/catalog/view-product/view-product';
+import { CategoriasClientes } from './features/administrator/companies/sections/clients/pages/categories/my-categories/my-categories';
+import { ClientesCatalogo } from './features/administrator/companies/sections/clients/pages/catalog/my-clients/my-clients';
 import { EmployeeBranches } from './features/employee/companies/branches/my-branches/my-branches';
 import { EmployeeCashRegister } from './features/employee/companies/branches/cash_registers/cash_register/cash_register';
 import { OpenCashRegister } from './features/employee/companies/branches/cash_registers/open_cash_register/open_cash_register';
@@ -91,6 +93,16 @@ export const routes: Routes = [
   {
     path: 'administrator/company/:id/products',
     component: ProductosPanel,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/clients',
+    component: ClientesCatalogo,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/clients/categories',
+    component: CategoriasClientes,
     canActivate: [authGuard],
   },
   {
