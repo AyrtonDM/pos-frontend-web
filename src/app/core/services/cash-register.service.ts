@@ -12,6 +12,22 @@ export interface UpdateCashRegisterRequest extends CreateCashRegisterRequest {
   activo: boolean;
 }
 
+export interface OpenCashRegisterSessionRequest {
+  monto_inicial: number;
+  nota: string;
+}
+
+export interface CashRegisterSessionResponse {
+  id_caja_sesion: number;
+  id_caja: number;
+  fecha_apertura: string;
+  fecha_cierre: string | null;
+  monto_inicial: number;
+  monto_final: number | null;
+  estado: string;
+  nota: string;
+}
+
 export interface CashRegisterResponse {
   id?: number;
   id_caja: number;
@@ -38,6 +54,16 @@ export class CashRegisterService {
   crearCaja(idSucursal: string, payload: CreateCashRegisterRequest): Observable<CashRegisterResponse> {
     return this.apiService.post<CashRegisterResponse, CreateCashRegisterRequest>(
       `/api/sucursales/${idSucursal}/cajas`,
+      payload,
+    );
+  }
+
+  abrirSesionCaja(
+    idCaja: string,
+    payload: OpenCashRegisterSessionRequest,
+  ): Observable<CashRegisterSessionResponse> {
+    return this.apiService.post<CashRegisterSessionResponse, OpenCashRegisterSessionRequest>(
+      `/api/cajas/${idCaja}/sesiones`,
       payload,
     );
   }

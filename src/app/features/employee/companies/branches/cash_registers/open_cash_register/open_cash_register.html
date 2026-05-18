@@ -19,7 +19,15 @@
       </section>
 
       <section class="open-cash-register-panel panel">
-        <form class="open-cash-register-form" aria-label="Formulario para abrir caja">
+        <form
+          class="open-cash-register-form"
+          aria-label="Formulario para abrir caja"
+          (submit)="abrirCaja($event)"
+        >
+          @if (mensajeError) {
+            <p class="text-danger" role="alert">{{ mensajeError }}</p>
+          }
+
           <div class="form-grid">
             <div class="form-group">
               <label class="label" for="initial-amount">Monto inicial</label>
@@ -55,20 +63,9 @@
             >
               Cancelar
             </a>
-            <a
-              class="btn btn-primary"
-              [routerLink]="[
-                '/employee/company',
-                companyId,
-                'branch',
-                branchId,
-                'cash_register',
-                cashRegisterId,
-                'sales',
-              ]"
-            >
-              Abrir caja
-            </a>
+            <button class="btn btn-primary" type="submit" [disabled]="cargando">
+              {{ cargando ? 'Abriendo...' : 'Abrir caja' }}
+            </button>
           </div>
         </form>
       </section>
