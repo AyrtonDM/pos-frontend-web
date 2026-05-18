@@ -18,6 +18,7 @@ import { ViewProduct } from './features/administrator/companies/sections/product
 import { EmployeeBranches } from './features/employee/companies/branches/my-branches/my-branches';
 import { EmployeeCashRegister } from './features/employee/companies/branches/cash_registers/cash_register/cash_register';
 import { OpenCashRegister } from './features/employee/companies/branches/cash_registers/open_cash_register/open_cash_register';
+import { Sales } from './features/employee/companies/branches/cash_registers/sales/sales';
 import { EmployeeMyCompanies } from './features/employee/companies/my-companies/my-companies';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
@@ -130,6 +131,11 @@ export const routes: Routes = [
   {
     path: 'employee/company/:idEmpresa/branch/:branchId/cash_register/:cashRegisterId/open_cash_register',
     component: OpenCashRegister,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee/company/:idEmpresa/branch/:branchId/cash_register/:cashRegisterId/sales',
+    component: Sales,
     canActivate: [authGuard],
   },
 ];

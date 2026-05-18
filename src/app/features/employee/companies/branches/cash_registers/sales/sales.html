@@ -1,0 +1,61 @@
+<div class="page-container sales-page">
+  <app-navbar />
+
+  <main class="sales-layout">
+    <app-sidebar
+      role="employee"
+      [companyId]="companyId"
+      [branchId]="branchId"
+      [cashRegisterId]="cashRegisterId"
+      activeItemLabel="Ventas"
+    />
+
+    <section class="sales-content">
+      <section class="sales-header panel">
+        <div>
+          <p class="badge badge-success">Caja {{ cashRegisterId }}</p>
+          <h1 class="title-xl">Ventas</h1>
+          <p class="text-muted">Registra ventas y consulta el historial de esta caja.</p>
+        </div>
+      </section>
+
+      <section class="tabs-panel panel">
+        <div class="tabs" role="tablist" aria-label="Secciones de ventas">
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'register'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'register'"
+            (click)="setActiveTab('register')"
+          >
+            Registrar Ventas
+          </button>
+
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'history'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'history'"
+            (click)="setActiveTab('history')"
+          >
+            Historial de Ventas
+          </button>
+        </div>
+
+        <div class="tab-content">
+          @if (activeTab === 'register') {
+            <section class="sales-state" aria-live="polite">
+              <p class="text-muted">El registro de ventas estara disponible aqui.</p>
+            </section>
+          } @else {
+            <section class="sales-state" aria-live="polite">
+              <p class="text-muted">El historial de ventas estara disponible aqui.</p>
+            </section>
+          }
+        </div>
+      </section>
+    </section>
+  </main>
+</div>

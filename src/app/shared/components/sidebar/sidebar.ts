@@ -25,6 +25,7 @@ export class Sidebar {
   @Input() role?: SidebarRole;
   @Input() companyId = '';
   @Input() branchId = '';
+  @Input() cashRegisterId = '';
   @Input() activeItemLabel = '';
 
   openGroups: Record<string, boolean> = {};
@@ -98,8 +99,31 @@ export class Sidebar {
     const role = this.getRole();
     const companyId = this.companyId || this.getCompanyIdFromUrl(role);
     const branchId = this.branchId || this.getBranchIdFromUrl();
+    const cashRegisterId = this.cashRegisterId || this.getCashRegisterIdFromUrl();
 
     if (role === 'employee') {
+      if (this.isCashRegisterSessionView()) {
+        return [
+          {
+            label: 'Ventas',
+            link: [
+              '/employee/company',
+              companyId,
+              'branch',
+              branchId,
+              'cash_register',
+              cashRegisterId,
+              'sales',
+            ],
+            active: this.isActiveItem('Ventas'),
+          },
+          {
+            label: 'Movimientos',
+            active: this.isActiveItem('Movimientos'),
+          },
+        ];
+      }
+
       return [
         {
           label: 'Cajas',
@@ -135,6 +159,21 @@ export class Sidebar {
   private getBranchIdFromUrl(): string {
     const match = this.router.url.match(/\/branch\/([^/]+)/);
     return match?.[1] ?? '';
+  }
+
+  private getCashRegisterIdFromUrl(): string {
+    const match = this.router.url.match(/\/cash_register\/([^/]+)/);
+    return match?.[1] ?? '';
+  }
+
+  private isCashRegisterSessionView(): boolean {
+    const activeItem = this.activeItemLabel.toLowerCase();
+
+    return (
+      this.getRole() === 'employee' &&
+      this.router.url.includes('/cash_register/') &&
+      (this.router.url.endsWith('/sales') || activeItem === 'ventas' || activeItem === 'movimientos')
+    );
   }
 
   private isActiveItem(label: string): boolean {
