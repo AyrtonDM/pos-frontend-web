@@ -46,9 +46,217 @@
 
         <div class="tab-content">
           @if (activeTab === 'register') {
-            <section class="sales-state" aria-live="polite">
-              <p class="text-muted">El registro de ventas estara disponible aqui.</p>
-            </section>
+            @if (registerError) {
+              <p class="feedback feedback-error">{{ registerError }}</p>
+            }
+
+            @if (registerMessage) {
+              <p class="feedback feedback-success">{{ registerMessage }}</p>
+            }
+
+            @if (loadingRegisterData) {
+              <section class="sales-state" aria-live="polite">
+                <p class="text-muted">Cargando productos y clientes...</p>
+              </section>
+            } @else {
+              <section class="register-sale" aria-label="Registrar venta">
+                <div class="sale-workspace">
+                  <section class="product-search-panel" aria-label="Buscar productos">
+                    <div class="form-group">
+                      <label class="label" for="productSearch">Buscar producto</label>
+                      <input
+                        class="input"
+                        id="productSearch"
+                        name="productSearch"
+                        type="search"
+                        placeholder="Nombre, codigo o codigo de barras"
+                        autocomplete="off"
+                        [(ngModel)]="searchTerm"
+                      />
+                    </div>
+
+                    @if (products.length === 0) {
+                      <section class="sales-state compact" aria-live="polite">
+                        <p class="text-muted">No hay productos con stock en esta sucursal.</p>
+                      </section>
+                    } @else if (filteredProducts.length === 0) {
+                      <section class="sales-state compact" aria-live="polite">
+                        <p class="text-muted">No se encontraron productos.</p>
+                      </section>
+                    } @else {
+                      <div class="product-results" aria-label="Resultados de productos">
+                        @for (product of filteredProducts; track trackProduct($index, product)) {
+                          <button class="product-result" type="button" (click)="addProduct(product)">
+                            <span>
+                              <strong>{{ product.nombre }}</strong>
+                              <small>
+                                Codigo {{ product.codigo || product.idProducto }}
+                                @if (product.codigoBarras) {
+                                  - Barras {{ product.codigoBarras }}
+                                }
+                              </small>
+                            </span>
+                            <span class="product-meta">
+                              <strong>Bs {{ formatCurrency(product.precio) }}</strong>
+                              <small>Stock {{ product.stock }} {{ product.unidadMedida }}</small>
+                            </span>
+                          </button>
+                        }
+                      </div>
+                    }
+                  </section>
+
+                  <aside class="sale-summary-panel" aria-label="Resumen de venta">
+                    <div class="form-group">
+                      <label class="label" for="client">Cliente opcional</label>
+                      <select
+                        class="select"
+                        id="client"
+                        name="client"
+                        [(ngModel)]="selectedClientId"
+                      >
+                        <option [ngValue]="null">Consumidor final</option>
+                        @for (client of clients; track trackClient($index, client)) {
+                          <option [ngValue]="client.id">{{ client.nombre }} - {{ client.correo }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="label" for="saleDiscount">Descuento venta</label>
+                      <input
+                        class="input"
+                        id="saleDiscount"
+                        name="saleDiscount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        [(ngModel)]="saleDiscount"
+                      />
+                    </div>
+
+                    <dl class="totals-list">
+                      <div>
+                        <dt>Subtotal</dt>
+                        <dd>Bs {{ formatCurrency(subtotal) }}</dd>
+                      </div>
+                      <div>
+                        <dt>Descuento total</dt>
+                        <dd>Bs {{ formatCurrency(discountTotal) }}</dd>
+                      </div>
+                      <div class="total-row">
+                        <dt>Total</dt>
+                        <dd>Bs {{ formatCurrency(total) }}</dd>
+                      </div>
+                    </dl>
+
+                    <button
+                      class="btn btn-primary charge-button"
+                      type="button"
+                      [disabled]="saleDetails.length === 0 || chargingSale"
+                      (click)="cobrar()"
+                    >
+                      {{ chargingSale ? 'Cobrando...' : 'Cobrar' }}
+                    </button>
+                  </aside>
+                </div>
+
+                <section class="sale-detail-panel" aria-label="Detalle de venta">
+                  <div class="detail-header">
+                    <h2 class="title-md">Detalle de venta</h2>
+                    <p class="text-muted">{{ saleDetails.length }} productos agregados</p>
+                  </div>
+
+                  @if (saleDetails.length === 0) {
+                    <section class="sales-state compact" aria-live="polite">
+                      <p class="text-muted">Busca un producto y agregalo al detalle.</p>
+                    </section>
+                  } @else {
+                    <div class="table-shell">
+                      <table class="table sale-detail-table">
+                        <thead>
+                          <tr>
+                            <th>Producto</th>
+                            <th>Precio</th>
+                            <th>Cantidad</th>
+                            <th>Descuento</th>
+                            <th>Importe</th>
+                            <th class="actions-header">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (item of saleDetails; track trackDetail($index, item)) {
+                            <tr>
+                              <td>
+                                <strong>{{ item.nombre }}</strong>
+                                <span class="detail-code">Codigo {{ item.codigo || item.idProducto }}</span>
+                              </td>
+                              <td>Bs {{ formatCurrency(item.precio) }}</td>
+                              <td>
+                                <input
+                                  class="input quantity-input"
+                                  type="number"
+                                  min="1"
+                                  [max]="item.stock"
+                                  [ngModel]="item.cantidad"
+                                  [ngModelOptions]="{ standalone: true }"
+                                  (ngModelChange)="updateQuantity(item, $event)"
+                                />
+                              </td>
+                              <td>
+                                <div class="discount-control">
+                                  <input
+                                    class="input money-input"
+                                    type="number"
+                                    min="0"
+                                    [max]="item.descuentoTipo === 'percentage' ? 100 : item.precio * item.cantidad"
+                                    step="0.01"
+                                    [ngModel]="item.descuento"
+                                    [ngModelOptions]="{ standalone: true }"
+                                    (ngModelChange)="updateItemDiscount(item, $event)"
+                                  />
+
+                                  <div class="discount-options" aria-label="Tipo de descuento">
+                                    <label>
+                                      <input
+                                        type="radio"
+                                        [name]="'discountType-' + item.idProducto"
+                                        value="percentage"
+                                        [ngModel]="item.descuentoTipo"
+                                        [ngModelOptions]="{ standalone: true }"
+                                        (ngModelChange)="updateItemDiscountType(item, 'percentage')"
+                                      />
+                                      %
+                                    </label>
+                                    <label>
+                                      <input
+                                        type="radio"
+                                        [name]="'discountType-' + item.idProducto"
+                                        value="fixed"
+                                        [ngModel]="item.descuentoTipo"
+                                        [ngModelOptions]="{ standalone: true }"
+                                        (ngModelChange)="updateItemDiscountType(item, 'fixed')"
+                                      />
+                                      Bs
+                                    </label>
+                                  </div>
+                                </div>
+                              </td>
+                              <td>Bs {{ formatCurrency(getItemLineTotal(item)) }}</td>
+                              <td class="actions-cell">
+                                <button class="btn btn-danger btn-sm" type="button" (click)="removeProduct(item)">
+                                  Eliminar
+                                </button>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  }
+                </section>
+              </section>
+            }
           } @else {
             <section class="sales-state" aria-live="polite">
               <p class="text-muted">El historial de ventas estara disponible aqui.</p>
