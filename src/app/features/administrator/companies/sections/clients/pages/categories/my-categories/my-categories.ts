@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
@@ -10,17 +11,25 @@ type ClientCategoryTab = 'register' | 'list';
 interface ClientCategoryForm {
   nombre: string;
   descripcion: string;
+  permitCredito: boolean;
+  descuentoBase: number;
+  limiteCredito: number;
+  activo: boolean;
 }
 
 interface ClientCategory {
   id: number;
   nombre: string;
   descripcion: string;
+  permitCredito: boolean;
+  descuentoBase: number;
+  limiteCredito: number;
+  activo: boolean;
 }
 
 @Component({
   selector: 'app-categorias-clientes',
-  imports: [FormsModule, Navbar, Sidebar],
+  imports: [FormsModule, DecimalPipe, Navbar, Sidebar],
   templateUrl: './my-categories.html',
   styleUrl: './my-categories.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +44,10 @@ export class CategoriasClientes {
   protected readonly categoryForm: ClientCategoryForm = {
     nombre: '',
     descripcion: '',
+    permitCredito: false,
+    descuentoBase: 0,
+    limiteCredito: 0,
+    activo: true,
   };
 
   protected categories: ClientCategory[] = [
@@ -42,11 +55,19 @@ export class CategoriasClientes {
       id: 1,
       nombre: 'Mayoristas',
       descripcion: 'Clientes con compras frecuentes o por volumen.',
+      permitCredito: true,
+      descuentoBase: 15,
+      limiteCredito: 5000,
+      activo: true,
     },
     {
       id: 2,
       nombre: 'Minoristas',
-      descripcion: 'Clientes regulares de atencion general.',
+      descripcion: 'Clientes regulares de atención general.',
+      permitCredito: true,
+      descuentoBase: 5,
+      limiteCredito: 1000,
+      activo: true,
     },
   ];
 
@@ -94,12 +115,20 @@ export class CategoriasClientes {
         id: Date.now(),
         nombre,
         descripcion: this.categoryForm.descripcion.trim(),
+        permitCredito: this.categoryForm.permitCredito,
+        descuentoBase: this.categoryForm.descuentoBase,
+        limiteCredito: this.categoryForm.limiteCredito,
+        activo: this.categoryForm.activo,
       },
       ...this.categories,
     ];
 
     this.categoryForm.nombre = '';
     this.categoryForm.descripcion = '';
+    this.categoryForm.permitCredito = false;
+    this.categoryForm.descuentoBase = 0;
+    this.categoryForm.limiteCredito = 0;
+    this.categoryForm.activo = true;
     this.activeTab = 'list';
   }
 }
