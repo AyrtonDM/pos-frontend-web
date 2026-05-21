@@ -39,7 +39,15 @@
 
         <div class="tab-content">
           @if (activeTab === 'list') {
-            @if (categories.length === 0) {
+            @if (cargandoCategorias) {
+              <section class="state-panel" aria-live="polite">
+                <p class="text-muted">Cargando categorias...</p>
+              </section>
+            } @else if (errorCategorias) {
+              <section class="state-panel" aria-live="polite">
+                <p class="feedback feedback-error">{{ errorCategorias }}</p>
+              </section>
+            } @else if (categories.length === 0) {
               <section class="state-panel" aria-live="polite">
                 <p class="text-muted">Aun no hay categorias registradas para clientes.</p>
               </section>
@@ -61,6 +69,14 @@
                       <span class="detail-item">Límite crédito: ${{ category.limiteCredito | number:'1.2-2' }}</span>
                     </div>
                   </div>
+                  <div class="row-actions">
+                    <a
+                      class="btn btn-primary"
+                      [routerLink]="['/administrator/company', companyId, 'clients', 'categories', category.id, 'edit-category']"
+                    >
+                      Editar
+                    </a>
+                  </div>
                 </article>
               }
             </section>
@@ -68,6 +84,14 @@
           } @else {
             <section class="register-panel">
               <h2 class="title-md">Registrar categoria de cliente</h2>
+              @if (errorRegistro) {
+                <p class="feedback feedback-error">{{ errorRegistro }}</p>
+              }
+
+              @if (mensajeRegistro) {
+                <p class="feedback feedback-success">{{ mensajeRegistro }}</p>
+              }
+
               <form class="entity-form" (submit)="registrarCategoria($event)">
                 <div class="form-group">
                   <label class="label" for="categoria_nombre">Nombre <span class="required">*</span></label>
@@ -124,30 +148,26 @@
                   </div>
                 </div>
 
-                <div class="form-group checkbox-group">
-                  <label class="checkbox-label">
+                <div class="form-group status-field">
+                  <span class="label">Permitir Credito</span>
+                  <label class="toggle-switch" for="permit_credito">
                     <input
-                      type="checkbox"
+                      id="permit_credito"
                       name="permit_credito"
+                      type="checkbox"
                       [(ngModel)]="categoryForm.permitCredito"
                     />
-                    <span>Permitir crédito a clientes de esta categoría</span>
-                  </label>
-                </div>
-
-                <div class="form-group checkbox-group">
-                  <label class="checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="activo"
-                      [(ngModel)]="categoryForm.activo"
-                    />
-                    <span>Categoría activa</span>
+                    <span class="toggle-track" aria-hidden="true"></span>
+                    <span class="toggle-text">
+                      {{ categoryForm.permitCredito ? 'Credito permitido' : 'Credito deshabilitado' }}
+                    </span>
                   </label>
                 </div>
 
                 <div class="form-actions">
-                  <button class="btn btn-primary" type="submit">Registrar categoria</button>
+                  <button class="btn btn-primary" type="submit" [disabled]="cargandoRegistro">
+                    {{ cargandoRegistro ? 'Registrando...' : 'Registrar categoria' }}
+                  </button>
                 </div>
               </form>
             </section>

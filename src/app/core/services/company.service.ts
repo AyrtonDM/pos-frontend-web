@@ -71,6 +71,45 @@ export interface InviteClientResponse {
   link_invitacion: string;
 }
 
+export interface CreateClientCategoryRequest {
+  nombre: string;
+  descripcion: string;
+  permite_credito: boolean;
+  descuento_base: number;
+  limite_credito: number;
+}
+
+export interface UpdateClientCategoryRequest {
+  nombre: string;
+  descripcion: string;
+  permite_credito: boolean;
+  descuento_base: number;
+  limite_credito: number;
+  activo: boolean;
+}
+
+export interface CreateClientCategoryResponse {
+  id_categoria_cliente: number;
+  id_empresa: number;
+  nombre: string;
+  descripcion: string;
+  permite_credito: boolean;
+  descuento_base: string;
+  limite_credito: string;
+  activo: boolean;
+}
+
+export interface ClientCategoryResponse {
+  id_categoria_cliente: number;
+  id_empresa: number;
+  nombre: string;
+  descripcion: string;
+  permite_credito: boolean;
+  descuento_base: string;
+  limite_credito: string;
+  activo: boolean;
+}
+
 export interface ClientPerson {
   id_persona: number;
   nombre_completo: string;
@@ -87,6 +126,16 @@ export interface ClientUser {
   persona?: ClientPerson;
 }
 
+export interface ClientRecord {
+  id_cliente: number;
+  id_usuario: number;
+  id_categoria_cliente: number | null;
+  codigo_cliente: string;
+  saldo_credito: number | null;
+  limite_credito: number | null;
+  activo: boolean;
+}
+
 export interface ClientRole {
   id_usuario_rol: number;
   id_usuario: number;
@@ -95,6 +144,25 @@ export interface ClientRole {
   id_sucursal: number | null;
   activo: boolean;
   usuario: ClientUser;
+  cliente: ClientRecord;
+}
+
+export interface UpdateClientRequest {
+  id_categoria_cliente: number;
+  codigo_cliente: string;
+  saldo_credito: number;
+  limite_credito: number;
+  activo: boolean;
+}
+
+export interface UpdateClientResponse {
+  id_cliente: number;
+  id_usuario: number;
+  id_categoria_cliente: number;
+  codigo_cliente: string;
+  saldo_credito: number;
+  limite_credito: number;
+  activo: boolean;
 }
 
 export interface EmployeeRole {
@@ -190,6 +258,42 @@ export class CompanyService {
 
   getClientesEmpresa(idEmpresa: string): Observable<ClientRole[]> {
     return this.apiService.get<ClientRole[]>(`/api/empresas/${idEmpresa}/clientes`);
+  }
+
+  actualizarClienteEmpresa(
+    idEmpresa: string,
+    idCliente: string | number,
+    payload: UpdateClientRequest,
+  ): Observable<UpdateClientResponse> {
+    return this.apiService.put<UpdateClientResponse, UpdateClientRequest>(
+      `/api/empresas/${idEmpresa}/clientes/${idCliente}`,
+      payload,
+    );
+  }
+
+  getCategoriasCliente(idEmpresa: string): Observable<ClientCategoryResponse[]> {
+    return this.apiService.get<ClientCategoryResponse[]>(`/api/empresas/${idEmpresa}/categorias-cliente`);
+  }
+
+  crearCategoriaCliente(
+    idEmpresa: string,
+    payload: CreateClientCategoryRequest,
+  ): Observable<CreateClientCategoryResponse> {
+    return this.apiService.post<CreateClientCategoryResponse, CreateClientCategoryRequest>(
+      `/api/categorias-cliente/${idEmpresa}`,
+      payload,
+    );
+  }
+
+  actualizarCategoriaCliente(
+    idEmpresa: string,
+    idCategoriaCliente: string | number,
+    payload: UpdateClientCategoryRequest,
+  ): Observable<CreateClientCategoryResponse> {
+    return this.apiService.put<CreateClientCategoryResponse, UpdateClientCategoryRequest>(
+      `/api/empresas/${idEmpresa}/categorias-cliente/${idCategoriaCliente}`,
+      payload,
+    );
   }
 
   getEmpleadosSucursal(idEmpresa: string, idSucursal: string): Observable<EmployeeRole[]> {

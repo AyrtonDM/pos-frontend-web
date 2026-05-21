@@ -246,18 +246,20 @@
 }
 
 .money-input {
-  width: 108px;
-  padding: 8px 10px;
+  width: 86px;
+  padding: 6px 8px;
 }
 
 .discount-control {
-  display: grid;
-  gap: var(--space-xs);
-  width: 150px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: auto;
 }
 
 .discount-options {
   display: flex;
+  flex-direction: column;
   gap: var(--space-xs);
 }
 
