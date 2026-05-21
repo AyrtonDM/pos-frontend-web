@@ -90,15 +90,26 @@
                   <table class="table clients-table">
                     <thead>
                       <tr>
+                        <th>Codigo</th>
                         <th>Nombre</th>
                         <th>Correo</th>
+                        <th class="actions-header">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
                       @for (client of clients; track client.correo) {
                         <tr>
+                          <td>{{ client.codigo }}</td>
                           <td>{{ client.nombre }}</td>
                           <td>{{ client.correo }}</td>
+                          <td class="actions-cell">
+                            <a
+                              class="btn btn-primary btn-sm"
+                              [routerLink]="['/administrator/company', companyId, 'clients', client.idCliente, 'edit-client']"
+                            >
+                              Editar
+                            </a>
+                          </td>
                         </tr>
                       }
                     </tbody>

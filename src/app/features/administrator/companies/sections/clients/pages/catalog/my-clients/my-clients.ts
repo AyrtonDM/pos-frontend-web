@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import {
@@ -24,13 +24,19 @@ interface ClientInvitation {
 }
 
 interface ClientRow {
+  idCliente: number;
   nombre: string;
   correo: string;
+  categoriaId: number | null;
+  codigo: string;
+  saldoCredito: number;
+  limiteCredito: number;
+  activo: boolean;
 }
 
 @Component({
   selector: 'app-clientes-catalogo',
-  imports: [FormsModule, Navbar, Sidebar],
+  imports: [FormsModule, Navbar, Sidebar, RouterLink],
   templateUrl: './my-clients.html',
   styleUrl: './my-clients.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -181,8 +187,14 @@ export class ClientesCatalogo {
 
   private mapClientRole(client: ClientRole): ClientRow {
     return {
+      idCliente: client.cliente.id_cliente,
       nombre: client.usuario.persona?.nombre_completo ?? 'Sin nombre',
       correo: client.usuario.email,
+      categoriaId: client.cliente.id_categoria_cliente,
+      codigo: client.cliente.codigo_cliente,
+      saldoCredito: Number(client.cliente.saldo_credito ?? 0),
+      limiteCredito: Number(client.cliente.limite_credito ?? 0),
+      activo: client.cliente.activo,
     };
   }
 }
