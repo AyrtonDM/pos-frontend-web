@@ -112,6 +112,11 @@
   top: calc(100% + 8px);
   z-index: 50;
   width: min(620px, calc(100vw - 24px));
+  display: none;
+}
+
+.notifications-dropdown.open {
+  display: block;
 }
 
 .login-trigger {

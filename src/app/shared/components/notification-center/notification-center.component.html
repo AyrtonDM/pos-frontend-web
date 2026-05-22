@@ -1,7 +1,10 @@
 <div class="notification-center">
   <div class="notification-header">
-    <h3>Notificaciones</h3>
-    <p>Historial de alertas y eventos recientes</p>
+    <div>
+      <h3>Notificaciones</h3>
+      <p>Historial de alertas y eventos recientes</p>
+    </div>
+    <button class="panel-close" type="button" (click)="requestClose()" aria-label="Cerrar historial">×</button>
   </div>
 
   <div class="notification-list" aria-label="Historial de notificaciones">
@@ -15,45 +18,5 @@
     </li>
     </ul>
   </div>
-
-  <!-- Detail modal -->
-  <div class="modal-backdrop" *ngIf="selected">
-    <div class="modal-window">
-      <div class="modal-header">
-        <div>
-          <span class="modal-kicker">Detalle de notificación</span>
-          <h4>{{ selected.titulo || ('Stock bajo en "' + (selected.payload?.sucursal_nombre || selected.payload?.sucursal || '') + '"') }}</h4>
-        </div>
-        <button class="modal-close" type="button" (click)="closeDetail()" aria-label="Cerrar">×</button>
-      </div>
-
-      <div class="modal-content">
-        <div class="modal-card">
-          <p class="modal-summary">{{ selected.mensaje }}</p>
-          <div class="modal-grid">
-            <div>
-              <span class="modal-label">Sucursal</span>
-              <strong>{{ selected.display?.sucursal_nombre || 'N/A' }}</strong>
-            </div>
-            <div>
-              <span class="modal-label">Producto</span>
-              <strong>{{ selected.display?.producto_nombre || selected.payload?.producto_id || 'N/A' }}</strong>
-            </div>
-            <div>
-              <span class="modal-label">Cantidad</span>
-              <strong>{{ selected.display?.cantidad ?? 'N/A' }}</strong>
-            </div>
-            <div>
-              <span class="modal-label">Fecha</span>
-              <strong>{{ selected.fechaLegible || selected.fecha }}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-actions">
-        <button (click)="closeDetail()">Cerrar</button>
-      </div>
-    </div>
-  </div>
 </div>
+

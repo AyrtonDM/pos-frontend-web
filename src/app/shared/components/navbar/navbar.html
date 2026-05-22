@@ -26,11 +26,14 @@
               <span class="notifications-badge">{{ unreadNotifications() }}</span>
             }
           </button>
-          @if (notifsOpen()) {
-            <div class="notifications-dropdown">
-              <app-notification-center (unreadCountChange)="updateUnreadNotifications($event)"></app-notification-center>
-            </div>
-          }
+          <div class="notifications-dropdown" [class.open]="notifsOpen()">
+            <app-notification-center
+              (closeRequested)="closeNotifs()"
+              (unreadCountChange)="updateUnreadNotifications($event)"
+              (incomingNotification)="actualizarAlertaEmergente($event)"
+              (detailRequested)="abrirDetalleAlerta($event)"
+            ></app-notification-center>
+          </div>
         </div>
       }
       <button class="btn btn-danger" type="button" (click)="cerrarSesion()">Cerrar sesion</button>
@@ -72,3 +75,10 @@
     }
   </div>
 </nav>
+
+<app-notification-toast (detailRequested)="abrirDetalleAlerta($event)"></app-notification-toast>
+<app-notification-detail-modal
+  [detail]="activeDetail"
+  (closeRequested)="cerrarDetalleAlerta()"
+></app-notification-detail-modal>
+
