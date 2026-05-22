@@ -95,6 +95,11 @@
   color: var(--color-success);
 }
 
+.badge-neutral {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--color-text-soft);
+}
+
 .sales-state {
   display: grid;
   min-height: 220px;
@@ -113,6 +118,41 @@
 .register-sale {
   display: grid;
   gap: var(--space-lg);
+}
+
+.movement-workspace {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.movement-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.movement-form-panel,
+.movement-list-panel {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: var(--space-lg);
+}
+
+.movement-form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.movement-table {
+  min-width: 720px;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.movement-table tbody tr:hover {
+  background: rgba(244, 166, 42, 0.06);
 }
 
 .sale-workspace {
@@ -282,6 +322,12 @@
   padding: 8px 12px;
 }
 
+@media (max-width: 960px) {
+  .movement-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 640px) {
   .sales-page {
     padding: var(--space-md);
@@ -330,6 +376,10 @@
   }
 
   .sale-detail-table {
+    min-width: 100%;
+  }
+
+  .movement-table {
     min-width: 100%;
   }
 }

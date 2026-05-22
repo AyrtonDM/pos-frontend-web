@@ -27,6 +27,7 @@ export class Sidebar {
   @Input() companyId = '';
   @Input() branchId = '';
   @Input() cashRegisterId = '';
+  @Input() cashRegisterSessionId = '';
   @Input() activeItemLabel = '';
 
   openGroups: Record<string, boolean> = {};
@@ -104,22 +105,35 @@ export class Sidebar {
 
     if (role === 'employee') {
       if (this.isCashRegisterSessionView()) {
+        const salesLink = [
+          '/employee/company',
+          companyId,
+          'branch',
+          branchId,
+          'cash_register',
+          cashRegisterId,
+          'sales',
+        ];
+
+        const sharedQueryParams = this.cashRegisterSessionId ? { sessionId: this.cashRegisterSessionId } : undefined;
+
         return [
           {
             label: 'Ventas',
-            link: [
-              '/employee/company',
-              companyId,
-              'branch',
-              branchId,
-              'cash_register',
-              cashRegisterId,
-              'sales',
-            ],
+            link: salesLink,
+            queryParams: {
+              section: 'sales',
+              ...(sharedQueryParams ?? {}),
+            },
             active: this.isActiveItem('Ventas'),
           },
           {
             label: 'Movimientos',
+            link: salesLink,
+            queryParams: {
+              section: 'movimientos',
+              ...(sharedQueryParams ?? {}),
+            },
             active: this.isActiveItem('Movimientos'),
           },
         ];

@@ -144,6 +144,12 @@
   opacity: 0.55;
 }
 
+.btn.conflict-disabled {
+  background: #9ca3af;
+  border-color: #9ca3af;
+  color: #f8fafc;
+}
+
 @media (max-width: 640px) {
   .employee-cash-register-page {
     padding: var(--space-md);

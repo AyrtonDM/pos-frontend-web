@@ -20,12 +20,42 @@ export interface OpenCashRegisterSessionRequest {
 export interface CashRegisterSessionResponse {
   id_caja_sesion: number;
   id_caja: number;
+  id_usuario: number;
   fecha_apertura: string;
   fecha_cierre: string | null;
   monto_inicial: number;
   monto_final: number | null;
-  estado: string;
+  estado: 'Abierto' | string;
   nota: string;
+}
+
+export interface CreateCashRegisterMovementRequest {
+  concepto: string;
+  monto: number;
+  id_tipo_movimiento_caja: number;
+  id_metodo_pago: number;
+}
+
+export interface CashRegisterMovementResponse {
+  id_movimiento_caja: number;
+  id_metodo_pago: number | null;
+  id_tipo_movimiento_caja: number;
+  id_caja_sesion: number;
+  id_usuario: number;
+  fecha: string;
+  monto: number;
+  concepto: string;
+}
+
+export interface CashRegisterMovementListItem {
+  id_movimiento_caja: number;
+  id_metodo_pago: number | null;
+  id_tipo_movimiento_caja: number;
+  id_caja_sesion: number;
+  id_usuario: number;
+  fecha: string;
+  monto: number;
+  concepto: string;
 }
 
 export interface CashRegisterResponse {
@@ -65,6 +95,22 @@ export class CashRegisterService {
     return this.apiService.post<CashRegisterSessionResponse, OpenCashRegisterSessionRequest>(
       `/api/cajas/${idCaja}/sesiones`,
       payload,
+    );
+  }
+
+  crearMovimientoCajaSesion(
+    idCajaSesion: string | number,
+    payload: CreateCashRegisterMovementRequest,
+  ): Observable<CashRegisterMovementResponse> {
+    return this.apiService.post<CashRegisterMovementResponse, CreateCashRegisterMovementRequest>(
+      `/api/cajas/sesiones/${idCajaSesion}/movimientos`,
+      payload,
+    );
+  }
+
+  getMovimientosCajaSesion(idCajaSesion: string | number): Observable<CashRegisterMovementListItem[]> {
+    return this.apiService.get<CashRegisterMovementListItem[]>(
+      `/api/cajas/sesiones/${idCajaSesion}/movimientos`,
     );
   }
 
