@@ -1,0 +1,104 @@
+<div class="page-container close-cash-register-page">
+  <app-navbar />
+
+  <main class="close-cash-register-layout">
+    <app-sidebar
+      role="employee"
+      [companyId]="companyId"
+      [branchId]="branchId"
+      [cashRegisterId]="cashRegisterId"
+      activeItemLabel="Cajas"
+    />
+
+    <section class="close-cash-register-content">
+      <section class="close-cash-register-header panel">
+        <div>
+          <p class="badge badge-success">Caja {{ cashRegisterId }}</p>
+          <h1 class="title-xl">Cerrar caja</h1>
+          <p class="text-muted">Verifica los montos por metodo de pago antes de cerrar la sesion.</p>
+        </div>
+      </section>
+
+      <section class="close-cash-register-panel panel">
+        <div class="close-summary" aria-label="Resumen de cierre">
+          <dl>
+            <div>
+              <dt>Total esperado</dt>
+              <dd>Bs {{ formatCurrency(totalEsperado) }}</dd>
+            </div>
+            <div>
+              <dt>Total real</dt>
+              <dd>Bs {{ formatCurrency(totalReal) }}</dd>
+            </div>
+            <div>
+              <dt>Diferencia</dt>
+              <dd [class.negative]="diferenciaTotal < 0" [class.positive]="diferenciaTotal > 0">
+                Bs {{ formatCurrency(diferenciaTotal) }}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="close-modal-grid" aria-label="Metodos de pago usados">
+          @for (cierre of cierresMetodoPago; track trackCierreMetodoPago($index, cierre)) {
+            <section class="close-modal" aria-label="Cierre de {{ cierre.metodoPago }}">
+              <header class="close-modal-header">
+                <p class="label">Metodo de pago</p>
+                <h2 class="title-md">{{ cierre.metodoPago }}</h2>
+              </header>
+
+              <div class="close-modal-body">
+                <div class="amount-row">
+                  <span>Monto esperado</span>
+                  <strong>Bs {{ formatCurrency(cierre.montoEsperado) }}</strong>
+                </div>
+
+                <div class="form-group">
+                  <label class="label" [for]="'real-amount-' + cierre.id">Monto real</label>
+                  <input
+                    class="input"
+                    [id]="'real-amount-' + cierre.id"
+                    [name]="'real-amount-' + cierre.id"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    [(ngModel)]="cierre.montoReal"
+                  />
+                </div>
+
+                <div class="amount-row difference-row">
+                  <span>Diferencia</span>
+                  <strong [class.negative]="getDiferencia(cierre) < 0" [class.positive]="getDiferencia(cierre) > 0">
+                    Bs {{ formatCurrency(getDiferencia(cierre)) }}
+                  </strong>
+                </div>
+
+                <div class="form-group">
+                  <label class="label" [for]="'observation-' + cierre.id">Observacion</label>
+                  <textarea
+                    class="input textarea"
+                    [id]="'observation-' + cierre.id"
+                    [name]="'observation-' + cierre.id"
+                    rows="4"
+                    placeholder="Detalle opcional"
+                    [(ngModel)]="cierre.observacion"
+                  ></textarea>
+                </div>
+              </div>
+            </section>
+          }
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary" type="button" (click)="cancelar()">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" type="button" [disabled]="cerrandoCaja" (click)="cerrarCaja()">
+            {{ cerrandoCaja ? 'Cerrando...' : 'Cerrar caja' }}
+          </button>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
