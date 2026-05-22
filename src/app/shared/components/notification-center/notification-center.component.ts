@@ -1,6 +1,17 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import axios from 'axios';
+import { FcmService } from '../../../core/notifications/fcm.service';
+import {
+  buildIncomingStockNotification,
+  buildStockDetailModel,
+  fetchStockAlertHistory,
+  findLatestNewUnreadStockAlert,
+  markStockAlertAsRead,
+  NotificationDetailModel,
+  NotificationViewModel,
+  normalizeStockNotification,
+  shouldHandleStockAlertEvent,
+} from './stock-alerts/stock-alerts';
 
 @Component({
   selector: 'app-notification-center',
@@ -9,119 +20,110 @@ import axios from 'axios';
   templateUrl: './notification-center.component.html',
   styleUrls: ['./notification-center.component.css']
 })
-export class NotificationCenterComponent implements OnInit {
-  items: any[] = [];
+export class NotificationCenterComponent implements OnInit, OnDestroy {
+  items: NotificationViewModel[] = [];
   apiBase = 'http://127.0.0.1:8000';
-  selected: any = null;
+  @Output() closeRequested = new EventEmitter<void>();
   @Output() unreadCountChange = new EventEmitter<number>();
+  @Output() incomingNotification = new EventEmitter<NotificationViewModel>();
+  @Output() detailRequested = new EventEmitter<NotificationDetailModel>();
+  private readonly knownNotificationIds = new Set<string>();
+  private pollHandle: ReturnType<typeof setInterval> | null = null;
 
-  constructor() {}
+  constructor(
+    private readonly fcmService: FcmService,
+    private readonly ngZone: NgZone,
+  ) {}
 
   async ngOnInit() {
-    await this.load();
+    await this.load(true);
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (ev: any) => {
-        if (ev.data?.type === 'NOTIFICATION_CLICK') {
-          this.handleIncoming(ev.data.payload);
-        }
+        this.ngZone.run(() => {
+          if (shouldHandleStockAlertEvent(ev.data?.type)) {
+            this.handleIncoming(ev.data.payload);
+          }
+        });
       });
+    }
+    this.startPolling();
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollHandle !== null) {
+      clearInterval(this.pollHandle);
+      this.pollHandle = null;
     }
   }
 
-  async load() {
-    const res = await axios.get(`${this.apiBase}/notifications/history/empresas/1`);
-    this.items = (res.data.items || [])
-      .map((it: any) => this.normalizeNotification(it))
+  async load(initialLoad = false) {
+    const previousIds = new Set(this.knownNotificationIds);
+    const idsEmpresa = await this.fcmService.obtenerEmpresasContexto();
+    const historyItems = await fetchStockAlertHistory(this.apiBase, idsEmpresa);
+
+    const nextItems = historyItems
+      .map((it: any) => normalizeStockNotification(it))
       .sort((left: any, right: any) => right.sortAt.getTime() - left.sortAt.getTime());
+
+    this.items = nextItems;
+    this.knownNotificationIds.clear();
+    for (const item of this.items) {
+      this.knownNotificationIds.add(String(item.id));
+    }
+
     this.emitUnreadCount();
+
+    if (!initialLoad) {
+      const latestNewUnreadStock = findLatestNewUnreadStockAlert(this.items, previousIds);
+
+      if (latestNewUnreadStock) {
+        this.incomingNotification.emit(latestNewUnreadStock);
+      }
+    }
   }
 
-  async markRead(item: any) {
-    await axios.post(`${this.apiBase}/notifications/mark-read`, { id: item.id });
+  async markRead(item: NotificationViewModel) {
+    await markStockAlertAsRead(this.apiBase, item.id);
     item.leido = true;
     this.emitUnreadCount();
   }
 
-  handleIncoming(payload: any) {
-    this.items.unshift(this.normalizeNotification({
-      titulo: payload.title || 'Notificación',
-      mensaje: payload.body || '',
-      fecha: new Date().toISOString(),
-      leido: false,
-      payload,
-    }));
-    this.items.sort((left: any, right: any) => right.sortAt.getTime() - left.sortAt.getTime());
-    this.emitUnreadCount();
+  handleIncoming(payload: any): NotificationViewModel {
+    return this.ngZone.run(() => {
+      const item = buildIncomingStockNotification(payload);
+
+      this.items.unshift(item);
+      this.items.sort((left: any, right: any) => right.sortAt.getTime() - left.sortAt.getTime());
+      this.knownNotificationIds.add(String(item.id));
+      this.emitUnreadCount();
+      this.incomingNotification.emit(item);
+      return item;
+    });
   }
 
-  openDetail(item: any) {
-    // mark read locally and on server
-    const payload = item.payload || {};
-    const sucursal_nombre = payload.sucursal_nombre || payload.nombre_sucursal || payload.sucursal || payload.sucursal?.nombre || payload.sucursal?.nombre_sucursal || payload.branch_name || null;
-    const producto_nombre = payload.producto_nombre || payload.nombre_producto || payload.producto || payload.producto?.nombre || payload.product?.nombre || payload.product_name || null;
-    const cantidad = payload.cantidad ?? payload.stock_actual ?? payload.cantidad_actual ?? payload.qty ?? payload.quantity ?? null;
-
-    this.selected = { ...item, display: { sucursal_nombre, producto_nombre, cantidad }, payload };
+  openDetail(item: NotificationViewModel) {
+    const detail = buildStockDetailModel(item);
+    this.detailRequested.emit(detail);
     if (!item.leido) this.markRead(item).catch(() => {});
   }
 
-  closeDetail() {
-    this.selected = null;
+  requestClose(): void {
+    this.closeRequested.emit();
   }
 
   private emitUnreadCount() {
     this.unreadCountChange.emit(this.items.filter((item) => !item.leido).length);
   }
 
-  private normalizeNotification(item: any) {
-    const payload = (typeof item.payload === 'string' ? tryParseJson(item.payload) : item.payload) || {};
-    const sucursal_nombre = payload.sucursal_nombre || payload.nombre_sucursal || payload.sucursal || payload.sucursal?.nombre || payload.sucursal?.nombre_sucursal || payload.branch_name || null;
-    const producto_nombre = payload.producto_nombre || payload.nombre_producto || payload.producto || payload.producto?.nombre || payload.product?.nombre || payload.product_name || null;
-    const cantidad = payload.cantidad ?? payload.stock_actual ?? payload.cantidad_actual ?? payload.qty ?? payload.quantity ?? null;
-    const titulo = item.titulo || payload.title || (sucursal_nombre ? `Stock bajo en "${sucursal_nombre}"` : 'Notificación');
+  private startPolling(): void {
+    if (this.pollHandle !== null) {
+      return;
+    }
 
-    return {
-      id: item.id,
-      titulo,
-      mensaje: item.mensaje || payload.body || payload.message || '',
-      fecha: item.fecha || item.created_at || item.createdAt || new Date().toISOString(),
-      fechaLegible: formatDateTime(item.fecha || item.created_at || item.createdAt || new Date().toISOString()),
-      sortAt: new Date(item.fecha || item.created_at || item.createdAt || new Date().toISOString()),
-      leido: !!item.leido,
-      payload,
-      display: { sucursal_nombre, producto_nombre, cantidad },
-    };
+    this.pollHandle = setInterval(() => {
+      this.ngZone.run(() => {
+        void this.load(false);
+      });
+    }, 5000);
   }
-}
-
-function tryParseJson(value: any) {
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
-}
-
-function formatDateTime(value: string | Date): string {
-  let date: Date;
-  if (value instanceof Date) {
-    date = value;
-  } else if (typeof value === 'string') {
-    // If the server sent a naive ISO timestamp without timezone (e.g. "2024-05-18T12:34:56"),
-    // treat it as UTC by appending a 'Z' so the Date constructor does not parse it as local.
-    const isoNoTZ = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/;
-    const normalized = isoNoTZ.test(value) ? `${value}Z` : value;
-    date = new Date(normalized);
-  } else {
-    date = new Date(String(value));
-  }
-
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-
-  return new Intl.DateTimeFormat('es-ES', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
 }

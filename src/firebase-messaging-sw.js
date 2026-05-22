@@ -19,6 +19,19 @@ messaging.onBackgroundMessage(function(payload) {
     data: payload.data || {},
   };
   self.registration.showNotification(title, options);
+
+  self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+    for (const client of windowClients) {
+      client.postMessage({
+        type: 'STOCK_ALERT',
+        payload: {
+          title: title,
+          body: options.body,
+          data: payload.data || {},
+        },
+      });
+    }
+  });
 });
 
 self.addEventListener('notificationclick', function(event) {
