@@ -61,11 +61,24 @@ export class Sidebar {
   }
 
   get backButtonLabel(): string {
+    if (this.isCashRegisterSessionView()) {
+      return 'Volver a Cajas';
+    }
+
     return this.isBranchView() ? 'Volver a Mis Sucursales' : 'Volver a Mis Empresas';
   }
 
   get backButtonLink(): string[] {
     const role = this.getRole();
+
+    if (this.isCashRegisterSessionView() && role === 'employee') {
+      const companyId = this.companyId || this.getCompanyIdFromUrl(role);
+      const branchId = this.branchId || this.getBranchIdFromUrl();
+
+      return companyId && branchId
+        ? ['/employee/company', companyId, 'branch', branchId, 'cash_registers']
+        : ['/employee/my-companies'];
+    }
 
     if (this.isBranchView()) {
       const companyId = this.companyId || this.getCompanyIdFromUrl(role);
