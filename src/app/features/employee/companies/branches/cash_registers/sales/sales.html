@@ -7,251 +7,427 @@
       [companyId]="companyId"
       [branchId]="branchId"
       [cashRegisterId]="cashRegisterId"
-      activeItemLabel="Ventas"
+      [cashRegisterSessionId]="cashRegisterSessionId"
+      [activeItemLabel]="sidebarActiveItemLabel"
     />
 
     <section class="sales-content">
       <section class="sales-header panel">
-        <div>
-          <p class="badge badge-success">Caja {{ cashRegisterId }}</p>
-          <h1 class="title-xl">Ventas</h1>
-          <p class="text-muted">Registra ventas y consulta el historial de esta caja.</p>
-        </div>
+        @if (viewMode === 'sales') {
+          <div>
+            <p class="badge badge-success">Caja {{ cashRegisterId }}</p>
+            <h1 class="title-xl">Ventas</h1>
+            <p class="text-muted">Registra ventas y consulta el historial de esta caja.</p>
+          </div>
+        } @else {
+          <div>
+            <p class="badge badge-success">Caja {{ cashRegisterId }}</p>
+            @if (cashRegisterSessionId) {
+              <p class="badge badge-neutral">Sesion {{ cashRegisterSessionId }}</p>
+            }
+            <h1 class="title-xl">Movimientos de caja</h1>
+            <p class="text-muted">Registra movimientos de caja y revisa el historial local de la vista.</p>
+          </div>
+        }
       </section>
 
       <section class="tabs-panel panel">
-        <div class="tabs" role="tablist" aria-label="Secciones de ventas">
-          <button
-            class="tab-button"
-            [class.active]="activeTab === 'register'"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'register'"
-            (click)="setActiveTab('register')"
-          >
-            Registrar Ventas
-          </button>
+        @if (viewMode === 'sales') {
+          <div class="tabs" role="tablist" aria-label="Secciones de ventas">
+            <button
+              class="tab-button"
+              [class.active]="activeTab === 'register'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'register'"
+              (click)="setActiveTab('register')"
+            >
+              Registrar Ventas
+            </button>
 
-          <button
-            class="tab-button"
-            [class.active]="activeTab === 'history'"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'history'"
-            (click)="setActiveTab('history')"
-          >
-            Historial de Ventas
-          </button>
-        </div>
+            <button
+              class="tab-button"
+              [class.active]="activeTab === 'history'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'history'"
+              (click)="setActiveTab('history')"
+            >
+              Historial de Ventas
+            </button>
+          </div>
 
-        <div class="tab-content">
-          @if (activeTab === 'register') {
-            @if (registerError) {
-              <p class="feedback feedback-error">{{ registerError }}</p>
-            }
+          <div class="tab-content">
+            @if (activeTab === 'register') {
+              @if (registerError) {
+                <p class="feedback feedback-error">{{ registerError }}</p>
+              }
 
-            @if (registerMessage) {
-              <p class="feedback feedback-success">{{ registerMessage }}</p>
-            }
+              @if (registerMessage) {
+                <p class="feedback feedback-success">{{ registerMessage }}</p>
+              }
 
-            @if (loadingRegisterData) {
-              <section class="sales-state" aria-live="polite">
-                <p class="text-muted">Cargando productos y clientes...</p>
-              </section>
-            } @else {
-              <section class="register-sale" aria-label="Registrar venta">
-                <div class="sale-workspace">
-                  <section class="product-search-panel" aria-label="Buscar productos">
-                    <div class="form-group">
-                      <label class="label" for="productSearch">Buscar producto</label>
-                      <input
-                        class="input"
-                        id="productSearch"
-                        name="productSearch"
-                        type="search"
-                        placeholder="Nombre, codigo o codigo de barras"
-                        autocomplete="off"
-                        [(ngModel)]="searchTerm"
-                      />
+              @if (loadingRegisterData) {
+                <section class="sales-state" aria-live="polite">
+                  <p class="text-muted">Cargando productos y clientes...</p>
+                </section>
+              } @else {
+                <section class="register-sale" aria-label="Registrar venta">
+                  <div class="sale-workspace">
+                    <section class="product-search-panel" aria-label="Buscar productos">
+                      <div class="form-group">
+                        <label class="label" for="productSearch">Buscar producto</label>
+                        <input
+                          class="input"
+                          id="productSearch"
+                          name="productSearch"
+                          type="search"
+                          placeholder="Nombre, codigo o codigo de barras"
+                          autocomplete="off"
+                          [(ngModel)]="searchTerm"
+                        />
+                      </div>
+
+                      @if (products.length === 0) {
+                        <section class="sales-state compact" aria-live="polite">
+                          <p class="text-muted">No hay productos con stock en esta sucursal.</p>
+                        </section>
+                      } @else if (filteredProducts.length === 0) {
+                        <section class="sales-state compact" aria-live="polite">
+                          <p class="text-muted">No se encontraron productos.</p>
+                        </section>
+                      } @else {
+                        <div class="product-results" aria-label="Resultados de productos">
+                          @for (product of filteredProducts; track trackProduct($index, product)) {
+                            <button class="product-result" type="button" (click)="addProduct(product)">
+                              <span>
+                                <strong>{{ product.nombre }}</strong>
+                                <small>
+                                  Codigo {{ product.codigo || product.idProducto }}
+                                  @if (product.codigoBarras) {
+                                    - Barras {{ product.codigoBarras }}
+                                  }
+                                </small>
+                              </span>
+                              <span class="product-meta">
+                                <strong>Bs {{ formatCurrency(product.precio) }}</strong>
+                                <small>Stock {{ product.stock }} {{ product.unidadMedida }}</small>
+                              </span>
+                            </button>
+                          }
+                        </div>
+                      }
+                    </section>
+
+                    <aside class="sale-summary-panel" aria-label="Resumen de venta">
+                      <div class="form-group">
+                        <label class="label" for="saleType">Tipo de venta</label>
+                        <select
+                          class="select"
+                          id="saleType"
+                          name="saleType"
+                          [(ngModel)]="selectedSaleTypeId"
+                          [disabled]="loadingSaleTypes || saleTypes.length === 0"
+                        >
+                          @for (saleType of saleTypes; track saleType.id) {
+                            <option [ngValue]="saleType.id">{{ saleType.nombre }}</option>
+                          }
+                        </select>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="label" for="client">Cliente opcional</label>
+                        <select
+                          class="select"
+                          id="client"
+                          name="client"
+                          [(ngModel)]="selectedClientId"
+                        >
+                          <option [ngValue]="null">Consumidor final</option>
+                          @for (client of clients; track trackClient($index, client)) {
+                            <option [ngValue]="client.id">{{ client.nombre }} - {{ client.correo }}</option>
+                          }
+                        </select>
+                      </div>
+
+                      <!-- El campo global de descuento de venta fue eliminado según solicitud del UX -->
+
+                      <dl class="totals-list">
+                        <div>
+                          <dt>Subtotal</dt>
+                          <dd>Bs {{ formatCurrency(subtotal) }}</dd>
+                        </div>
+                        <div>
+                          <dt>Descuento total</dt>
+                          <dd>Bs {{ formatCurrency(discountTotal) }}</dd>
+                        </div>
+                        <div class="total-row">
+                          <dt>Total</dt>
+                          <dd>Bs {{ formatCurrency(total) }}</dd>
+                        </div>
+                      </dl>
+
+                      <button
+                        class="btn btn-primary charge-button"
+                        type="button"
+                        [disabled]="saleDetails.length === 0 || chargingSale"
+                        (click)="cobrar()"
+                      >
+                        {{ chargingSale ? 'Cobrando...' : 'Cobrar' }}
+                      </button>
+                    </aside>
+                  </div>
+
+                  <section class="sale-detail-panel" aria-label="Detalle de venta">
+                    <div class="detail-header">
+                      <h2 class="title-md">Detalle de venta</h2>
+                      <p class="text-muted">{{ saleDetails.length }} productos agregados</p>
                     </div>
 
-                    @if (products.length === 0) {
+                    @if (saleDetails.length === 0) {
                       <section class="sales-state compact" aria-live="polite">
-                        <p class="text-muted">No hay productos con stock en esta sucursal.</p>
-                      </section>
-                    } @else if (filteredProducts.length === 0) {
-                      <section class="sales-state compact" aria-live="polite">
-                        <p class="text-muted">No se encontraron productos.</p>
+                        <p class="text-muted">Busca un producto y agregalo al detalle.</p>
                       </section>
                     } @else {
-                      <div class="product-results" aria-label="Resultados de productos">
-                        @for (product of filteredProducts; track trackProduct($index, product)) {
-                          <button class="product-result" type="button" (click)="addProduct(product)">
-                            <span>
-                              <strong>{{ product.nombre }}</strong>
-                              <small>
-                                Codigo {{ product.codigo || product.idProducto }}
-                                @if (product.codigoBarras) {
-                                  - Barras {{ product.codigoBarras }}
-                                }
-                              </small>
-                            </span>
-                            <span class="product-meta">
-                              <strong>Bs {{ formatCurrency(product.precio) }}</strong>
-                              <small>Stock {{ product.stock }} {{ product.unidadMedida }}</small>
-                            </span>
-                          </button>
-                        }
+                      <div class="table-shell">
+                        <table class="table sale-detail-table">
+                          <thead>
+                            <tr>
+                              <th>Producto</th>
+                              <th>Precio</th>
+                              <th>Cantidad</th>
+                              <th>Descuento</th>
+                              <th>Importe</th>
+                              <th class="actions-header">Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (item of saleDetails; track trackDetail($index, item)) {
+                              <tr>
+                                <td>
+                                  <strong>{{ item.nombre }}</strong>
+                                  <span class="detail-code">Codigo {{ item.codigo || item.idProducto }}</span>
+                                </td>
+                                <td>Bs {{ formatCurrency(item.precio) }}</td>
+                                <td>
+                                  <input
+                                    class="input quantity-input"
+                                    type="number"
+                                    min="1"
+                                    [max]="item.stock"
+                                    [ngModel]="item.cantidad"
+                                    [ngModelOptions]="{ standalone: true }"
+                                    (ngModelChange)="updateQuantity(item, $event)"
+                                  />
+                                </td>
+                                <td>
+                                  <div class="discount-control">
+                                    <input
+                                      class="input money-input"
+                                      type="number"
+                                      min="0"
+                                      [max]="item.descuentoTipo === 'percentage' ? 100 : item.precio * item.cantidad"
+                                      step="0.01"
+                                      [ngModel]="item.descuento"
+                                      [ngModelOptions]="{ standalone: true }"
+                                      (ngModelChange)="updateItemDiscount(item, $event)"
+                                    />
+
+                                    <div class="discount-options" aria-label="Tipo de descuento">
+                                      <label>
+                                        <input
+                                          type="radio"
+                                          [name]="'discountType-' + item.idProducto"
+                                          value="percentage"
+                                          [ngModel]="item.descuentoTipo"
+                                          [ngModelOptions]="{ standalone: true }"
+                                          (ngModelChange)="updateItemDiscountType(item, 'percentage')"
+                                        />
+                                        %
+                                      </label>
+                                      <label>
+                                        <input
+                                          type="radio"
+                                          [name]="'discountType-' + item.idProducto"
+                                          value="fixed"
+                                          [ngModel]="item.descuentoTipo"
+                                          [ngModelOptions]="{ standalone: true }"
+                                          (ngModelChange)="updateItemDiscountType(item, 'fixed')"
+                                        />
+                                        Bs
+                                      </label>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td>Bs {{ formatCurrency(getItemLineTotal(item)) }}</td>
+                                <td class="actions-cell">
+                                  <button class="btn btn-danger btn-sm" type="button" (click)="removeProduct(item)">
+                                    Eliminar
+                                  </button>
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
                       </div>
                     }
                   </section>
-
-                  <aside class="sale-summary-panel" aria-label="Resumen de venta">
-                    <div class="form-group">
-                      <label class="label" for="client">Cliente opcional</label>
-                      <select
-                        class="select"
-                        id="client"
-                        name="client"
-                        [(ngModel)]="selectedClientId"
-                      >
-                        <option [ngValue]="null">Consumidor final</option>
-                        @for (client of clients; track trackClient($index, client)) {
-                          <option [ngValue]="client.id">{{ client.nombre }} - {{ client.correo }}</option>
-                        }
-                      </select>
-                    </div>
-
-                    <!-- El campo global de descuento de venta fue eliminado según solicitud del UX -->
-
-                    <dl class="totals-list">
-                      <div>
-                        <dt>Subtotal</dt>
-                        <dd>Bs {{ formatCurrency(subtotal) }}</dd>
-                      </div>
-                      <div>
-                        <dt>Descuento total</dt>
-                        <dd>Bs {{ formatCurrency(discountTotal) }}</dd>
-                      </div>
-                      <div class="total-row">
-                        <dt>Total</dt>
-                        <dd>Bs {{ formatCurrency(total) }}</dd>
-                      </div>
-                    </dl>
-
-                    <button
-                      class="btn btn-primary charge-button"
-                      type="button"
-                      [disabled]="saleDetails.length === 0 || chargingSale"
-                      (click)="cobrar()"
-                    >
-                      {{ chargingSale ? 'Cobrando...' : 'Cobrar' }}
-                    </button>
-                  </aside>
-                </div>
-
-                <section class="sale-detail-panel" aria-label="Detalle de venta">
-                  <div class="detail-header">
-                    <h2 class="title-md">Detalle de venta</h2>
-                    <p class="text-muted">{{ saleDetails.length }} productos agregados</p>
-                  </div>
-
-                  @if (saleDetails.length === 0) {
-                    <section class="sales-state compact" aria-live="polite">
-                      <p class="text-muted">Busca un producto y agregalo al detalle.</p>
-                    </section>
-                  } @else {
-                    <div class="table-shell">
-                      <table class="table sale-detail-table">
-                        <thead>
-                          <tr>
-                            <th>Producto</th>
-                            <th>Precio</th>
-                            <th>Cantidad</th>
-                            <th>Descuento</th>
-                            <th>Importe</th>
-                            <th class="actions-header">Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          @for (item of saleDetails; track trackDetail($index, item)) {
-                            <tr>
-                              <td>
-                                <strong>{{ item.nombre }}</strong>
-                                <span class="detail-code">Codigo {{ item.codigo || item.idProducto }}</span>
-                              </td>
-                              <td>Bs {{ formatCurrency(item.precio) }}</td>
-                              <td>
-                                <input
-                                  class="input quantity-input"
-                                  type="number"
-                                  min="1"
-                                  [max]="item.stock"
-                                  [ngModel]="item.cantidad"
-                                  [ngModelOptions]="{ standalone: true }"
-                                  (ngModelChange)="updateQuantity(item, $event)"
-                                />
-                              </td>
-                              <td>
-                                <div class="discount-control">
-                                  <input
-                                    class="input money-input"
-                                    type="number"
-                                    min="0"
-                                    [max]="item.descuentoTipo === 'percentage' ? 100 : item.precio * item.cantidad"
-                                    step="0.01"
-                                    [ngModel]="item.descuento"
-                                    [ngModelOptions]="{ standalone: true }"
-                                    (ngModelChange)="updateItemDiscount(item, $event)"
-                                  />
-
-                                  <div class="discount-options" aria-label="Tipo de descuento">
-                                    <label>
-                                      <input
-                                        type="radio"
-                                        [name]="'discountType-' + item.idProducto"
-                                        value="percentage"
-                                        [ngModel]="item.descuentoTipo"
-                                        [ngModelOptions]="{ standalone: true }"
-                                        (ngModelChange)="updateItemDiscountType(item, 'percentage')"
-                                      />
-                                      %
-                                    </label>
-                                    <label>
-                                      <input
-                                        type="radio"
-                                        [name]="'discountType-' + item.idProducto"
-                                        value="fixed"
-                                        [ngModel]="item.descuentoTipo"
-                                        [ngModelOptions]="{ standalone: true }"
-                                        (ngModelChange)="updateItemDiscountType(item, 'fixed')"
-                                      />
-                                      Bs
-                                    </label>
-                                  </div>
-                                </div>
-                              </td>
-                              <td>Bs {{ formatCurrency(getItemLineTotal(item)) }}</td>
-                              <td class="actions-cell">
-                                <button class="btn btn-danger btn-sm" type="button" (click)="removeProduct(item)">
-                                  Eliminar
-                                </button>
-                              </td>
-                            </tr>
-                          }
-                        </tbody>
-                      </table>
-                    </div>
-                  }
                 </section>
+              }
+            } @else {
+              <section class="sales-state" aria-live="polite">
+                <p class="text-muted">El historial de ventas estara disponible aqui.</p>
               </section>
             }
-          } @else {
-            <section class="sales-state" aria-live="polite">
-              <p class="text-muted">El historial de ventas estara disponible aqui.</p>
-            </section>
-          }
-        </div>
+          </div>
+        } @else {
+          <div class="tabs" role="tablist" aria-label="Secciones de movimientos de caja">
+            <button
+              class="tab-button"
+              [class.active]="movementActiveTab === 'register'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="movementActiveTab === 'register'"
+              (click)="setMovementTab('register')"
+            >
+              Registrar un movimiento caja
+            </button>
+
+            <button
+              class="tab-button"
+              [class.active]="movementActiveTab === 'list'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="movementActiveTab === 'list'"
+              (click)="setMovementTab('list')"
+            >
+              Listar movimientos
+            </button>
+          </div>
+
+          <div class="tab-content">
+            @if (movementError) {
+              <p class="feedback feedback-error">{{ movementError }}</p>
+            }
+
+            @if (movementMessage) {
+              <p class="feedback feedback-success">{{ movementMessage }}</p>
+            }
+
+            @if (movementActiveTab === 'register') {
+              @if (loadingMovementTypes) {
+                <section class="sales-state" aria-live="polite">
+                  <p class="text-muted">Cargando tipos de movimiento de caja...</p>
+                </section>
+              } @else {
+                <section class="movement-workspace">
+                  <form class="movement-form-panel" aria-label="Registrar movimiento de caja" (submit)="registrarMovimientoCaja($event)">
+                    <div class="form-grid movement-grid">
+                      <div class="form-group">
+                        <label class="label" for="movementConcept">Concepto</label>
+                        <input
+                          class="input"
+                          id="movementConcept"
+                          name="movementConcept"
+                          type="text"
+                          placeholder="Escribe el concepto del movimiento"
+                          [(ngModel)]="movementConcept"
+                        />
+                      </div>
+
+                      <div class="form-group">
+                        <label class="label" for="movementAmount">Monto</label>
+                        <input
+                          class="input"
+                          id="movementAmount"
+                          name="movementAmount"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="0.00"
+                          [(ngModel)]="movementAmount"
+                        />
+                      </div>
+
+                      <div class="form-group form-group-full">
+                        <label class="label" for="movementType">Tipo de movimiento caja</label>
+                        <select
+                          class="select"
+                          id="movementType"
+                          name="movementType"
+                          [(ngModel)]="selectedMovementTypeId"
+                          [disabled]="loadingMovementTypes || movementTypes.length === 0"
+                        >
+                          @for (movementType of movementTypes; track trackMovementType($index, movementType)) {
+                            <option [ngValue]="movementType.id">{{ movementType.nombre }}</option>
+                          }
+                        </select>
+                      </div>
+
+                      <div class="form-group form-group-full">
+                        <label class="label" for="paymentMethod">Metodo de pago</label>
+                        <select
+                          class="select"
+                          id="paymentMethod"
+                          name="paymentMethod"
+                          [(ngModel)]="selectedPaymentMethodId"
+                          [disabled]="loadingPaymentMethods || paymentMethods.length === 0"
+                        >
+                          @for (paymentMethod of paymentMethods; track paymentMethod.id) {
+                            <option [ngValue]="paymentMethod.id">{{ paymentMethod.nombre }}</option>
+                          }
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="movement-form-actions">
+                      <button class="btn btn-primary" type="submit" [disabled]="savingMovement">
+                        {{ savingMovement ? 'Registrando...' : 'Registrar movimiento caja' }}
+                      </button>
+                    </div>
+                  </form>
+                </section>
+              }
+            } @else {
+              @if (loadingMovementItems) {
+                <section class="sales-state" aria-live="polite">
+                  <p class="text-muted">Cargando movimientos de caja...</p>
+                </section>
+              } @else if (movementItems.length === 0) {
+                <section class="sales-state" aria-live="polite">
+                  <p class="text-muted">Aun no hay movimientos de caja registrados en esta vista.</p>
+                </section>
+              } @else {
+                <section class="movement-list-panel" aria-label="Listado de movimientos de caja">
+                  <div class="table-shell">
+                    <table class="table movement-table">
+                      <thead>
+                        <tr>
+                          <th>Fecha</th>
+                          <th>Tipo</th>
+                          <th>Metodo de pago</th>
+                          <th>Concepto</th>
+                          <th>Monto</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (movement of movementItems; track trackMovementItem($index, movement)) {
+                          <tr>
+                            <td>{{ movement.fecha }}</td>
+                            <td>{{ movement.tipoMovimiento }}</td>
+                            <td>{{ movement.metodoPago }}</td>
+                            <td>{{ movement.concepto }}</td>
+                            <td>Bs {{ formatCurrency(movement.monto) }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              }
+            }
+          </div>
+        }
       </section>
     </section>
   </main>

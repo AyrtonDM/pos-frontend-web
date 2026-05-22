@@ -187,6 +187,12 @@ export interface EmployeeRole {
   };
 }
 
+export interface CashRegisterMovementType {
+  id_tipo_movimiento_caja: number;
+  nombre: string;
+  descripcion?: string | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -300,5 +306,9 @@ export class CompanyService {
     return this.apiService.get<EmployeeRole[]>(
       `/api/empresas/${idEmpresa}/sucursales/${idSucursal}/empleados`,
     );
+  }
+
+  getTiposMovimientoCaja(): Observable<CashRegisterMovementType[]> {
+    return this.apiService.get<CashRegisterMovementType[]>('/api/empresas/tipos-movimiento-caja');
   }
 }

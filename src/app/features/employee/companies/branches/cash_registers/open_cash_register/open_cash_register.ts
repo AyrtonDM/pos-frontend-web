@@ -8,6 +8,20 @@ import { CashRegisterService } from '../../../../../../core/services/cash-regist
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
+interface OpenSessionConflictDetail {
+  id_caja: number;
+  id_caja_sesion: number;
+  detail: string;
+}
+
+interface CashRegisterOpenPolicy {
+  mode: 'none' | 'single-allowed';
+  allowedCashRegisterId: number | null;
+  sessionId: number | null;
+  blockedCashRegisterIds: number[];
+  message?: string;
+}
+
 @Component({
   selector: 'app-open-cash-register',
   imports: [CommonModule, FormsModule, Navbar, RouterLink, Sidebar],
@@ -16,6 +30,8 @@ import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OpenCashRegister {
+  private static readonly OPEN_POLICY_STORAGE_PREFIX = 'cash-register-open-policy';
+
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly cashRegisterService = inject(CashRegisterService);
@@ -56,7 +72,14 @@ export class OpenCashRegister {
         }),
       )
       .subscribe({
-        next: () => {
+        next: (response) => {
+          this.saveOpenPolicy({
+            mode: 'single-allowed',
+            allowedCashRegisterId: response.id_caja,
+            sessionId: response.id_caja_sesion,
+            blockedCashRegisterIds: [],
+          });
+
           void this.router.navigate([
             '/employee/company',
             this.companyId,
@@ -65,11 +88,120 @@ export class OpenCashRegister {
             'cash_register',
             this.cashRegisterId,
             'sales',
-          ]);
+          ], {
+            queryParams: { sessionId: response.id_caja_sesion },
+          });
         },
         error: (error) => {
-          this.mensajeError = error?.error?.detail ?? 'No se pudo abrir la caja.';
+          const detail = error?.error?.detail;
+
+          if (error?.status === 409 && this.handleConflictDetail(detail)) {
+            return;
+          }
+
+          this.mensajeError = this.getErrorMessage(detail);
         },
       });
+  }
+
+  private getErrorMessage(detail?: string): string {
+    switch (detail) {
+      case 'Caja no encontrada.':
+        return 'No se encontro la caja seleccionada.';
+      case 'Empresa no encontrada para este usuario.':
+        return 'No se encontro la empresa asociada a este usuario.';
+      case 'Usuario no autorizado o inactivo.':
+        return 'Tu usuario no esta autorizado o se encuentra inactivo.';
+      case 'No se pudo crear la sesion de caja.':
+        return 'No se pudo crear la sesion de caja. Intenta nuevamente.';
+      default:
+        return detail ?? 'No se pudo abrir la caja.';
+    }
+  }
+
+  private handleConflictDetail(detail: unknown): boolean {
+    if (!this.isOpenSessionConflictDetail(detail)) {
+      return false;
+    }
+
+    if (detail.detail === 'Tienes una sesion abierta aun') {
+      const policy: CashRegisterOpenPolicy = {
+        mode: 'single-allowed',
+        allowedCashRegisterId: detail.id_caja,
+        sessionId: detail.id_caja_sesion,
+        blockedCashRegisterIds: [],
+      };
+
+      this.saveOpenPolicy(policy);
+      void this.router.navigate(['/employee/company', this.companyId, 'branch', this.branchId, 'cash_registers']);
+      return true;
+    }
+
+    if (detail.detail === 'Esta caja tiene ya una sesion abierta') {
+      const currentPolicy = this.getOpenPolicy();
+      const blockedIds = Array.from(new Set([...currentPolicy.blockedCashRegisterIds, detail.id_caja]));
+
+      this.saveOpenPolicy({
+        ...currentPolicy,
+        blockedCashRegisterIds: blockedIds,
+        sessionId: currentPolicy.sessionId,
+      });
+
+      void this.router.navigate(['/employee/company', this.companyId, 'branch', this.branchId, 'cash_registers']);
+      return true;
+    }
+
+    return false;
+  }
+
+  private isOpenSessionConflictDetail(detail: unknown): detail is OpenSessionConflictDetail {
+    if (!detail || typeof detail !== 'object') {
+      return false;
+    }
+
+    const candidate = detail as Partial<OpenSessionConflictDetail>;
+    return typeof candidate.id_caja === 'number' && typeof candidate.detail === 'string';
+  }
+
+  private getOpenPolicy(): CashRegisterOpenPolicy {
+    const rawPolicy = sessionStorage.getItem(this.getPolicyStorageKey());
+
+    if (!rawPolicy) {
+      return {
+        mode: 'none',
+        allowedCashRegisterId: null,
+        sessionId: null,
+        blockedCashRegisterIds: [],
+      };
+    }
+
+    try {
+      const parsedPolicy = JSON.parse(rawPolicy) as Partial<CashRegisterOpenPolicy>;
+      return {
+        mode: parsedPolicy.mode === 'single-allowed' ? 'single-allowed' : 'none',
+        allowedCashRegisterId:
+          typeof parsedPolicy.allowedCashRegisterId === 'number' ? parsedPolicy.allowedCashRegisterId : null,
+        sessionId: typeof parsedPolicy.sessionId === 'number' ? parsedPolicy.sessionId : null,
+        blockedCashRegisterIds: Array.isArray(parsedPolicy.blockedCashRegisterIds)
+          ? parsedPolicy.blockedCashRegisterIds.filter((id): id is number => typeof id === 'number')
+          : [],
+        message: typeof parsedPolicy.message === 'string' ? parsedPolicy.message : undefined,
+      };
+    } catch {
+      return {
+        mode: 'none',
+        allowedCashRegisterId: null,
+        sessionId: null,
+        blockedCashRegisterIds: [],
+      };
+    }
+  }
+
+  private saveOpenPolicy(policy: CashRegisterOpenPolicy): void {
+    sessionStorage.setItem(this.getPolicyStorageKey(), JSON.stringify(policy));
+  }
+
+  private getPolicyStorageKey(): string {
+    return `${OpenCashRegister.OPEN_POLICY_STORAGE_PREFIX}:${this.companyId}:${this.branchId}`;
   }
 }

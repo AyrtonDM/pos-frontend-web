@@ -66,6 +66,7 @@ export interface LoginResponse {
 })
 export class AuthService {
   private readonly tokenKey = 'access_token';
+  private readonly cashRegisterOpenPolicyPrefix = 'cash-register-open-policy:';
   readonly isAuthenticated = signal(this.hasValidStoredToken());
 
   constructor(private readonly apiService: ApiService) {}
@@ -121,7 +122,18 @@ export class AuthService {
 
   logout(): void {
     sessionStorage.removeItem(this.tokenKey);
+    this.clearCashRegisterOpenPolicies();
     this.isAuthenticated.set(false);
+  }
+
+  private clearCashRegisterOpenPolicies(): void {
+    for (let index = sessionStorage.length - 1; index >= 0; index -= 1) {
+      const key = sessionStorage.key(index);
+
+      if (key?.startsWith(this.cashRegisterOpenPolicyPrefix)) {
+        sessionStorage.removeItem(key);
+      }
+    }
   }
 
   private isTokenExpired(token: string): boolean {

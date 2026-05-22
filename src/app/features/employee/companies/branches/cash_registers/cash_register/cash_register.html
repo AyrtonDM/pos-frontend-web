@@ -77,10 +77,11 @@
                         <td class="cash-register-actions-cell">
                           <a
                             class="btn btn-primary btn-sm"
-                            [class.disabled]="!cashRegister.activo"
-                            [attr.aria-disabled]="!cashRegister.activo"
+                            [class.disabled]="!cashRegister.canOpen"
+                            [class.conflict-disabled]="cashRegister.activo && !cashRegister.canOpen"
+                            [attr.aria-disabled]="!cashRegister.canOpen"
                             [routerLink]="
-                              cashRegister.activo
+                              cashRegister.canOpen && cashRegister.actionLabel === 'Abrir Caja'
                                 ? [
                                     '/employee/company',
                                     companyId,
@@ -90,10 +91,25 @@
                                     cashRegister.id,
                                     'open_cash_register',
                                   ]
+                                : cashRegister.canOpen && cashRegister.actionLabel === 'Ventas' && cashRegister.sessionId
+                                  ? [
+                                      '/employee/company',
+                                      companyId,
+                                      'branch',
+                                      branchId,
+                                      'cash_register',
+                                      cashRegister.id,
+                                      'sales',
+                                    ]
+                                : null
+                            "
+                            [queryParams]="
+                              cashRegister.canOpen && cashRegister.actionLabel === 'Ventas' && cashRegister.sessionId
+                                ? { sessionId: cashRegister.sessionId }
                                 : null
                             "
                           >
-                            Nueva sesion
+                            {{ cashRegister.actionLabel }}
                           </a>
                         </td>
                       </tr>
