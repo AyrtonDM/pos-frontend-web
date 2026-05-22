@@ -134,6 +134,15 @@
   text-align: right;
 }
 
+.cash-register-actions {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
 .btn-sm {
   min-height: 34px;
   padding: 8px 12px;

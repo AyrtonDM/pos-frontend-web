@@ -75,23 +75,14 @@
                           }
                         </td>
                         <td class="cash-register-actions-cell">
-                          <a
-                            class="btn btn-primary btn-sm"
-                            [class.disabled]="!cashRegister.canOpen"
-                            [class.conflict-disabled]="cashRegister.activo && !cashRegister.canOpen"
-                            [attr.aria-disabled]="!cashRegister.canOpen"
-                            [routerLink]="
-                              cashRegister.canOpen && cashRegister.actionLabel === 'Abrir Caja'
-                                ? [
-                                    '/employee/company',
-                                    companyId,
-                                    'branch',
-                                    branchId,
-                                    'cash_register',
-                                    cashRegister.id,
-                                    'open_cash_register',
-                                  ]
-                                : cashRegister.canOpen && cashRegister.actionLabel === 'Ventas' && cashRegister.sessionId
+                          <div class="cash-register-actions">
+                            <a
+                              class="btn btn-primary btn-sm"
+                              [class.disabled]="!cashRegister.canOpen"
+                              [class.conflict-disabled]="cashRegister.activo && !cashRegister.canOpen"
+                              [attr.aria-disabled]="!cashRegister.canOpen"
+                              [routerLink]="
+                                cashRegister.canOpen && cashRegister.actionLabel === 'Abrir Caja'
                                   ? [
                                       '/employee/company',
                                       companyId,
@@ -99,18 +90,35 @@
                                       branchId,
                                       'cash_register',
                                       cashRegister.id,
-                                      'sales',
+                                      'open_cash_register',
                                     ]
-                                : null
-                            "
-                            [queryParams]="
-                              cashRegister.canOpen && cashRegister.actionLabel === 'Ventas' && cashRegister.sessionId
-                                ? { sessionId: cashRegister.sessionId }
-                                : null
-                            "
-                          >
-                            {{ cashRegister.actionLabel }}
-                          </a>
+                                  : cashRegister.canOpen && cashRegister.actionLabel === 'Ventas' && cashRegister.sessionId
+                                    ? [
+                                        '/employee/company',
+                                        companyId,
+                                        'branch',
+                                        branchId,
+                                        'cash_register',
+                                        cashRegister.id,
+                                        'sales',
+                                      ]
+                                  : null
+                              "
+                              [queryParams]="
+                                cashRegister.canOpen && cashRegister.actionLabel === 'Ventas' && cashRegister.sessionId
+                                  ? { sessionId: cashRegister.sessionId }
+                                  : null
+                              "
+                            >
+                              {{ cashRegister.actionLabel }}
+                            </a>
+
+                            @if (cashRegister.actionLabel === 'Ventas' && cashRegister.sessionId) {
+                              <button class="btn btn-sm btn-secondary" type="button">
+                                Cerrar Sesion
+                              </button>
+                            }
+                          </div>
                         </td>
                       </tr>
                     }
