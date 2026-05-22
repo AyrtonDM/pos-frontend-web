@@ -23,9 +23,10 @@ import { Navbar } from '../../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
 type SessionViewMode = 'sales' | 'movements';
-type SalesTab = 'register' | 'history';
+type SalesTab = 'register' | 'payment' | 'history';
 type MovementTab = 'register' | 'list';
 type DiscountType = 'percentage' | 'fixed';
+type SalePaymentMethod = 'efectivo' | 'qr' | 'tarjeta';
 
 interface ProductSearchItem {
   idProducto: number;
@@ -65,6 +66,12 @@ interface PaymentMethodOption {
   id: number;
   nombre: string;
   descripcion: string;
+}
+
+interface SalePaymentRow {
+  id: number;
+  metodo: SalePaymentMethod;
+  monto: number | null;
 }
 
 interface CashMovementItem {
@@ -118,6 +125,8 @@ export class Sales implements OnInit {
   protected movementAmount: number | null = null;
   protected selectedMovementTypeId: number | null = null;
   protected selectedPaymentMethodId: number | null = null;
+  protected showPaymentTab = false;
+  protected nextPaymentRowId = 1;
 
   protected loadingRegisterData = false;
   protected loadingSaleTypes = false;
@@ -135,9 +144,16 @@ export class Sales implements OnInit {
   protected clients: ClientOption[] = [];
   protected saleTypes: SaleTypeOption[] = [];
   protected saleDetails: SaleDetailItem[] = [];
+  protected salePaymentRows: SalePaymentRow[] = [];
   protected movementTypes: CashMovementTypeOption[] = [];
   protected paymentMethods: PaymentMethodOption[] = [];
   protected movementItems: CashMovementItem[] = [];
+
+  protected readonly salePaymentMethods: { value: SalePaymentMethod; label: string }[] = [
+    { value: 'efectivo', label: 'Efectivo' },
+    { value: 'qr', label: 'QR' },
+    { value: 'tarjeta', label: 'Tarjeta' },
+  ];
 
   ngOnInit(): void {
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
@@ -170,6 +186,10 @@ export class Sales implements OnInit {
   }
 
   protected setActiveTab(tab: SalesTab): void {
+    if (tab !== 'payment') {
+      this.closePaymentTab();
+    }
+
     this.activeTab = tab;
   }
 
@@ -289,14 +309,70 @@ export class Sales implements OnInit {
       return;
     }
 
+    this.openPaymentTab();
+  }
+
+  protected addPaymentRow(): void {
+    this.salePaymentRows = [
+      ...this.salePaymentRows,
+      this.createPaymentRow(),
+    ];
+  }
+
+  protected removePaymentRow(row: SalePaymentRow): void {
+    if (this.salePaymentRows.length === 1) {
+      this.salePaymentRows = [this.createPaymentRow(this.salePaymentRows[0]?.id)];
+      return;
+    }
+
+    this.salePaymentRows = this.salePaymentRows.filter((paymentRow) => paymentRow.id !== row.id);
+  }
+
+  protected trackPaymentRow(_: number, row: SalePaymentRow): number {
+    return row.id;
+  }
+
+  protected registrarPago(): void {
+    this.registerError = '';
     this.chargingSale = true;
     this.registerMessage = `Venta cobrada por Bs ${this.formatCurrency(this.total)}.`;
+    this.resetSaleForm();
+    this.closePaymentTab();
+    this.activeTab = 'history';
+    this.chargingSale = false;
+  }
+
+  protected cancelarPago(): void {
+    this.registerError = '';
+    this.closePaymentTab();
+    this.activeTab = 'register';
+  }
+
+  private openPaymentTab(): void {
+    this.showPaymentTab = true;
+    this.salePaymentRows = [this.createPaymentRow(undefined, this.total)];
+    this.activeTab = 'payment';
+  }
+
+  private closePaymentTab(): void {
+    this.showPaymentTab = false;
+    this.salePaymentRows = [];
+  }
+
+  private resetSaleForm(): void {
     this.saleDetails = [];
     this.searchTerm = '';
     this.selectedClientId = null;
     this.selectedSaleTypeId = this.saleTypes[0]?.id ?? null;
     this.saleDiscount = 0;
-    this.chargingSale = false;
+  }
+
+  private createPaymentRow(id = this.nextPaymentRowId++, monto: number | null = null): SalePaymentRow {
+    return {
+      id,
+      metodo: 'efectivo',
+      monto,
+    };
   }
 
   protected formatCurrency(value: number): string {
@@ -631,6 +707,7 @@ export class Sales implements OnInit {
     this.limpiarMensajesMovimientoCaja();
     this.activeTab = 'register';
     this.movementActiveTab = 'register';
+    this.closePaymentTab();
   }
 
   private clearSalesMessages(): void {
