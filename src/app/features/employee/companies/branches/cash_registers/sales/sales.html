@@ -55,6 +55,19 @@
             >
               Historial de Ventas
             </button>
+
+            @if (showPaymentTab) {
+              <button
+                class="tab-button"
+                [class.active]="activeTab === 'payment'"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeTab === 'payment'"
+                (click)="setActiveTab('payment')"
+              >
+                Registrar pago
+              </button>
+            }
           </div>
 
           <div class="tab-content">
@@ -274,6 +287,78 @@
                   </section>
                 </section>
               }
+            } @else if (activeTab === 'payment') {
+              <section class="payment-panel" aria-label="Registrar pago">
+                <div class="payment-header">
+                  <div>
+                    <h2 class="title-md">Registrar pago</h2>
+                    <p class="text-muted">Total a cobrar: Bs {{ formatCurrency(total) }}</p>
+                  </div>
+
+                  <button
+                    class="btn btn-secondary add-payment-button"
+                    type="button"
+                    aria-label="Agregar forma de pago"
+                    title="Agregar forma de pago"
+                    (click)="addPaymentRow()"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <div class="payment-rows" aria-label="Formas de pago">
+                  @for (paymentRow of salePaymentRows; track trackPaymentRow($index, paymentRow)) {
+                    <div class="payment-row">
+                      <div class="form-group">
+                        <label class="label" [for]="'paymentMethod-' + paymentRow.id">Metodo de pago</label>
+                        <select
+                          class="select"
+                          [id]="'paymentMethod-' + paymentRow.id"
+                          [name]="'paymentMethod-' + paymentRow.id"
+                          [(ngModel)]="paymentRow.metodo"
+                        >
+                          @for (paymentMethod of salePaymentMethods; track paymentMethod.value) {
+                            <option [ngValue]="paymentMethod.value">{{ paymentMethod.label }}</option>
+                          }
+                        </select>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="label" [for]="'paymentAmount-' + paymentRow.id">Monto</label>
+                        <input
+                          class="input"
+                          [id]="'paymentAmount-' + paymentRow.id"
+                          [name]="'paymentAmount-' + paymentRow.id"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="0.00"
+                          [(ngModel)]="paymentRow.monto"
+                        />
+                      </div>
+
+                      @if (salePaymentRows.length > 1) {
+                        <button
+                          class="btn btn-danger btn-sm remove-payment-button"
+                          type="button"
+                          (click)="removePaymentRow(paymentRow)"
+                        >
+                          Eliminar
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <div class="payment-actions">
+                  <button class="btn btn-secondary" type="button" (click)="cancelarPago()">
+                    Cancelar
+                  </button>
+                  <button class="btn btn-primary" type="button" [disabled]="chargingSale" (click)="registrarPago()">
+                    {{ chargingSale ? 'Registrando...' : 'Registrar' }}
+                  </button>
+                </div>
+              </section>
             } @else {
               <section class="sales-state" aria-live="polite">
                 <p class="text-muted">El historial de ventas estara disponible aqui.</p>
