@@ -114,9 +114,20 @@
                             </a>
 
                             @if (cashRegister.actionLabel === 'Ventas' && cashRegister.sessionId) {
-                              <button class="btn btn-sm btn-secondary" type="button">
-                                Cerrar Sesion
-                              </button>
+                              <a
+                                class="btn btn-sm btn-secondary"
+                                [routerLink]="[
+                                  '/employee/company',
+                                  companyId,
+                                  'branch',
+                                  branchId,
+                                  'cash_register',
+                                  cashRegister.id,
+                                  'close_cash_register',
+                                ]"
+                              >
+                                Cerrar caja
+                              </a>
                             }
                           </div>
                         </td>

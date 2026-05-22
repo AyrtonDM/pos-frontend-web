@@ -21,6 +21,7 @@ import { EditClient } from './features/administrator/companies/sections/clients/
 import { ClientesCatalogo } from './features/administrator/companies/sections/clients/pages/catalog/my-clients/my-clients';
 import { EmployeeBranches } from './features/employee/companies/branches/my-branches/my-branches';
 import { EmployeeCashRegister } from './features/employee/companies/branches/cash_registers/cash_register/cash_register';
+import { CloseCashRegister } from './features/employee/companies/branches/cash_registers/close_cash_register/close_cash_register';
 import { OpenCashRegister } from './features/employee/companies/branches/cash_registers/open_cash_register/open_cash_register';
 import { Sales } from './features/employee/companies/branches/cash_registers/sales/sales';
 import { EmployeeMyCompanies } from './features/employee/companies/my-companies/my-companies';
@@ -155,6 +156,11 @@ export const routes: Routes = [
   {
     path: 'employee/company/:idEmpresa/branch/:branchId/cash_register/:cashRegisterId/open_cash_register',
     component: OpenCashRegister,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee/company/:idEmpresa/branch/:branchId/cash_register/:cashRegisterId/close_cash_register',
+    component: CloseCashRegister,
     canActivate: [authGuard],
   },
   {
