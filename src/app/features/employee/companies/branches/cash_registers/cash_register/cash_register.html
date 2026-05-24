@@ -92,7 +92,7 @@
                                       cashRegister.id,
                                       'open_cash_register',
                                     ]
-                                  : cashRegister.canOpen && cashRegister.actionLabel === 'Ventas' && cashRegister.sessionId
+                                  : cashRegister.canOpen && cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId
                                     ? [
                                         '/employee/company',
                                         companyId,
@@ -105,7 +105,7 @@
                                   : null
                               "
                               [queryParams]="
-                                cashRegister.canOpen && cashRegister.actionLabel === 'Ventas' && cashRegister.sessionId
+                                cashRegister.canOpen && cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId
                                   ? { sessionId: cashRegister.sessionId }
                                   : null
                               "
@@ -113,7 +113,7 @@
                               {{ cashRegister.actionLabel }}
                             </a>
 
-                            @if (cashRegister.actionLabel === 'Ventas' && cashRegister.sessionId) {
+                            @if (cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId) {
                               <a
                                 class="btn btn-sm btn-secondary"
                                 [routerLink]="[
@@ -125,6 +125,7 @@
                                   cashRegister.id,
                                   'close_cash_register',
                                 ]"
+                                [queryParams]="{ sessionId: cashRegister.sessionId }"
                               >
                                 Cerrar caja
                               </a>

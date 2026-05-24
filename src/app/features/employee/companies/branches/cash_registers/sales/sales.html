@@ -315,10 +315,11 @@
                           class="select"
                           [id]="'paymentMethod-' + paymentRow.id"
                           [name]="'paymentMethod-' + paymentRow.id"
-                          [(ngModel)]="paymentRow.metodo"
+                          [(ngModel)]="paymentRow.metodoPagoId"
+                          [disabled]="loadingPaymentMethods || paymentMethods.length === 0"
                         >
-                          @for (paymentMethod of salePaymentMethods; track paymentMethod.value) {
-                            <option [ngValue]="paymentMethod.value">{{ paymentMethod.label }}</option>
+                          @for (paymentMethod of paymentMethods; track paymentMethod.id) {
+                            <option [ngValue]="paymentMethod.id">{{ paymentMethod.nombre }}</option>
                           }
                         </select>
                       </div>
@@ -359,6 +360,55 @@
                   </button>
                 </div>
               </section>
+            } @else if (activeTab === 'history') {
+              @if (salesHistoryError) {
+                <p class="feedback feedback-error">{{ salesHistoryError }}</p>
+              }
+
+              @if (loadingSalesHistory) {
+                <section class="sales-state" aria-live="polite">
+                  <p class="text-muted">Cargando historial de ventas...</p>
+                </section>
+              } @else if (salesHistory.length === 0) {
+                <section class="sales-state" aria-live="polite">
+                  <p class="text-muted">Aun no hay ventas registradas en esta sesion.</p>
+                </section>
+              } @else {
+                <section class="history-panel" aria-label="Historial de ventas">
+                  <div class="table-shell">
+                    <table class="table movement-table history-table">
+                      <thead>
+                        <tr>
+                          <th>Fecha</th>
+                          <th>Venta</th>
+                          <th>Cliente</th>
+                          <th>Pago</th>
+                          <th>Total</th>
+                          <th>Subtotal</th>
+                          <th>Descuento</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (sale of salesHistory; track sale.id) {
+                          <tr>
+                            <td>
+                              <strong>{{ sale.fecha }}</strong>
+                            </td>
+                            <td>
+                              <strong>{{ sale.id }}</strong>
+                            </td>
+                            <td>{{ sale.clienteId ?? sale.cliente }}</td>
+                            <td>{{ sale.metodosPagoIds }}</td>
+                            <td><strong>Bs {{ formatCurrency(sale.total) }}</strong></td>
+                            <td>Bs {{ formatCurrency(sale.subtotal) }}</td>
+                            <td>Bs {{ formatCurrency(sale.descuentoTotal) }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              }
             } @else {
               <section class="sales-state" aria-live="polite">
                 <p class="text-muted">El historial de ventas estara disponible aqui.</p>

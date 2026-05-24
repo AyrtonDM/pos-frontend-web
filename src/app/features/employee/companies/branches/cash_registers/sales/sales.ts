@@ -9,8 +9,10 @@ import {
   CompanyService,
 } from '../../../../../../core/services/company.service';
 import {
+  CreateSaleRequest,
   CashRegisterMovementResponse,
   CashRegisterMovementListItem,
+  SaleHistoryResponse,
   CashRegisterService,
 } from '../../../../../../core/services/cash-register.service';
 import {
@@ -26,7 +28,6 @@ type SessionViewMode = 'sales' | 'movements';
 type SalesTab = 'register' | 'payment' | 'history';
 type MovementTab = 'register' | 'list';
 type DiscountType = 'percentage' | 'fixed';
-type SalePaymentMethod = 'efectivo' | 'qr' | 'tarjeta';
 
 interface ProductSearchItem {
   idProducto: number;
@@ -70,7 +71,7 @@ interface PaymentMethodOption {
 
 interface SalePaymentRow {
   id: number;
-  metodo: SalePaymentMethod;
+  metodoPagoId: number | null;
   monto: number | null;
 }
 
@@ -83,6 +84,24 @@ interface CashMovementItem {
   metodoPagoId: number | null;
   metodoPago: string;
   fecha: string;
+}
+
+interface SaleHistoryRow {
+  id: number;
+  tipoVentaId: number | string;
+  fecha: string;
+  tipoVenta: string;
+  cliente: string;
+  clienteId: number | string | null;
+  usuarioId: number | string;
+  cajaSesionId: number | string;
+  total: number;
+  estado: string;
+  metodosPago: string;
+  metodosPagoIds: string;
+  articulos: number;
+  subtotal: number;
+  descuentoTotal: number;
 }
 
 type ProductStockRecord = StockSucursalProducto & {
@@ -133,27 +152,24 @@ export class Sales implements OnInit {
   protected loadingMovementTypes = false;
   protected loadingPaymentMethods = false;
   protected loadingMovementItems = false;
+  protected loadingSalesHistory = false;
   protected chargingSale = false;
   protected savingMovement = false;
   protected registerError = '';
   protected registerMessage = '';
   protected movementError = '';
   protected movementMessage = '';
+  protected salesHistoryError = '';
 
   protected products: ProductSearchItem[] = [];
   protected clients: ClientOption[] = [];
   protected saleTypes: SaleTypeOption[] = [];
   protected saleDetails: SaleDetailItem[] = [];
   protected salePaymentRows: SalePaymentRow[] = [];
+  protected salesHistory: SaleHistoryRow[] = [];
   protected movementTypes: CashMovementTypeOption[] = [];
   protected paymentMethods: PaymentMethodOption[] = [];
   protected movementItems: CashMovementItem[] = [];
-
-  protected readonly salePaymentMethods: { value: SalePaymentMethod; label: string }[] = [
-    { value: 'efectivo', label: 'Efectivo' },
-    { value: 'qr', label: 'QR' },
-    { value: 'tarjeta', label: 'Tarjeta' },
-  ];
 
   ngOnInit(): void {
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
@@ -191,6 +207,10 @@ export class Sales implements OnInit {
     }
 
     this.activeTab = tab;
+
+    if (tab === 'history') {
+      this.loadSalesHistory();
+    }
   }
 
   protected setMovementTab(tab: MovementTab): void {
@@ -334,12 +354,65 @@ export class Sales implements OnInit {
 
   protected registrarPago(): void {
     this.registerError = '';
+
+    if (!this.cashRegisterSessionId) {
+      this.registerError = 'No se encontro la sesion de caja para registrar la venta.';
+      return;
+    }
+
+    if (this.saleDetails.length === 0) {
+      this.registerError = 'Agrega al menos un producto al detalle de venta.';
+      return;
+    }
+
+    if (!this.selectedSaleTypeId) {
+      this.registerError = 'Selecciona un tipo de venta.';
+      return;
+    }
+
+    const paymentRow = this.salePaymentRows[0];
+    const idMetodoPago = paymentRow?.metodoPagoId ?? null;
+
+    if (!idMetodoPago) {
+      this.registerError = 'Selecciona un metodo de pago.';
+      return;
+    }
+
+    const payload: CreateSaleRequest = {
+      id_tipo_venta: this.selectedSaleTypeId,
+      id_cliente: this.selectedClientId,
+      id_metodo_pago: idMetodoPago,
+      subtotal: this.subtotal,
+      descuento_total: this.discountTotal,
+      total: this.total,
+      estado: 'Pendiente',
+      detalles: this.saleDetails.map((item) => ({
+        id_producto: item.idProducto,
+        cantidad: item.cantidad,
+        precio_unitario: item.precio,
+        descuento: this.getItemDiscountAmount(item),
+        subtotal: this.getItemLineTotal(item),
+        descripcion: 'Venta de mostrador',
+      })),
+    };
+
     this.chargingSale = true;
-    this.registerMessage = `Venta cobrada por Bs ${this.formatCurrency(this.total)}.`;
-    this.resetSaleForm();
-    this.closePaymentTab();
-    this.activeTab = 'history';
-    this.chargingSale = false;
+
+    this.cashRegisterService.registrarVentaSesionCaja(this.cashRegisterSessionId, payload).subscribe({
+      next: (response) => {
+        this.registerMessage = `Venta registrada correctamente con el ID ${response.id_venta}.`;
+        this.resetSaleForm();
+        this.closePaymentTab();
+        this.activeTab = 'history';
+        this.chargingSale = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.chargingSale = false;
+        this.registerError = error?.error?.detail ?? 'No se pudo registrar la venta.';
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   protected cancelarPago(): void {
@@ -370,7 +443,7 @@ export class Sales implements OnInit {
   private createPaymentRow(id = this.nextPaymentRowId++, monto: number | null = null): SalePaymentRow {
     return {
       id,
-      metodo: 'efectivo',
+      metodoPagoId: this.paymentMethods[0]?.id ?? null,
       monto,
     };
   }
@@ -451,6 +524,11 @@ export class Sales implements OnInit {
   private loadSalesViewData(): void {
     this.loadRegisterData();
     this.loadSaleTypes();
+    this.loadPaymentMethods();
+
+    if (this.activeTab === 'history') {
+      this.loadSalesHistory();
+    }
   }
 
   private loadRegisterData(): void {
@@ -570,6 +648,12 @@ export class Sales implements OnInit {
       next: (methods) => {
         this.paymentMethods = methods.map((method) => this.mapPaymentMethod(method));
         this.selectedPaymentMethodId = this.paymentMethods[0]?.id ?? null;
+        if (this.salePaymentRows.length > 0) {
+          this.salePaymentRows = this.salePaymentRows.map((row) => ({
+            ...row,
+            metodoPagoId: row.metodoPagoId ?? this.paymentMethods[0]?.id ?? null,
+          }));
+        }
         this.loadingPaymentMethods = false;
         this.cdr.detectChanges();
       },
@@ -577,6 +661,33 @@ export class Sales implements OnInit {
         this.paymentMethods = [];
         this.selectedPaymentMethodId = null;
         this.loadingPaymentMethods = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private loadSalesHistory(): void {
+    if (!this.cashRegisterSessionId) {
+      this.salesHistory = [];
+      this.loadingSalesHistory = false;
+      this.salesHistoryError = 'No se encontro la sesion de caja para cargar el historial de ventas.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.loadingSalesHistory = true;
+    this.salesHistoryError = '';
+
+    this.cashRegisterService.getVentasSesionCaja(this.cashRegisterSessionId).subscribe({
+      next: (sales) => {
+        this.salesHistory = sales.map((sale) => this.mapSaleHistory(sale)).reverse();
+        this.loadingSalesHistory = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.salesHistory = [];
+        this.loadingSalesHistory = false;
+        this.salesHistoryError = error?.error?.detail ?? 'No se pudo cargar el historial de ventas.';
         this.cdr.detectChanges();
       },
     });
@@ -653,6 +764,65 @@ export class Sales implements OnInit {
     };
   }
 
+  private mapSaleHistory(sale: SaleHistoryResponse): SaleHistoryRow {
+    const rawSale = sale as SaleHistoryResponse & {
+      tipo_venta?: { nombre?: string };
+      tipoVenta?: { nombre?: string };
+      cliente?: { nombre?: string };
+    };
+
+    const salePayments = sale.pagos ?? [];
+    const saleDetails = sale.detalles ?? [];
+
+    const paymentLabels = salePayments.length > 0
+      ? salePayments
+          .map((payment) => {
+            const methodName = this.paymentMethods.find((method) => method.id === payment.id_metodo_pago)?.nombre;
+            const amount = this.formatCurrency(Number(payment.monto ?? 0));
+            return `${methodName ?? `Metodo ${payment.id_metodo_pago}`}: Bs ${amount}`;
+          })
+          .join(' | ')
+      : 'Sin pagos';
+
+    const tipoVentaId =
+      sale.id_tipo_venta ??
+      (sale as unknown as Record<string, number | string | undefined>)['id_tipo_venta'] ??
+      (sale as unknown as Record<string, number | string | undefined>)['idTipoVenta'] ??
+      'Sin tipo';
+
+    const saleTypeLabel =
+      rawSale.tipo_venta?.nombre ??
+      rawSale.tipoVenta?.nombre ??
+      this.saleTypes.find((type) => type.id === Number(tipoVentaId))?.nombre ??
+      `Tipo ${tipoVentaId}`;
+
+    const client = sale.id_cliente
+      ? String(sale.id_cliente)
+      : 'Consumidor';
+
+    const paymentMethodIds = salePayments.length > 0
+      ? salePayments.map((payment) => String(payment.id_venta_pago)).join(' | ')
+      : 'Sin metodo';
+
+    return {
+      id: sale.id_venta,
+      tipoVentaId,
+      fecha: this.formatDateOnly(sale.fecha),
+      tipoVenta: saleTypeLabel,
+      cliente: client,
+      clienteId: sale.id_cliente,
+      usuarioId: sale.id_usuario,
+      cajaSesionId: sale.id_caja_sesion,
+      total: Number(sale.total ?? 0),
+      estado: sale.estado,
+      metodosPago: paymentLabels,
+      metodosPagoIds: paymentMethodIds,
+      articulos: saleDetails.reduce((total, detail) => total + Number(detail.cantidad ?? 0), 0),
+      subtotal: Number(sale.subtotal ?? 0),
+      descuentoTotal: Number(sale.descuento_total ?? 0),
+    };
+  }
+
   private productMatchesSearch(product: ProductSearchItem, term: string): boolean {
     const searchable = [
       product.nombre,
@@ -695,6 +865,20 @@ export class Sales implements OnInit {
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+    }).format(parsedDate);
+  }
+
+  private formatDateOnly(date: string): string {
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return date;
+    }
+
+    return new Intl.DateTimeFormat('es-BO', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
     }).format(parsedDate);
   }
 

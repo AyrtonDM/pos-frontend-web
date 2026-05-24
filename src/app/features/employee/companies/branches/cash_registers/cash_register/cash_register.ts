@@ -15,7 +15,7 @@ interface CashRegisterItem {
   fechaCreacion: string;
   activo: boolean;
   canOpen: boolean;
-  actionLabel: 'Abrir Caja' | 'Ventas';
+  actionLabel: 'Abrir Caja' | 'Continuar Sesion';
   sessionId: number | null;
 }
 
@@ -124,7 +124,7 @@ export class EmployeeCashRegister implements OnInit {
 
       return {
         canOpen: isAllowedCashRegister,
-        actionLabel: isAllowedCashRegister ? 'Ventas' : 'Abrir Caja',
+        actionLabel: isAllowedCashRegister ? 'Continuar Sesion' : 'Abrir Caja',
         sessionId: isAllowedCashRegister ? this.openPolicy.sessionId : null,
       };
     }
