@@ -86,6 +86,10 @@ export class Inventario implements OnInit {
       link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'staff'],
     },
     {
+      label: 'Cajas',
+      link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'cash-register'],
+    },
+    {
       label: 'Inventario',
       active: true,
     },

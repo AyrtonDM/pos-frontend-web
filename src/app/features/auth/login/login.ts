@@ -60,7 +60,7 @@ export class Login {
         }
 
         if (rol === 'empleado') {
-          void this.router.navigate(['/employee/my-branches']);
+          void this.router.navigate(['/employee/my-companies']);
           return;
         }
 
