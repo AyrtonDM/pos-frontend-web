@@ -69,6 +69,23 @@
   font-weight: var(--font-weight-bold);
 }
 
+.feedback {
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  padding: 10px 12px;
+}
+
+.feedback-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+}
+
+.feedback-success {
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--color-success);
+}
+
 .close-modal-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
