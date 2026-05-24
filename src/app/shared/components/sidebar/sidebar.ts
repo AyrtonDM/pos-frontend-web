@@ -1,6 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { Params, Router, RouterLink } from '@angular/router';
 
+export type SidebarRole = 'administrator' | 'employee';
+
 export type SidebarItem = {
   label: string;
   link?: string | unknown[];
@@ -12,6 +14,7 @@ export type SidebarItem = {
 
 @Component({
   selector: 'app-sidebar',
+  standalone: true,
   imports: [RouterLink],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
@@ -20,6 +23,12 @@ export class Sidebar {
   private readonly router = inject(Router);
 
   @Input() items: SidebarItem[] = [];
+  @Input() role?: SidebarRole;
+  @Input() companyId = '';
+  @Input() branchId = '';
+  @Input() cashRegisterId = '';
+  @Input() cashRegisterSessionId = '';
+  @Input() activeItemLabel = '';
 
   openGroups: Record<string, boolean> = {};
 
@@ -39,32 +48,168 @@ export class Sidebar {
     return this.openGroups[item.label] ?? false;
   }
 
+  get displayedItems(): SidebarItem[] {
+    if (this.items.length > 0) {
+      return this.items;
+    }
+
+    if (!this.isBranchView()) {
+      return [];
+    }
+
+    return this.buildBranchItems();
+  }
+
   get backButtonLabel(): string {
+    if (this.isCashRegisterSessionView()) {
+      return 'Volver a Cajas';
+    }
+
     return this.isBranchView() ? 'Volver a Mis Sucursales' : 'Volver a Mis Empresas';
   }
 
   get backButtonLink(): string[] {
-    if (this.isBranchView()) {
-      const companyId = this.getCompanyIdFromUrl();
-      return companyId
-        ? ['/administrator/company', companyId, 'branches']
-        : ['/administrator/my-companies'];
+    const role = this.getRole();
+
+    if (this.isCashRegisterSessionView() && role === 'employee') {
+      const companyId = this.companyId || this.getCompanyIdFromUrl(role);
+      const branchId = this.branchId || this.getBranchIdFromUrl();
+
+      return companyId && branchId
+        ? ['/employee/company', companyId, 'branch', branchId, 'cash_registers']
+        : ['/employee/my-companies'];
     }
 
-    return ['/administrator/my-companies'];
+    if (this.isBranchView()) {
+      const companyId = this.companyId || this.getCompanyIdFromUrl(role);
+
+      if (role === 'employee') {
+        return companyId ? ['/employee/company', companyId, 'branches'] : ['/employee/my-companies'];
+      }
+
+      return companyId ? ['/administrator/company', companyId, 'branches'] : ['/administrator/my-companies'];
+    }
+
+    return role === 'employee' ? ['/employee/my-companies'] : ['/administrator/my-companies'];
   }
 
   private isBranchView(): boolean {
     return this.router.url.includes('/branch/');
   }
 
-  private getCompanyIdFromUrl(): string {
-    const match = this.router.url.match(/\/administrator\/company\/([^/]+)/);
+  private getRole(): SidebarRole {
+    if (this.role) {
+      return this.role;
+    }
+
+    return this.router.url.startsWith('/employee/') ? 'employee' : 'administrator';
+  }
+
+  private getCompanyIdFromUrl(role: SidebarRole): string {
+    const match = this.router.url.match(new RegExp(`/${role}/company/([^/]+)`));
     return match?.[1] ?? '';
   }
 
+  private buildBranchItems(): SidebarItem[] {
+    const role = this.getRole();
+    const companyId = this.companyId || this.getCompanyIdFromUrl(role);
+    const branchId = this.branchId || this.getBranchIdFromUrl();
+    const cashRegisterId = this.cashRegisterId || this.getCashRegisterIdFromUrl();
+
+    if (role === 'employee') {
+      if (this.isCashRegisterSessionView()) {
+        const salesLink = [
+          '/employee/company',
+          companyId,
+          'branch',
+          branchId,
+          'cash_register',
+          cashRegisterId,
+          'sales',
+        ];
+
+        const sharedQueryParams = this.cashRegisterSessionId ? { sessionId: this.cashRegisterSessionId } : undefined;
+
+        return [
+          {
+            label: 'Ventas',
+            link: salesLink,
+            queryParams: {
+              section: 'sales',
+              ...(sharedQueryParams ?? {}),
+            },
+            active: this.isActiveItem('Ventas'),
+          },
+          {
+            label: 'Movimientos',
+            link: salesLink,
+            queryParams: {
+              section: 'movimientos',
+              ...(sharedQueryParams ?? {}),
+            },
+            active: this.isActiveItem('Movimientos'),
+          },
+        ];
+      }
+
+      return [
+        {
+          label: 'Cajas',
+          link: ['/employee/company', companyId, 'branch', branchId, 'cash_registers'],
+          active: this.isActiveItem('Cajas'),
+        },
+      ];
+    }
+
+    return [
+      {
+        label: 'Personal',
+        link: ['/administrator/company', companyId, 'branch', branchId, 'staff'],
+        active: this.isActiveItem('Personal'),
+      },
+      {
+        label: 'Cajas',
+        link: ['/administrator/company', companyId, 'branch', branchId, 'cash-register'],
+        active: this.isActiveItem('Cajas'),
+      },
+      {
+        label: 'Inventario',
+        link: ['/administrator/company', companyId, 'branch', branchId, 'inventario'],
+        active: this.isActiveItem('Inventario'),
+      },
+      {
+        label: 'Ventas',
+        active: this.isActiveItem('Ventas'),
+      },
+    ];
+  }
+
+  private getBranchIdFromUrl(): string {
+    const match = this.router.url.match(/\/branch\/([^/]+)/);
+    return match?.[1] ?? '';
+  }
+
+  private getCashRegisterIdFromUrl(): string {
+    const match = this.router.url.match(/\/cash_register\/([^/]+)/);
+    return match?.[1] ?? '';
+  }
+
+  private isCashRegisterSessionView(): boolean {
+    const activeItem = this.activeItemLabel.toLowerCase();
+
+    return (
+      this.getRole() === 'employee' &&
+      this.router.url.includes('/cash_register/') &&
+      (this.router.url.endsWith('/sales') || activeItem === 'ventas' || activeItem === 'movimientos')
+    );
+  }
+
+  private isActiveItem(label: string): boolean {
+    return this.activeItemLabel.toLowerCase() === label.toLowerCase();
+  }
+
   private syncOpenGroups(): void {
-    for (const item of this.items) {
+    for (const item of this.displayedItems) {
       if (!item.children?.length) {
         continue;
       }

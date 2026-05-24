@@ -64,6 +64,20 @@ export class EditProduct implements OnInit {
         },
       ],
     },
+    {
+      label: 'Clientes',
+      link: ['/administrator/company', this.companyId, 'clients'],
+      children: [
+        {
+          label: 'Catalogo',
+          link: ['/administrator/company', this.companyId, 'clients'],
+        },
+        {
+          label: 'Categorias',
+          link: ['/administrator/company', this.companyId, 'clients', 'categories'],
+        },
+      ],
+    },
   ];
 
   ngOnInit(): void {

@@ -105,6 +105,18 @@ export interface TipoMovimiento {
   direccion?: 'ENTRADA' | 'SALIDA' | string;
 }
 
+export interface TipoVenta {
+  id_tipo_venta: number;
+  nombre: string;
+  descripcion?: string | null;
+}
+
+export interface MetodoPago {
+  id_metodo_pago: number;
+  nombre: string;
+  descripcion?: string | null;
+}
+
 export interface MovimientoInventario {
   id_movimiento?: number;
   id?: number;
@@ -268,6 +280,14 @@ export class ProductService {
 
   getTiposMovimiento(): Observable<TipoMovimiento[]> {
     return this.apiService.get<TipoMovimiento[]>('/api/inventario/tipos-movimiento');
+  }
+
+  getTiposVenta(): Observable<TipoVenta[]> {
+    return this.apiService.get<TipoVenta[]>('/api/ventas/tipos-venta');
+  }
+
+  getMetodosPago(): Observable<MetodoPago[]> {
+    return this.apiService.get<MetodoPago[]>('/api/ventas/metodos-pago');
   }
 
   getMovimientosSucursal(idEmpresa: string, idSucursal: string): Observable<MovimientoInventario[]> {

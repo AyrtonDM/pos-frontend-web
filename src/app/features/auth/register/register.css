@@ -43,6 +43,10 @@
   row-gap: var(--space-sm);
 }
 
+.verification-entry-button {
+  width: 100%;
+}
+
 .span-2 {
   grid-column: 1 / -1;
 }

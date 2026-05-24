@@ -5,6 +5,7 @@ import { RegisterCompany } from './features/administrator/companies/pages/regist
 import { Branches } from './features/administrator/companies/sections/branches/pages/branches/branches';
 import { EditBranch } from './features/administrator/companies/sections/branches/pages/edit-branch/edit-branch';
 import { ViewBranch } from './features/administrator/companies/sections/branches/pages/view-branch/view-branch';
+import { CashRegister } from './features/administrator/companies/sections/branches/sections/cash_register/cash_register';
 import { Staff } from './features/administrator/companies/sections/branches/sections/staff/staff';
 
 import { Inventario } from './features/administrator/companies/sections/branches/sections/inventario/inventario';
@@ -14,7 +15,16 @@ import { EditProduct } from './features/administrator/companies/sections/product
 import { ProductosPanel } from './features/administrator/companies/sections/products/pages/catalog/my-catalog/my-catalog';
 import { ViewCategory } from './features/administrator/companies/sections/products/pages/categories/view-category/view-category';
 import { ViewProduct } from './features/administrator/companies/sections/products/pages/catalog/view-product/view-product';
-import { EmployeeBranches } from './features/employee/branches/pages/employee-branches/employee-branches';
+import { CategoriasClientes } from './features/administrator/companies/sections/clients/pages/categories/my-categories/my-categories';
+import { EditClientCategory } from './features/administrator/companies/sections/clients/pages/categories/edit-category/edit-category';
+import { EditClient } from './features/administrator/companies/sections/clients/pages/edit-client';
+import { ClientesCatalogo } from './features/administrator/companies/sections/clients/pages/catalog/my-clients/my-clients';
+import { EmployeeBranches } from './features/employee/companies/branches/my-branches/my-branches';
+import { EmployeeCashRegister } from './features/employee/companies/branches/cash_registers/cash_register/cash_register';
+import { CloseCashRegister } from './features/employee/companies/branches/cash_registers/close_cash_register/close_cash_register';
+import { OpenCashRegister } from './features/employee/companies/branches/cash_registers/open_cash_register/open_cash_register';
+import { Sales } from './features/employee/companies/branches/cash_registers/sales/sales';
+import { EmployeeMyCompanies } from './features/employee/companies/my-companies/my-companies';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
 import { HomePage } from './features/landing/home_page/home_page';
@@ -69,6 +79,11 @@ export const routes: Routes = [
 /*  */    canActivate: [authGuard],
   },
   {
+    path: 'administrator/company/:id/branch/:branchId/cash-register',
+    component: CashRegister,
+    canActivate: [authGuard],
+  },
+  {
     path: 'administrator/company/:id/branch/:branchId/inventario',
     component: Inventario,
     canActivate: [authGuard],
@@ -81,6 +96,26 @@ export const routes: Routes = [
   {
     path: 'administrator/company/:id/products',
     component: ProductosPanel,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/clients',
+    component: ClientesCatalogo,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/clients/categories',
+    component: CategoriasClientes,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/clients/categories/:categoryId/edit-category',
+    component: EditClientCategory,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/clients/:clientId/edit-client',
+    component: EditClient,
     canActivate: [authGuard],
   },
   {
@@ -104,8 +139,33 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'employee/my-branches',
+    path: 'employee/my-companies',
+    component: EmployeeMyCompanies,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee/company/:idEmpresa/branches',
     component: EmployeeBranches,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee/company/:idEmpresa/branch/:branchId/cash_registers',
+    component: EmployeeCashRegister,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee/company/:idEmpresa/branch/:branchId/cash_register/:cashRegisterId/open_cash_register',
+    component: OpenCashRegister,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee/company/:idEmpresa/branch/:branchId/cash_register/:cashRegisterId/close_cash_register',
+    component: CloseCashRegister,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee/company/:idEmpresa/branch/:branchId/cash_register/:cashRegisterId/sales',
+    component: Sales,
     canActivate: [authGuard],
   },
 ];
