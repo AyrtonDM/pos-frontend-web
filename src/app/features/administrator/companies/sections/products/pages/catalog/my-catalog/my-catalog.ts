@@ -170,7 +170,15 @@ export class ProductosPanel implements OnInit {
   }
 
   private cargarProductos(onDone?: () => void): void {
-    this.productService.getProductos().subscribe({
+    if (!this.companyId) {
+      this.productos = [];
+      this.errorGeneral = 'No se encontro la empresa para cargar productos.';
+      onDone?.();
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.productService.getProductos(this.companyId).subscribe({
       next: (productos) => {
         this.productos = productos;
         this.errorGeneral = '';

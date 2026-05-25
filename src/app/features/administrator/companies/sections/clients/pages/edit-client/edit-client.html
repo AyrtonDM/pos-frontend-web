@@ -30,39 +30,28 @@
 
         <form class="client-form" (submit)="guardarCliente($event)">
           <div class="form-group category-selector-group">
-            <label class="label" for="cliente_categoria_busqueda">Categoria de cliente</label>
+            <label class="label" for="cliente_categoria">Categoria de cliente</label>
 
-            <div class="category-selector-shell">
-              <input
-                class="input category-search-input"
-                id="cliente_categoria_busqueda"
-                name="cliente_categoria_busqueda"
-                type="search"
-                placeholder="Buscar categoria"
-                [(ngModel)]="categorySearch"
-              />
-
-              <select
-                class="select"
-                id="cliente_categoria"
-                name="cliente_categoria"
-                [(ngModel)]="form.id_categoria_cliente"
-              >
-                <option [ngValue]="null">Selecciona una categoria</option>
-                @if (filteredCategories.length === 0) {
-                  <option [ngValue]="null" disabled>No hay categorias para este filtro</option>
-                } @else {
-                  @for (category of filteredCategories; track trackCategory($index, category)) {
-                    <option [ngValue]="category.id_categoria_cliente">
-                      {{ category.nombre }}
-                      @if (category.permite_credito) {
-                        - Credito permitido
-                      }
-                    </option>
-                  }
+            <select
+              class="select"
+              id="cliente_categoria"
+              name="cliente_categoria"
+              [(ngModel)]="form.id_categoria_cliente"
+            >
+              <option [ngValue]="null">Selecciona una categoria</option>
+              @if (categories.length === 0) {
+                <option [ngValue]="null" disabled>No hay categorias disponibles</option>
+              } @else {
+                @for (category of categories; track trackCategory($index, category)) {
+                  <option [ngValue]="category.id_categoria_cliente">
+                    {{ category.nombre }}
+                    @if (category.permite_credito) {
+                      - Credito permitido
+                    }
+                  </option>
                 }
-              </select>
-            </div>
+              }
+            </select>
           </div>
 
           <div class="form-group">

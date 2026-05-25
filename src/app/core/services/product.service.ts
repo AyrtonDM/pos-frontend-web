@@ -5,9 +5,11 @@ import { ApiService } from './api.service';
 
 export interface CategoriaProducto {
   id_categoria_producto: number;
+  id_empresa?: number;
   nombre: string;
   descripcion?: string | null;
   activo: boolean;
+  subcategorias?: SubcategoriaProducto[];
 }
 
 export interface SubcategoriaProducto {
@@ -20,6 +22,7 @@ export interface SubcategoriaProducto {
 
 export interface Producto {
   id_producto: number;
+  id_empresa?: number;
   id_subcategoria: number | null;
   nombre: string;
   descripcion?: string | null;
@@ -161,8 +164,10 @@ export interface ActualizarStockSucursalRequest {
 export class ProductService {
   constructor(private readonly apiService: ApiService) {}
 
-  getCategorias(): Observable<CategoriaProducto[]> {
-    return this.apiService.get<CategoriaProducto[]>('/api/productos/categorias');
+  getCategorias(idEmpresa: string): Observable<CategoriaProducto[]> {
+    return this.apiService.get<CategoriaProducto[]>(
+      `/api/empresas/${idEmpresa}/categorias-con-subcategorias`,
+    );
   }
 
   crearCategoria(idEmpresa: string, payload: CrearCategoriaRequest): Observable<CategoriaProducto> {
@@ -215,8 +220,8 @@ export class ProductService {
     );
   }
 
-  getProductos(): Observable<Producto[]> {
-    return this.apiService.get<Producto[]>('/api/productos');
+  getProductos(idEmpresa: string): Observable<Producto[]> {
+    return this.apiService.get<Producto[]>(`/api/empresas/${idEmpresa}/productos`);
   }
 
   crearProducto(idEmpresa: string, payload: CrearProductoRequest): Observable<Producto> {

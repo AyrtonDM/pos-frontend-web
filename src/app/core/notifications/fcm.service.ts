@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { CompanyService } from '../services/company.service';
 import { EmployeeBranchService } from '../services/employee-branch.service';
+import { ApiService } from '../services/api.service';
 
 @Injectable({ providedIn: 'root' })
 export class FcmService {
@@ -22,9 +23,11 @@ export class FcmService {
     private readonly authService: AuthService,
     private readonly companyService: CompanyService,
     private readonly employeeBranchService: EmployeeBranchService,
+    private readonly apiService: ApiService,
   ) {}
 
-  async registerToken(apiBase: string, idEmpresa?: number | null) {
+  async registerToken(apiBase?: string, idEmpresa?: number | null) {
+    const base = apiBase ?? this.apiService.getBaseUrl();
     // request permission
     if (!('Notification' in window)) return null;
     const permission = await Notification.requestPermission();
@@ -62,7 +65,7 @@ export class FcmService {
 
         await Promise.all(
           idsEmpresa.map((empresaId) =>
-            axios.post(`${apiBase}/notifications/register-token`, {
+            axios.post(`${base}/notifications/register-token`, {
               token: currentToken,
               id_empresa: empresaId,
             }),
@@ -74,6 +77,10 @@ export class FcmService {
       console.error('FCM getToken error', err);
     }
     return null;
+  }
+
+  getApiBase(): string {
+    return this.apiService.getBaseUrl();
   }
 
   async obtenerEmpresasContexto(idEmpresa?: number | null): Promise<number[]> {

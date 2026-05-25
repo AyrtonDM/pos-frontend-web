@@ -1,6 +1,7 @@
 import { Component, EventEmitter, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FcmService } from '../../../core/notifications/fcm.service';
+import { ApiService } from '../../../core/services/api.service';
 import {
   buildIncomingStockNotification,
   buildStockDetailModel,
@@ -22,7 +23,7 @@ import {
 })
 export class NotificationCenterComponent implements OnInit, OnDestroy {
   items: NotificationViewModel[] = [];
-  apiBase = 'http://127.0.0.1:8000';
+  apiBase = '';
   @Output() closeRequested = new EventEmitter<void>();
   @Output() unreadCountChange = new EventEmitter<number>();
   @Output() incomingNotification = new EventEmitter<NotificationViewModel>();
@@ -33,9 +34,11 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   constructor(
     private readonly fcmService: FcmService,
     private readonly ngZone: NgZone,
+    private readonly apiService: ApiService,
   ) {}
 
   async ngOnInit() {
+    this.apiBase = this.apiService.getBaseUrl();
     await this.load(true);
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (ev: any) => {

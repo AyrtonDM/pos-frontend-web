@@ -31,4 +31,8 @@ export class ApiService {
 
     return `${this.baseUrl}${cleanEndpoint}`;
   }
+
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
 }
