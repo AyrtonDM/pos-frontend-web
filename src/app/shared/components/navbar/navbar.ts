@@ -13,7 +13,7 @@ import { NotificationDetailModel } from '../notification-center/stock-alerts/sto
   standalone: true,
   imports: [RouterLink, NotificationCenterComponent, NotificationToastComponent, NotificationDetailModalComponent],
   templateUrl: './navbar.html',
-  styleUrl: './navbar.css',
+  styleUrls: ['./navbar.css'],
 })
 export class Navbar implements OnInit, OnDestroy {
   protected readonly menuLoginAbierto = signal(false);
@@ -46,7 +46,7 @@ export class Navbar implements OnInit, OnDestroy {
     }
 
     await this.loadUnreadNotifications();
-    await this.fcmService.registerToken('http://127.0.0.1:8000');
+    await this.fcmService.registerToken();
     window.addEventListener('stock-notification', this.stockNotificationListener);
   }
 
@@ -114,9 +114,8 @@ export class Navbar implements OnInit, OnDestroy {
   private async loadUnreadNotifications(): Promise<void> {
     try {
       const idsEmpresa = await this.fcmService.obtenerEmpresasContexto();
-      const responses = await Promise.all(
-        idsEmpresa.map((idEmpresa) => fetch(`http://127.0.0.1:8000/notifications/history/empresas/${idEmpresa}`)),
-      );
+      const base = this.fcmService.getApiBase();
+      const responses = await Promise.all(idsEmpresa.map((idEmpresa) => fetch(`${base}/notifications/history/empresas/${idEmpresa}`)),);
 
       const payloads = await Promise.all(
         responses

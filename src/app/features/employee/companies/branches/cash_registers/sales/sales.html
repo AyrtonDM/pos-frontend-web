@@ -155,12 +155,16 @@
                           id="client"
                           name="client"
                           [(ngModel)]="selectedClientId"
+                          (ngModelChange)="onClientSelected($event)"
                         >
                           <option [ngValue]="null">Consumidor final</option>
                           @for (client of clients; track trackClient($index, client)) {
-                            <option [ngValue]="client.id">{{ client.nombre }} - {{ client.correo }}</option>
+                            <option [ngValue]="client.id">{{ client.nombre }}</option>
                           }
                         </select>
+                        @if (selectedClientCategory) {
+                          <small class="text-muted">Categoria: {{ selectedClientCategory.nombre }}</small>
+                        }
                       </div>
 
                       <!-- El campo global de descuento de venta fue eliminado según solicitud del UX -->
@@ -335,6 +339,9 @@
                           step="0.01"
                           placeholder="0.00"
                           [(ngModel)]="paymentRow.monto"
+                          readonly
+                          aria-readonly="true"
+                          title="Monto (no editable)"
                         />
                       </div>
 
@@ -382,7 +389,6 @@
                           <th>Fecha</th>
                           <th>Venta</th>
                           <th>Cliente</th>
-                          <th>Pago</th>
                           <th>Total</th>
                           <th>Subtotal</th>
                           <th>Descuento</th>
@@ -398,7 +404,7 @@
                               <strong>{{ sale.id }}</strong>
                             </td>
                             <td>{{ sale.clienteId ?? sale.cliente }}</td>
-                            <td>{{ sale.metodosPagoIds }}</td>
+                          
                             <td><strong>Bs {{ formatCurrency(sale.total) }}</strong></td>
                             <td>Bs {{ formatCurrency(sale.subtotal) }}</td>
                             <td>Bs {{ formatCurrency(sale.descuentoTotal) }}</td>

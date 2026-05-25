@@ -84,7 +84,7 @@ export class ClientesCatalogo {
       expanded: true,
       children: [
         {
-          label: 'Catalogo',
+          label: 'Agenda',
           link: ['/administrator/company', this.companyId, 'clients'],
           active: true,
         },

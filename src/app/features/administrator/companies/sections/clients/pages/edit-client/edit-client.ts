@@ -33,7 +33,7 @@ interface ClientCategoryOption {
   standalone: true,
   imports: [FormsModule, Navbar, Sidebar, RouterLink],
   templateUrl: './edit-client.html',
-  styleUrl: './edit-client.css',
+  styleUrls: ['./edit-client.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditClient implements OnInit {
@@ -49,7 +49,6 @@ export class EditClient implements OnInit {
   protected guardandoCliente = false;
   protected errorEdicion = '';
   protected mensajeEdicion = '';
-  protected categorySearch = '';
 
   protected readonly form: ClientEditForm = {
     id_categoria_cliente: null,
@@ -77,7 +76,7 @@ export class EditClient implements OnInit {
       expanded: true,
       children: [
         {
-          label: 'Catalogo',
+          label: 'Agenda',
           link: ['/administrator/company', this.companyId, 'clients'],
         },
         {
@@ -93,21 +92,6 @@ export class EditClient implements OnInit {
     this.cargarDatos();
   }
 
-  protected get filteredCategories(): ClientCategoryOption[] {
-    const term = this.categorySearch.trim().toLowerCase();
-
-    if (!term) {
-      return [...this.categories];
-    }
-
-    return this.categories.filter((category) => {
-      const searchable = [category.nombre, category.descripcion, String(category.id_categoria_cliente)]
-        .join(' ')
-        .toLowerCase();
-
-      return searchable.includes(term);
-    });
-  }
 
   protected guardarCliente(event: SubmitEvent): void {
     event.preventDefault();

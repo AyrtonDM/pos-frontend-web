@@ -179,7 +179,14 @@ export class CategoriasPanel implements OnInit {
   }
 
   private cargarCategorias(): void {
-    this.productService.getCategorias().subscribe({
+    if (!this.companyId) {
+      this.errorGeneral = 'No se encontro la empresa para cargar categorias.';
+      this.categorias = [];
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.productService.getCategorias(this.companyId).subscribe({
       next: (categorias) => {
         this.categorias = categorias;
         this.cdr.detectChanges();

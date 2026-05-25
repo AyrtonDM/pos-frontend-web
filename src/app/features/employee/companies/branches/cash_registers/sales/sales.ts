@@ -7,6 +7,7 @@ import {
   CashRegisterMovementType,
   ClientRole,
   CompanyService,
+  ClientCategoryResponse,
 } from '../../../../../../core/services/company.service';
 import {
   CreateSaleRequest,
@@ -49,6 +50,7 @@ interface ClientOption {
   id: number;
   nombre: string;
   correo: string;
+  categoriaId?: number | null;
 }
 
 interface SaleTypeOption {
@@ -265,13 +267,15 @@ export class Sales implements OnInit {
       return;
     }
 
+    const clientDiscount = this.getClientDiscountPercentage();
+
     this.saleDetails = [
       ...this.saleDetails,
       {
         ...product,
         cantidad: 1,
-        descuento: 0,
-        descuentoTipo: 'fixed',
+        descuento: clientDiscount > 0 ? clientDiscount : 0,
+        descuentoTipo: clientDiscount > 0 ? 'percentage' : 'fixed',
       },
     ];
   }
@@ -403,7 +407,7 @@ export class Sales implements OnInit {
         this.registerMessage = `Venta registrada correctamente con el ID ${response.id_venta}.`;
         this.resetSaleForm();
         this.closePaymentTab();
-        this.activeTab = 'history';
+        this.activeTab = 'register';
         this.chargingSale = false;
         this.cdr.detectChanges();
       },
@@ -543,7 +547,9 @@ export class Sales implements OnInit {
 
     this.productService.getStockSucursal(this.companyId, this.branchId).subscribe({
       next: (stock) => {
-        this.products = stock.map((item) => this.mapStockProduct(item));
+        this.products = stock
+          .map((item) => this.mapStockProduct(item))
+          .filter((product) => product.stock > 0);
         this.loadingRegisterData = false;
         this.loadClients();
         this.cdr.detectChanges();
@@ -710,7 +716,67 @@ export class Sales implements OnInit {
       id: client.id_usuario,
       nombre: client.usuario.persona?.nombre_completo ?? 'Sin nombre',
       correo: client.usuario.email,
+      categoriaId: client.cliente?.id_categoria_cliente ?? null,
     };
+  }
+
+  protected selectedClientCategory: ClientCategoryResponse | null = null;
+
+  protected onClientSelected(clientId: number | null): void {
+    if (!clientId) {
+      this.selectedClientCategory = null;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const client = this.clients.find((c) => c.id === clientId);
+    const categoriaId = client?.categoriaId ?? null;
+
+    if (!categoriaId) {
+      this.selectedClientCategory = null;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // Fetch categories and find the matching one
+    this.companyService.getCategoriasCliente(this.companyId).subscribe({
+      next: (categories) => {
+        const found = categories.find((cat) => cat.id_categoria_cliente === categoriaId) ?? null;
+        this.selectedClientCategory = found;
+
+        // If a category with a base discount exists, apply it to current sale details
+        const pct = this.getClientDiscountPercentage();
+        if (pct > 0) {
+          this.applyClientDiscountToSaleDetails(pct);
+        }
+
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.selectedClientCategory = null;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private getClientDiscountPercentage(): number {
+    const raw = this.selectedClientCategory?.descuento_base ?? null;
+    const value = Number(raw ?? 0);
+    return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+  }
+
+  private applyClientDiscountToSaleDetails(percentage: number): void {
+    if (!percentage || percentage <= 0) return;
+
+    this.saleDetails = this.saleDetails.map((item) => {
+      const updated: SaleDetailItem = { ...item };
+      updated.descuentoTipo = 'percentage';
+      // set descuento as percentage number (bounded by updateItemDiscount logic below)
+      updated.descuento = percentage;
+      // ensure discount value is normalized
+      this.updateItemDiscount(updated, updated.descuento);
+      return updated;
+    });
   }
 
   private mapSaleType(saleType: TipoVenta): SaleTypeOption {
@@ -869,6 +935,14 @@ export class Sales implements OnInit {
   }
 
   private formatDateOnly(date: string): string {
+    // If the API returns an ISO-like date string without timezone (e.g. "2026-05-24T18:30:00"),
+    // extract the date part directly to avoid timezone surprises and always show dd/mm/yyyy.
+    const isoMatch = String(date).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return `${day}/${month}/${year}`;
+    }
+
     const parsedDate = new Date(date);
 
     if (Number.isNaN(parsedDate.getTime())) {

@@ -62,16 +62,6 @@
   font-size: var(--font-size-sm);
 }
 
-.remember-option {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.remember-option input {
-  accent-color: var(--color-primary);
-}
-
 .login-options a,
 .register-link a,
 .home-link a {
