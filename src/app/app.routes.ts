@@ -9,6 +9,9 @@ import { CashRegister } from './features/administrator/companies/sections/branch
 import { Staff } from './features/administrator/companies/sections/branches/sections/staff/staff';
 
 import { Inventario } from './features/administrator/companies/sections/branches/sections/inventario/inventario';
+import { DynamicReports } from './features/administrator/companies/sections/branches/sections/reports/dynamic/dynamic';
+import { ParameterizedReports } from './features/administrator/companies/sections/branches/sections/reports/parameterized/parameterized';
+import { StaticReports } from './features/administrator/companies/sections/branches/sections/reports/static/static';
 import { CategoriasPanel } from './features/administrator/companies/sections/products/pages/categories/my-categories/my-categories';
 import { EditCategory } from './features/administrator/companies/sections/products/pages/categories/edit-category/edit-category';
 import { EditProduct } from './features/administrator/companies/sections/products/pages/catalog/edit-product/edit-product';
@@ -86,6 +89,21 @@ export const routes: Routes = [
   {
     path: 'administrator/company/:id/branch/:branchId/inventario',
     component: Inventario,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/branch/:branchId/reports/static',
+    component: StaticReports,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/branch/:branchId/reports/parameterized',
+    component: ParameterizedReports,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/branch/:branchId/reports/dynamic',
+    component: DynamicReports,
     canActivate: [authGuard],
   },
   {

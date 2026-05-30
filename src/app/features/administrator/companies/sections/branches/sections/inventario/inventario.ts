@@ -96,6 +96,23 @@ export class Inventario implements OnInit {
     {
       label: 'Ventas',
     },
+    {
+      label: 'Reportes',
+      children: [
+        {
+          label: 'Estaticos',
+          link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'reports', 'static'],
+        },
+        {
+          label: 'Parametrizados',
+          link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'reports', 'parameterized'],
+        },
+        {
+          label: 'Dinamicos',
+          link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'reports', 'dynamic'],
+        },
+      ],
+    },
   ];
 
   ngOnInit(): void {

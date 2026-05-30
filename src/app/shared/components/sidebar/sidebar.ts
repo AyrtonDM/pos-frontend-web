@@ -181,6 +181,27 @@ export class Sidebar {
         label: 'Ventas',
         active: this.isActiveItem('Ventas'),
       },
+      {
+        label: 'Reportes',
+        active: this.isActiveItem('Reportes'),
+        children: [
+          {
+            label: 'Estaticos',
+            link: ['/administrator/company', companyId, 'branch', branchId, 'reports', 'static'],
+            active: this.isActiveItem('Estaticos'),
+          },
+          {
+            label: 'Parametrizados',
+            link: ['/administrator/company', companyId, 'branch', branchId, 'reports', 'parameterized'],
+            active: this.isActiveItem('Parametrizados'),
+          },
+          {
+            label: 'Dinamicos',
+            link: ['/administrator/company', companyId, 'branch', branchId, 'reports', 'dynamic'],
+            active: this.isActiveItem('Dinamicos'),
+          },
+        ],
+      },
     ];
   }
 
