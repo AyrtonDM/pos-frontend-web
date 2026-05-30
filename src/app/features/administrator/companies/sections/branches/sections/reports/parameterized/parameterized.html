@@ -1,0 +1,44 @@
+<div class="page-container reports-page">
+  <app-navbar />
+
+  <main class="reports-layout">
+    <app-sidebar [items]="sidebarItems" />
+
+    <section class="reports-content">
+      <header class="reports-header panel">
+        <div>
+          <p class="badge badge-success">Sucursal {{ branchId }}</p>
+          <h1 class="title-xl">Reportes Parametrizados</h1>
+          <p class="text-muted">Genera reportes aplicando parametros especificos para esta sucursal.</p>
+        </div>
+      </header>
+
+      <section class="tabs-panel panel">
+        <div class="tabs" role="tablist" aria-label="Secciones de reportes parametrizados">
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'test1'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'test1'"
+            (click)="setActiveTab('test1')"
+          >
+            prueba1
+          </button>
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'test2'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'test2'"
+            (click)="setActiveTab('test2')"
+          >
+            prueba2
+          </button>
+        </div>
+
+        <div class="tab-content"></div>
+      </section>
+    </section>
+  </main>
+</div>

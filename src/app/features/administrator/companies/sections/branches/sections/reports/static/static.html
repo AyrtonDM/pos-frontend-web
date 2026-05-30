@@ -1,0 +1,54 @@
+<div class="page-container reports-page">
+  <app-navbar />
+
+  <main class="reports-layout">
+    <app-sidebar [items]="sidebarItems" />
+
+    <section class="reports-content">
+      <header class="reports-header panel">
+        <div>
+          <p class="badge badge-success">Sucursal {{ branchId }}</p>
+          <h1 class="title-xl">Reportes Estaticos</h1>
+          <p class="text-muted">Consulta reportes predefinidos de ventas, inventario y cajas de esta sucursal.</p>
+        </div>
+      </header>
+
+      <section class="tabs-panel panel">
+        <div class="tabs" role="tablist" aria-label="Secciones de reportes estaticos">
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'sales'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'sales'"
+            (click)="setActiveTab('sales')"
+          >
+            Ventas
+          </button>
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'inventory'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'inventory'"
+            (click)="setActiveTab('inventory')"
+          >
+            Inventario
+          </button>
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'cash-registers'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'cash-registers'"
+            (click)="setActiveTab('cash-registers')"
+          >
+            Cajas
+          </button>
+        </div>
+
+        <div class="tab-content"></div>
+      </section>
+    </section>
+  </main>
+</div>
