@@ -109,8 +109,7 @@ interface SaleHistoryRow {
 type ProductStockRecord = StockSucursalProducto & {
   codigo?: string | number | null;
   codigo_producto?: string | number | null;
-  codigo_barras?: string | number | null;
-  barcode?: string | number | null;
+  codigo_barra?: string | number | null;
 };
 
 @Component({
@@ -278,6 +277,14 @@ export class Sales implements OnInit {
         descuentoTipo: clientDiscount > 0 ? 'percentage' : 'fixed',
       },
     ];
+  }
+
+  protected onSearchEnter(event: Event): void {
+    event.preventDefault();
+
+    if (this.filteredProducts.length === 1) {
+      this.addProduct(this.filteredProducts[0]);
+    }
   }
 
   protected updateQuantity(item: SaleDetailItem, value: number | string): void {
@@ -707,7 +714,7 @@ export class Sales implements OnInit {
       precio: Number(item.precio ?? 0),
       stock: Number(item.cantidad ?? 0),
       codigo: this.stringifyOptional(item.codigo ?? item.codigo_producto ?? item.id_producto),
-      codigoBarras: this.stringifyOptional(item.codigo_barras ?? item.barcode),
+      codigoBarras: this.stringifyOptional(item.codigo_barra),
     };
   }
 
@@ -890,6 +897,8 @@ export class Sales implements OnInit {
   }
 
   private productMatchesSearch(product: ProductSearchItem, term: string): boolean {
+    const normalizedTerm = this.normalizeSearchTerm(term);
+    const normalizedBarcodeTerm = this.normalizeBarcode(normalizedTerm);
     const searchable = [
       product.nombre,
       product.codigo,
@@ -899,11 +908,23 @@ export class Sales implements OnInit {
       .map((value) => this.normalizeSearchTerm(value))
       .join(' ');
 
-    return searchable.includes(term);
+    if (searchable.includes(normalizedTerm)) {
+      return true;
+    }
+
+    if (!normalizedBarcodeTerm) {
+      return false;
+    }
+
+    return this.normalizeBarcode(searchable).includes(normalizedBarcodeTerm);
   }
 
   private normalizeSearchTerm(value: string): string {
     return value.trim().toLowerCase();
+  }
+
+  private normalizeBarcode(value: string): string {
+    return value.replace(/\D+/g, '');
   }
 
   private normalizeMoney(value: number | string): number {
@@ -981,4 +1002,5 @@ export class Sales implements OnInit {
   private stringifyOptional(value: string | number | null | undefined): string {
     return value === null || value === undefined ? '' : String(value);
   }
+
 }

@@ -31,6 +31,7 @@ export class ProductosPanel implements OnInit {
 
   protected readonly productoForm: CrearProductoRequest = {
     id_subcategoria: 0,
+    codigo_barra: '',
     nombre: '',
     descripcion: '',
     unidad_medida: '',
@@ -74,6 +75,7 @@ export class ProductosPanel implements OnInit {
 
     const payload: CrearProductoRequest = {
       id_subcategoria: Number(this.productoForm.id_subcategoria),
+      codigo_barra: this.productoForm.codigo_barra?.trim() || '',
       nombre: this.productoForm.nombre.trim(),
       descripcion: this.productoForm.descripcion?.trim() || '',
       unidad_medida: this.productoForm.unidad_medida.trim(),
@@ -89,10 +91,7 @@ export class ProductosPanel implements OnInit {
     this.guardandoProducto = true;
 
     const request$ = this.imagenProductoSeleccionada
-      ? this.productService.crearProductoConImagen(
-          this.companyId,
-          this.construirFormDataProducto(payload, this.imagenProductoSeleccionada),
-        )
+      ? this.productService.crearProductoConImagen(this.companyId, payload, this.imagenProductoSeleccionada)
       : this.productService.crearProducto(this.companyId, payload);
 
     request$.subscribe({

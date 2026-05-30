@@ -95,9 +95,10 @@
                           id="productSearch"
                           name="productSearch"
                           type="search"
-                          placeholder="Nombre, codigo o codigo de barras"
+                          placeholder="Nombre o Codigo de Barra"
                           autocomplete="off"
                           [(ngModel)]="searchTerm"
+                          (keydown.enter)="onSearchEnter($event)"
                         />
                       </div>
 
@@ -224,6 +225,9 @@
                                 <td>
                                   <strong>{{ item.nombre }}</strong>
                                   <span class="detail-code">Codigo {{ item.codigo || item.idProducto }}</span>
+                                  @if (item.codigoBarras) {
+                                    <span class="detail-code">Barras {{ item.codigoBarras }}</span>
+                                  }
                                 </td>
                                 <td>Bs {{ formatCurrency(item.precio) }}</td>
                                 <td>
