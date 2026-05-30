@@ -33,6 +33,10 @@
               <dd>{{ producto.subcategoria?.nombre || 'Sin subcategoria' }}</dd>
             </div>
             <div>
+              <dt>Codigo de barras</dt>
+              <dd>{{ producto.codigo_barra || 'Sin codigo de barras' }}</dd>
+            </div>
+            <div>
               <dt>Unidad de medida</dt>
               <dd>{{ producto.unidad_medida }}</dd>
             </div>
@@ -46,7 +50,13 @@
             </div>
             <div>
               <dt>Imagen</dt>
-              <dd>{{ producto.imagen || 'Sin imagen' }}</dd>
+              <dd>
+                @if (producto.imagen) {
+                  <img class="product-image" [src]="producto.imagen" [alt]="producto.nombre" loading="lazy" />
+                } @else {
+                  <span>Sin imagen</span>
+                }
+              </dd>
             </div>
           </dl>
         }

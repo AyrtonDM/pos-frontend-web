@@ -41,9 +41,10 @@ export interface EmployeeBranchAssignment {
 export class EmployeeBranchService {
   constructor(private readonly apiService: ApiService) {}
 
-  getMisSucursalesEmpleado(idEmpresa: string | number): Observable<EmployeeBranchAssignment[]> {
-    return this.apiService.get<EmployeeBranchAssignment[]>(
-      `/api/sucursales/mis-sucursales-empleado/${idEmpresa}`,
-    );
+  getMisSucursalesEmpleado(idEmpresa?: string | number): Observable<EmployeeBranchAssignment[]> {
+    const path = typeof idEmpresa !== 'undefined' && idEmpresa !== null
+      ? `/api/sucursales/mis-sucursales-empleado/${idEmpresa}`
+      : `/api/sucursales/mis-sucursales-empleado`;
+    return this.apiService.get<EmployeeBranchAssignment[]>(path);
   }
 }
