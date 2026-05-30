@@ -90,6 +90,17 @@
                   ></textarea>
                 </div>
 
+                <div class="form-group">
+                  <label class="label" for="producto_codigo_barra">Codigo de barras</label>
+                  <input
+                    class="input"
+                    id="producto_codigo_barra"
+                    name="producto_codigo_barra"
+                    placeholder="Opcional"
+                    [(ngModel)]="productoForm.codigo_barra"
+                  />
+                </div>
+
                 <div class="form-grid-2">
                   <div class="form-group">
                     <label class="label" for="producto_unidad_medida">Unidad de medida</label>
@@ -156,6 +167,7 @@
                   <thead>
                     <tr>
                       <th>Nombre</th>
+                      <th>Codigo de barras</th>
                       <th>Subcategoria</th>
                       <th>Unidad</th>
                       <th>Precio</th>
@@ -167,6 +179,7 @@
                     @for (product of productos; track product.id_producto) {
                       <tr>
                         <td>{{ product.nombre }}</td>
+                        <td>{{ product.codigo_barra || 'Sin codigo de barras' }}</td>
                         <td>{{ product.subcategoria ? product.subcategoria.nombre : 'Sin subcategoria' }}</td>
                         <td>{{ product.unidad_medida || 'Sin unidad' }}</td>
                         <td>Bs {{ product.precio }}</td>

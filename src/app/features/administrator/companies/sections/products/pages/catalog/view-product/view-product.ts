@@ -51,7 +51,7 @@ export class ViewProduct implements OnInit {
       link: ['/administrator/company', this.companyId, 'clients'],
       children: [
         {
-          label: 'Catalogo',
+          label: 'Agenda',
           link: ['/administrator/company', this.companyId, 'clients'],
         },
         {

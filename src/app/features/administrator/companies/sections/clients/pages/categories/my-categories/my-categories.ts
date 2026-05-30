@@ -82,7 +82,7 @@ export class CategoriasClientes {
       expanded: true,
       children: [
         {
-          label: 'Catalogo',
+          label: 'Agenda',
           link: ['/administrator/company', this.companyId, 'clients'],
         },
         {
