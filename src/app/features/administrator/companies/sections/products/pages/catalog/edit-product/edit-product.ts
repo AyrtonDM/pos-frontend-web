@@ -36,6 +36,7 @@ export class EditProduct implements OnInit {
 
   protected readonly form: ActualizarProductoRequest = {
     id_subcategoria: 0,
+    codigo_barra: '',
     nombre: '',
     descripcion: '',
     unidad_medida: '',
@@ -97,6 +98,7 @@ export class EditProduct implements OnInit {
 
     const payload: ActualizarProductoRequest = {
       id_subcategoria: Number(this.form.id_subcategoria),
+      codigo_barra: this.form.codigo_barra?.trim(),
       nombre: this.form.nombre?.trim(),
       descripcion: this.form.descripcion?.trim(),
       unidad_medida: this.form.unidad_medida?.trim(),
@@ -153,6 +155,7 @@ export class EditProduct implements OnInit {
       next: (producto: Producto) => {
         this.cargandoProducto = false;
         this.imagenActual = producto.imagen ?? null;
+        this.form.codigo_barra = producto.codigo_barra ?? '';
         this.form.nombre = producto.nombre;
         this.form.descripcion = producto.descripcion ?? '';
         this.form.id_subcategoria = producto.id_subcategoria ?? 0;
