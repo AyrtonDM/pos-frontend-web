@@ -6,38 +6,238 @@
 
     <section class="reports-content">
       <header class="reports-header panel">
-        <div>
-          <p class="badge badge-success">Sucursal {{ branchId }}</p>
-          <h1 class="title-xl">Reportes Dinamicos</h1>
-          <p class="text-muted">Explora reportes configurables con informacion actualizada de esta sucursal.</p>
+        <div class="header-copy">
+          <p class="badge badge-success">Empresa {{ companyId }}</p>
+          <h1 class="title-xl">Reportes dinamicos</h1>
+          <p class="text-muted">
+            Escribe un prompt en lenguaje natural para consumir el backend dinamico y ver el resultado sin asumir una
+            plantilla fija.
+          </p>
         </div>
+
+        <form class="report-form" (submit)="$event.preventDefault(); runReport()" novalidate>
+          <label class="field-label" for="dynamic-report-prompt">Prompt</label>
+          <textarea
+            id="dynamic-report-prompt"
+            class="prompt-input"
+            [formControl]="promptControl"
+            rows="4"
+            placeholder="Ejemplo: ventas de los ultimos 30 dias"
+          ></textarea>
+
+          @if (promptControl.touched && promptControl.invalid) {
+            <p class="field-error">Ingresa un prompt valido para generar el reporte.</p>
+          }
+
+          <div class="action-row">
+            <button class="primary-action" type="submit" [disabled]="loading()">
+              {{ loading() ? 'Generando…' : 'Generar reporte' }}
+            </button>
+          </div>
+        </form>
       </header>
 
-      <section class="tabs-panel panel">
-        <div class="tabs" role="tablist" aria-label="Secciones de reportes dinamicos">
-          <button
-            class="tab-button"
-            [class.active]="activeTab === 'test1'"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'test1'"
-            (click)="setActiveTab('test1')"
-          >
-            prueba1
-          </button>
-          <button
-            class="tab-button"
-            [class.active]="activeTab === 'test2'"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'test2'"
-            (click)="setActiveTab('test2')"
-          >
-            prueba2
-          </button>
+      @if (errorMessage()) {
+        <section class="status-panel panel status-panel-error" role="alert">
+          <strong>Error</strong>
+          <p>{{ errorMessage() }}</p>
+        </section>
+      }
+
+      <section class="report-panel panel" aria-live="polite">
+        <div class="report-panel-header">
+          <div>
+            <p class="section-kicker">Resultado</p>
+            <h2 class="title-lg">{{ reportTitle() }}</h2>
+            <p class="text-muted">
+              @if (reportId()) {
+                ID del reporte: {{ reportId() }}
+              } @else if (loading()) {
+                Generando reporte...
+              } @else {
+                Esperando un reporte generado.
+              }
+              @if (reportDate()) {
+                <span> | Generado el {{ reportDate() }}</span>
+              }
+              @if (reportStatus()) {
+                <span> | Estado: {{ formatLabel(reportStatus()) }}</span>
+              }
+            </p>
+          </div>
+          <div class="export-actions" aria-label="Exportar reporte">
+            <button class="secondary-action" type="button" (click)="exportReport('excel')" [disabled]="!hasRows() || exportingFormat() !== null">
+              {{ exportingFormat() === 'excel' ? 'Exportando Excel…' : 'Excel' }}
+            </button>
+            <button class="secondary-action" type="button" (click)="exportReport('pdf')" [disabled]="!hasReport() || exportingFormat() !== null">
+              {{ exportingFormat() === 'pdf' ? 'Exportando PDF…' : 'PDF' }}
+            </button>
+          </div>
         </div>
 
-        <div class="tab-content"></div>
+        @if (!report() && !loading()) {
+          <section class="empty-state">
+            <h3 class="title-md">Aun no hay reporte</h3>
+            <p class="text-muted">Escribe un prompt y presiona Generar reporte para ver aqui la respuesta del backend.</p>
+          </section>
+        }
+
+        @if (report()) {
+          @if (clarificationQuestion()) {
+            <section class="clarification-box">
+              <p class="section-kicker">Aclaración requerida</p>
+              <h3 class="title-md">{{ clarificationQuestion() }}</h3>
+              <p class="text-muted">
+                Responde la pregunta en el prompt y vuelve a generar el reporte para desbloquear la tabla.
+              </p>
+            </section>
+          }
+
+          @if (hasAggregates()) {
+            <section class="aggregates-section">
+              <div class="section-heading">
+                <p class="section-kicker">Resumen</p>
+                <h3 class="title-md">Agregados</h3>
+              </div>
+
+              <div class="aggregate-grid">
+                @for (aggregate of reportAggregates(); track aggregate.name) {
+                  <article class="aggregate-card">
+                    <span class="aggregate-label">{{ aggregate.label }}</span>
+                    <strong class="aggregate-value">{{ formatValue(aggregate.value) }}</strong>
+                  </article>
+                }
+              </div>
+            </section>
+          }
+
+          @if (hasWarnings()) {
+            <section class="warnings-box" aria-label="Advertencias del reporte">
+              <p class="section-kicker">Advertencias</p>
+              <ul class="warnings-list">
+                @for (warning of reportWarnings(); track warning) {
+                  <li>{{ warning }}</li>
+                }
+              </ul>
+            </section>
+          }
+
+          <section class="response-overview">
+            <div class="section-heading">
+              <p class="section-kicker">Respuesta del backend</p>
+              <h3 class="title-md">Datos recibidos</h3>
+            </div>
+
+            <div class="response-grid">
+              <article class="response-card">
+                <span class="aggregate-label">ID reporte</span>
+                <strong class="aggregate-value">{{ reportId() || 'Sin ID' }}</strong>
+              </article>
+              <article class="response-card">
+                <span class="aggregate-label">Plantilla</span>
+                <strong class="aggregate-value">{{ reportIdentifier() ? formatLabel(reportIdentifier()) : 'Sin plantilla' }}</strong>
+              </article>
+              <article class="response-card">
+                <span class="aggregate-label">Estado</span>
+                <strong class="aggregate-value">{{ reportStatus() ? formatLabel(reportStatus()) : 'Sin estado' }}</strong>
+              </article>
+              <article class="response-card">
+                <span class="aggregate-label">Fecha</span>
+                <strong class="aggregate-value">{{ reportDate() || 'Sin fecha' }}</strong>
+              </article>
+            </div>
+
+            @if (reportSpecification()) {
+              <div class="specification-grid">
+                <article class="spec-card">
+                  <p class="section-kicker">Especificacion</p>
+                  <div class="spec-list">
+                    <div>
+                      <span class="spec-label">Confianza</span>
+                      <strong>{{ reportSpecification()?.confianza ?? 'Sin dato' }}</strong>
+                    </div>
+                    <div>
+                      <span class="spec-label">Formato</span>
+                      <strong>{{ reportSpecification()?.formato ? formatLabel(reportSpecification()!.formato!) : 'Sin dato' }}</strong>
+                    </div>
+                    <div>
+                      <span class="spec-label">Solicita aclaracion</span>
+                      <strong>{{ reportSpecification()?.solicita_aclaracion ? 'Sí' : 'No' }}</strong>
+                    </div>
+                    <div>
+                      <span class="spec-label">Pregunta</span>
+                      <strong>{{ reportSpecification()?.pregunta || 'Ninguna' }}</strong>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="spec-card">
+                  <p class="section-kicker">Métricas y dimensiones</p>
+                  <div class="chips-row">
+                    @for (metrica of specificationMetricas(); track metrica) {
+                      <span class="chip">{{ formatLabel(metrica) }}</span>
+                    }
+                    @for (dimension of specificationDimensiones(); track dimension) {
+                      <span class="chip chip-soft">{{ formatLabel(dimension) }}</span>
+                    }
+                  </div>
+                </article>
+
+                @if (specificationFilters().length > 0) {
+                  <article class="spec-card spec-card-full">
+                    <p class="section-kicker">Filtros</p>
+                    <div class="filters-grid">
+                      @for (filter of specificationFilters(); track filter.key) {
+                        <div class="filter-item">
+                          <span class="spec-label">{{ filter.label }}</span>
+                          <strong>{{ formatValue(filter.value) }}</strong>
+                        </div>
+                      }
+                    </div>
+                  </article>
+                }
+              </div>
+            }
+          </section>
+
+          @if (showEmptyState()) {
+            <section class="empty-state">
+              <h3 class="title-md">Sin filas para mostrar</h3>
+              <p class="text-muted">
+                El backend devolvió una estructura válida, pero no hay filas ni agregados para este prompt.
+              </p>
+            </section>
+          } @else if (hasRows() && !clarificationQuestion()) {
+            <section class="table-section">
+              <div class="section-heading">
+                <p class="section-kicker">Detalle</p>
+                <h3 class="title-md">Tabla dinamica</h3>
+              </div>
+
+              <div class="table-wrapper" tabindex="0">
+                <table class="dynamic-table">
+                  <thead>
+                    <tr>
+                      @for (column of reportColumns(); track column.nombre) {
+                        <th scope="col">{{ column.etiqueta ?? formatLabel(column.nombre) }}</th>
+                      }
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    @for (row of reportRows(); track $index) {
+                      <tr>
+                        @for (column of reportColumns(); track column.nombre) {
+                          <td>{{ formatValue(row[column.nombre], column.tipo) }}</td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          }
+        }
       </section>
     </section>
   </main>
