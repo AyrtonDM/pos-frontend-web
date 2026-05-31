@@ -50,14 +50,18 @@ export class Sidebar {
 
   get displayedItems(): SidebarItem[] {
     if (this.items.length > 0) {
-      return this.items;
+      return this.getRole() === 'administrator'
+        ? this.withAdministratorCompanyNavigation(this.items)
+        : this.items;
     }
 
     if (!this.isBranchView()) {
       return [];
     }
 
-    return this.buildBranchItems();
+    return this.getRole() === 'administrator'
+      ? this.withAdministratorCompanyNavigation(this.buildBranchItems())
+      : this.buildBranchItems();
   }
 
   get backButtonLabel(): string {
@@ -163,11 +167,6 @@ export class Sidebar {
 
     return [
       {
-        label: 'Personal',
-        link: ['/administrator/company', companyId, 'branch', branchId, 'staff'],
-        active: this.isActiveItem('Personal'),
-      },
-      {
         label: 'Cajas',
         link: ['/administrator/company', companyId, 'branch', branchId, 'cash-register'],
         active: this.isActiveItem('Cajas'),
@@ -203,6 +202,142 @@ export class Sidebar {
         ],
       },
     ];
+  }
+
+  private withAdministratorCompanyNavigation(items: SidebarItem[]): SidebarItem[] {
+    const companyId = this.companyId || this.getCompanyIdFromUrl('administrator');
+
+    if (!companyId) {
+      return items;
+    }
+
+    const filteredItems = items.filter((item) => item.label.toLowerCase() !== 'personal');
+    const itemsByLabel = new Map(filteredItems.map((item) => [item.label.toLowerCase(), item]));
+    const isUsersActive =
+      this.router.url.includes('/users/') ||
+      this.isActiveItem('Usuarios') ||
+      this.isActiveItem('Personal') ||
+      this.isActiveItem('Roles');
+
+    const usersItem: SidebarItem = {
+      ...itemsByLabel.get('usuarios'),
+      label: 'Usuarios',
+      link: ['/administrator/company', companyId, 'users', 'staff'],
+      active: isUsersActive,
+      expanded: isUsersActive,
+      children: [
+        {
+          label: 'Personal',
+          link: ['/administrator/company', companyId, 'users', 'staff'],
+          active: this.router.url.includes('/users/staff') || this.isActiveItem('Personal'),
+        },
+        {
+          label: 'Roles',
+          link: ['/administrator/company', companyId, 'users', 'rols'],
+          active: this.router.url.includes('/users/rols') || this.isActiveItem('Roles'),
+        },
+      ],
+    };
+
+    const clientsItem = this.buildClientsItem(itemsByLabel.get('clientes'), companyId);
+    const productsItem = this.buildProductsItem(itemsByLabel.get('productos'), companyId);
+    const orderedLabels = ['sucursales', 'usuarios', 'clientes', 'productos'];
+    const orderedItems = orderedLabels
+      .map((label) => {
+        if (label === 'usuarios') {
+          return usersItem;
+        }
+
+        if (label === 'clientes') {
+          return clientsItem;
+        }
+
+        if (label === 'productos') {
+          return productsItem;
+        }
+
+        return itemsByLabel.get(label);
+      })
+      .filter((item): item is SidebarItem => Boolean(item));
+
+    const remainingItems = filteredItems.filter(
+      (item) => !orderedLabels.includes(item.label.toLowerCase()),
+    );
+
+    return [...orderedItems, ...remainingItems];
+  }
+
+  private buildClientsItem(item: SidebarItem | undefined, companyId: string): SidebarItem | undefined {
+    if (!item) {
+      return undefined;
+    }
+
+    return {
+      ...item,
+      label: 'Clientes',
+      link: ['/administrator/company', companyId, 'clients'],
+      active:
+        this.router.url.includes('/clients') ||
+        item.active ||
+        item.children?.some((child) => child.active) ||
+        this.isActiveItem('Clientes') ||
+        this.isActiveItem('Agenda') ||
+        this.isActiveItem('Categorias'),
+      children: item.children?.length
+        ? item.children
+        : [
+            {
+              label: 'Agenda',
+              link: ['/administrator/company', companyId, 'clients'],
+              active: this.router.url.endsWith('/clients') || this.isActiveItem('Agenda'),
+            },
+            {
+              label: 'Categorias',
+              link: ['/administrator/company', companyId, 'clients', 'categories'],
+              active: this.router.url.includes('/clients/categories') || this.isActiveItem('Categorias'),
+            },
+          ],
+    };
+  }
+
+  private buildProductsItem(item: SidebarItem | undefined, companyId: string): SidebarItem | undefined {
+    if (!item) {
+      return undefined;
+    }
+
+    return {
+      ...item,
+      label: 'Productos',
+      link: ['/administrator/company', companyId, 'products'],
+      active:
+        this.router.url.includes('/products') ||
+        this.router.url.includes('/product/') ||
+        this.router.url.includes('/category/') ||
+        item.active ||
+        item.children?.some((child) => child.active) ||
+        this.isActiveItem('Productos') ||
+        this.isActiveItem('Catalogo') ||
+        this.isActiveItem('Categoria') ||
+        this.isActiveItem('Categorias'),
+      children: item.children?.length
+        ? item.children
+        : [
+            {
+              label: 'Catalogo',
+              link: ['/administrator/company', companyId, 'products'],
+              active: this.router.url.endsWith('/products') || this.isActiveItem('Catalogo'),
+            },
+            {
+              label: 'Categoria',
+              link: ['/administrator/company', companyId, 'products', 'categories'],
+              active:
+                this.router.url.includes('/products/categories') ||
+                this.router.url.includes('/category/') ||
+                this.isActiveItem('Categoria') ||
+                this.isActiveItem('Categorias'),
+            },
+          ],
+    };
   }
 
   private getBranchIdFromUrl(): string {

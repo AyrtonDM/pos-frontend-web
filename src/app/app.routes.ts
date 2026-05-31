@@ -6,7 +6,8 @@ import { Branches } from './features/administrator/companies/sections/branches/p
 import { EditBranch } from './features/administrator/companies/sections/branches/pages/edit-branch/edit-branch';
 import { ViewBranch } from './features/administrator/companies/sections/branches/pages/view-branch/view-branch';
 import { CashRegister } from './features/administrator/companies/sections/branches/sections/cash_register/cash_register';
-import { Staff } from './features/administrator/companies/sections/branches/sections/staff/staff';
+import { Staff } from './features/administrator/companies/sections/users/staff/staff';
+import { Rols } from './features/administrator/companies/sections/users/rols/rols';
 
 import { Inventario } from './features/administrator/companies/sections/branches/sections/inventario/inventario';
 import { DynamicReports } from './features/administrator/companies/sections/branches/sections/reports/dynamic/dynamic';
@@ -77,9 +78,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'administrator/company/:id/branch/:branchId/staff',
+    path: 'administrator/company/:id/users/staff',
     component: Staff,
-/*  */    canActivate: [authGuard],
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/users/rols',
+    component: Rols,
+    canActivate: [authGuard],
   },
   {
     path: 'administrator/company/:id/branch/:branchId/cash-register',
