@@ -67,6 +67,10 @@ export class EditClient implements OnInit {
       link: ['/administrator/company', this.companyId, 'branches'],
     },
     {
+      label: 'Usuarios',
+      link: ['/administrator/company', this.companyId, 'users', 'staff'],
+    },
+    {
       label: 'Productos',
       link: ['/administrator/company', this.companyId, 'products'],
     },

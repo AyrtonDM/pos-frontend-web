@@ -50,6 +50,10 @@ export class EditProduct implements OnInit {
       link: ['/administrator/company', this.companyId, 'branches'],
     },
     {
+      label: 'Usuarios',
+      link: ['/administrator/company', this.companyId, 'users', 'staff'],
+    },
+    {
       label: 'Productos',
       active: true,
       expanded: true,

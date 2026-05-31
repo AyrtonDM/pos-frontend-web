@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { Navbar } from '../../../../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../../../../shared/components/sidebar/sidebar';
+import { Navbar } from '../../../../../../shared/components/navbar/navbar';
+import { Sidebar, SidebarItem } from '../../../../../../shared/components/sidebar/sidebar';
 
 type StaticReportTab = 'sales' | 'inventory' | 'cash-registers';
 
@@ -21,19 +21,21 @@ export class StaticReports {
 
   protected readonly sidebarItems: SidebarItem[] = [
     {
-      label: 'Personal',
-      link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'staff'],
+      label: 'Sucursales',
+      link: ['/administrator/company', this.companyId, 'branches'],
+      active: true,
     },
     {
-      label: 'Cajas',
-      link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'cash-register'],
+      label: 'Usuarios',
+      link: ['/administrator/company', this.companyId, 'users'],
     },
     {
-      label: 'Inventario',
-      link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'inventario'],
+      label: 'Productos',
+      link: ['/administrator/company', this.companyId, 'products'],
     },
     {
-      label: 'Ventas',
+      label: 'Clientes',
+      link: ['/administrator/company', this.companyId, 'clients'],
     },
     {
       label: 'Reportes',
@@ -42,16 +44,16 @@ export class StaticReports {
       children: [
         {
           label: 'Estaticos',
-          link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'reports', 'static'],
+          link: ['/administrator/company', this.companyId, 'reports', 'static'],
           active: true,
         },
         {
           label: 'Parametrizados',
-          link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'reports', 'parameterized'],
+          link: ['/administrator/company', this.companyId, 'reports', 'parameterized'],
         },
         {
           label: 'Dinamicos',
-          link: ['/administrator/company', this.companyId, 'branch', this.branchId, 'reports', 'dynamic'],
+          link: ['/administrator/company', this.companyId, 'reports', 'dynamic'],
         },
       ],
     },
