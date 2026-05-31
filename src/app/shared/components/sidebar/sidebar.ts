@@ -180,27 +180,6 @@ export class Sidebar {
         label: 'Ventas',
         active: this.isActiveItem('Ventas'),
       },
-      {
-        label: 'Reportes',
-        active: this.isActiveItem('Reportes'),
-        children: [
-          {
-            label: 'Estaticos',
-            link: ['/administrator/company', companyId, 'branch', branchId, 'reports', 'static'],
-            active: this.isActiveItem('Estaticos'),
-          },
-          {
-            label: 'Parametrizados',
-            link: ['/administrator/company', companyId, 'branch', branchId, 'reports', 'parameterized'],
-            active: this.isActiveItem('Parametrizados'),
-          },
-          {
-            label: 'Dinamicos',
-            link: ['/administrator/company', companyId, 'branch', branchId, 'reports', 'dynamic'],
-            active: this.isActiveItem('Dinamicos'),
-          },
-        ],
-      },
     ];
   }
 
@@ -213,38 +192,19 @@ export class Sidebar {
 
     const filteredItems = items.filter((item) => item.label.toLowerCase() !== 'personal');
     const itemsByLabel = new Map(filteredItems.map((item) => [item.label.toLowerCase(), item]));
-    const isUsersActive =
-      this.router.url.includes('/users/') ||
-      this.isActiveItem('Usuarios') ||
-      this.isActiveItem('Personal') ||
-      this.isActiveItem('Roles');
 
-    const usersItem: SidebarItem = {
-      ...itemsByLabel.get('usuarios'),
-      label: 'Usuarios',
-      link: ['/administrator/company', companyId, 'users', 'staff'],
-      active: isUsersActive,
-      expanded: isUsersActive,
-      children: [
-        {
-          label: 'Personal',
-          link: ['/administrator/company', companyId, 'users', 'staff'],
-          active: this.router.url.includes('/users/staff') || this.isActiveItem('Personal'),
-        },
-        {
-          label: 'Roles',
-          link: ['/administrator/company', companyId, 'users', 'rols'],
-          active: this.router.url.includes('/users/rols') || this.isActiveItem('Roles'),
-        },
-      ],
-    };
-
+    const reportsItem = this.buildReportsItem(itemsByLabel.get('reportes'), companyId);
+    const usersItem = this.buildUsersItem(itemsByLabel.get('usuarios'), companyId);
     const clientsItem = this.buildClientsItem(itemsByLabel.get('clientes'), companyId);
     const productsItem = this.buildProductsItem(itemsByLabel.get('productos'), companyId);
-    const orderedLabels = ['sucursales', 'usuarios', 'clientes', 'productos'];
+    const orderedLabels = ['sucursales', 'reportes', 'usuarios', 'clientes', 'productos'];
     const orderedItems = orderedLabels
       .map((label) => {
-        if (label === 'usuarios') {
+        if (label === 'reportes') {
+          return reportsItem;
+        }
+
+        if(label === 'usuarios') {
           return usersItem;
         }
 
@@ -265,6 +225,78 @@ export class Sidebar {
     );
 
     return [...orderedItems, ...remainingItems];
+  }
+
+    private buildReportsItem(item: SidebarItem | undefined, companyId: string): SidebarItem | undefined {
+    if (!item) {
+      return undefined;
+    }
+
+    return {
+      ...item,
+      label: 'Reportes',
+      link: ['/administrator/company', companyId, 'reports', 'static'],
+      active:
+        this.router.url.includes('/reports') ||
+        item.active ||
+        item.children?.some((child) => child.active) ||
+        this.isActiveItem('Reportes') ||
+        this.isActiveItem('Estaticos') ||
+        this.isActiveItem('Parametrizados') ||
+        this.isActiveItem('Dinamicos'),
+      children: item.children?.length
+        ? item.children
+        : [
+            {
+              label: 'Estaticos',
+              link: ['/administrator/company', companyId, 'reports', 'static'],
+              active: this.router.url.endsWith('/reports/static') || this.isActiveItem('Estaticos'),
+            },
+            {
+              label: 'Parametrizados',
+              link: ['/administrator/company', companyId, 'reports', 'parameterized'],
+              active: this.router.url.endsWith('/reports/parameterized') || this.isActiveItem('Parametrizados'),
+            },
+            {
+              label: 'Dinamicos',
+              link: ['/administrator/company', companyId, 'reports', 'dynamic'],
+              active: this.router.url.endsWith('/reports/dynamic') || this.isActiveItem('Dinamicos'),
+            },
+          ],
+    };
+  }
+
+  private buildUsersItem(item: SidebarItem | undefined, companyId: string): SidebarItem | undefined {
+    if (!item) {
+      return undefined;
+    }
+
+    return {
+      ...item,
+      label: 'Usuarios',
+      link: ['/administrator/company', companyId, 'users', 'staff'],
+      active:
+        this.router.url.includes('/users') ||
+        item.active ||
+        item.children?.some((child) => child.active) ||
+        this.isActiveItem('Usuarios') ||
+        this.isActiveItem('Personal') ||
+        this.isActiveItem('Roles'),
+      children: item.children?.length
+        ? item.children
+        : [
+            {
+              label: 'Personal',
+              link: ['/administrator/company', companyId, 'users', 'staff'],
+              active: this.router.url.endsWith('/users/staff') || this.isActiveItem('Personal'),
+            },
+            {
+              label: 'Roles',
+              link: ['/administrator/company', companyId, 'users', 'rols'],
+              active: this.router.url.includes('/users/rols') || this.isActiveItem('Roles'),
+            },
+          ],
+    };
   }
 
   private buildClientsItem(item: SidebarItem | undefined, companyId: string): SidebarItem | undefined {

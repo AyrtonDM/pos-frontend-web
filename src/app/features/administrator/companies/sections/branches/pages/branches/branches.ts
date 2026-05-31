@@ -43,12 +43,20 @@ export class Branches implements OnInit {
       active: true,
     },
     {
+      label: 'Usuarios',
+      link: ['/administrator/company', this.companyId, 'users'],
+    },
+    {
       label: 'Productos',
       link: ['/administrator/company', this.companyId, 'products'],
     },
     {
       label: 'Clientes',
       link: ['/administrator/company', this.companyId, 'clients'],
+    },
+    {
+      label: 'Reportes',
+      link: ['/administrator/company', this.companyId, 'reports'],  
     },
   ];
 
