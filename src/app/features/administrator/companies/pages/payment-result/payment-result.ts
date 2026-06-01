@@ -40,18 +40,37 @@ export class PaymentResultComponent implements OnInit {
     this.confirmarPago(sessionId);
   }
 
-  confirmarPago(sessionId: string): void {
+  confirmarPago(sessionId: string, intentos: number = 0): void {
+    const maxIntentos = 5;
     this.estado = 'cargando';
     this.pagoService.confirmarPago({ session_id: sessionId }).subscribe({
       next: (response: ConfirmarResponse) => {
+        if (response.mensaje && response.mensaje.includes('ya fue procesado')) {
+          this.volverMisEmpresas();
+          return;
+        }
         this.estado = 'exito';
         if (response.suscripcion) {
           this.suscripcion = response.suscripcion;
         }
       },
       error: (err: any) => {
+        const errorBody = err.error?.detail || err.error;
+        if (errorBody && errorBody.mensaje && errorBody.mensaje.includes('ya fue procesado')) {
+          this.volverMisEmpresas();
+          return;
+        }
+
+        if (intentos < maxIntentos) {
+          // Reintentar en 3 segundos si falla (probablemente esperando el webhook)
+          setTimeout(() => {
+            this.confirmarPago(sessionId, intentos + 1);
+          }, 3000);
+          return;
+        }
+
         this.estado = 'error';
-        this.mensajeError = err.error?.detail || 'Ocurrió un error al confirmar el pago. Por favor contacte a soporte.';
+        this.mensajeError = errorBody?.mensaje || errorBody || 'Ocurrió un error al confirmar el pago. Por favor contacte a soporte.';
         console.error('Error al confirmar pago', err);
       }
     });
