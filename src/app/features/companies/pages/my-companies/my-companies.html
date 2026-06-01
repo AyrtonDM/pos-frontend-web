@@ -64,11 +64,14 @@
                 [routerLink]="['/edit-company', obtenerIdEmpresa(company)]"
                 >Editar</a
               >
-              <a
+              <button
                 class="btn btn-primary"
-                [routerLink]="['/company', obtenerIdEmpresa(company), 'branches']"
-                >Entrar</a
+                type="button"
+                [disabled]="empresaEntrandoId === obtenerIdEmpresa(company)"
+                (click)="entrarEmpresa(company)"
               >
+                {{ empresaEntrandoId === obtenerIdEmpresa(company) ? 'Entrando...' : 'Entrar' }}
+              </button>
             </div>
           </article>
         }
