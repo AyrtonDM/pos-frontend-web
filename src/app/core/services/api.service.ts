@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  private readonly baseUrl = 'http://127.0.0.1:8000';
+  private readonly baseUrl = 'https://pos-backend-app.duckdns.org';
 
   constructor(private readonly http: HttpClient) {}
 
