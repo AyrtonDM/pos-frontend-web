@@ -2,14 +2,7 @@
   <app-navbar />
 
   <main class="sales-layout">
-    <app-sidebar
-      role="administrator"
-      [companyId]="companyId"
-      [branchId]="branchId"
-      [cashRegisterId]="cashRegisterId"
-      [cashRegisterSessionId]="cashRegisterSessionId"
-      [activeItemLabel]="sidebarActiveItemLabel"
-    />
+    <app-sidebar context="cash_register" [companyId]="companyId" [branchId]="branchId" [cashRegisterId]="cashRegisterId" [cashRegisterSessionId]="cashRegisterSessionId" />
 
     <section class="sales-content">
       <section class="sales-header panel">
@@ -168,7 +161,7 @@
                         }
                       </div>
 
-                      <!-- El campo global de descuento de venta fue eliminado según solicitud del UX -->
+                      <!-- El campo global de descuento de venta fue eliminado segï¿½n solicitud del UX -->
 
                       <dl class="totals-list">
                         <div>

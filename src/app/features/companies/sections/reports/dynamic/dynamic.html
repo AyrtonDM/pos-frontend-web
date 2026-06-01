@@ -2,7 +2,7 @@
   <app-navbar />
 
   <main class="reports-layout">
-    <app-sidebar [items]="sidebarItems" />
+    <app-sidebar context="company" [companyId]="companyId" />
 
     <section class="reports-content">
       <header class="reports-header panel">
@@ -31,7 +31,7 @@
 
           <div class="action-row">
             <button class="primary-action" type="submit" [disabled]="loading()">
-              {{ loading() ? 'Generando…' : 'Generar reporte' }}
+              {{ loading() ? 'Generandoï¿½' : 'Generar reporte' }}
             </button>
           </div>
         </form>
@@ -67,10 +67,10 @@
           </div>
           <div class="export-actions" aria-label="Exportar reporte">
             <button class="secondary-action" type="button" (click)="exportReport('excel')" [disabled]="!hasRows() || exportingFormat() !== null">
-              {{ exportingFormat() === 'excel' ? 'Exportando Excel…' : 'Excel' }}
+              {{ exportingFormat() === 'excel' ? 'Exportando Excelï¿½' : 'Excel' }}
             </button>
             <button class="secondary-action" type="button" (click)="exportReport('pdf')" [disabled]="!hasReport() || exportingFormat() !== null">
-              {{ exportingFormat() === 'pdf' ? 'Exportando PDF…' : 'PDF' }}
+              {{ exportingFormat() === 'pdf' ? 'Exportando PDFï¿½' : 'PDF' }}
             </button>
           </div>
         </div>
@@ -85,7 +85,7 @@
         @if (report()) {
           @if (clarificationQuestion()) {
             <section class="clarification-box">
-              <p class="section-kicker">Aclaración requerida</p>
+              <p class="section-kicker">Aclaraciï¿½n requerida</p>
               <h3 class="title-md">{{ clarificationQuestion() }}</h3>
               <p class="text-muted">
                 Responde la pregunta en el prompt y vuelve a generar el reporte para desbloquear la tabla.
@@ -162,7 +162,7 @@
                     </div>
                     <div>
                       <span class="spec-label">Solicita aclaracion</span>
-                      <strong>{{ reportSpecification()?.solicita_aclaracion ? 'Sí' : 'No' }}</strong>
+                      <strong>{{ reportSpecification()?.solicita_aclaracion ? 'Sï¿½' : 'No' }}</strong>
                     </div>
                     <div>
                       <span class="spec-label">Pregunta</span>
@@ -172,7 +172,7 @@
                 </article>
 
                 <article class="spec-card">
-                  <p class="section-kicker">Métricas y dimensiones</p>
+                  <p class="section-kicker">Mï¿½tricas y dimensiones</p>
                   <div class="chips-row">
                     @for (metrica of specificationMetricas(); track metrica) {
                       <span class="chip">{{ formatLabel(metrica) }}</span>
@@ -204,7 +204,7 @@
             <section class="empty-state">
               <h3 class="title-md">Sin filas para mostrar</h3>
               <p class="text-muted">
-                El backend devolvió una estructura válida, pero no hay filas ni agregados para este prompt.
+                El backend devolviï¿½ una estructura vï¿½lida, pero no hay filas ni agregados para este prompt.
               </p>
             </section>
           } @else if (hasRows() && !clarificationQuestion()) {

@@ -2,7 +2,7 @@
   <app-navbar />
 
   <main class="inventory-layout">
-    <app-sidebar [items]="sidebarItems" />
+    <app-sidebar context="branch" [companyId]="companyId" [branchId]="branchId" />
 
     <section class="inventory-content">
       <header class="inventory-header panel">

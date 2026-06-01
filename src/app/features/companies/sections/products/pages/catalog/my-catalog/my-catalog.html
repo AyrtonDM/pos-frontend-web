@@ -2,7 +2,7 @@
   <app-navbar />
 
   <main class="catalog-layout">
-    <app-sidebar [items]="sidebarItems" />
+    <app-sidebar context="company" [companyId]="companyId" />
 
     <section class="catalog-content">
       <header class="catalog-header panel">
