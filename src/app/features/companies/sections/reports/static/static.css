@@ -53,6 +53,140 @@
   padding: 10px var(--space-md);
 }
 
+.report-items {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.report-card {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.report-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.report-card-header h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.report-card-description {
+  margin: 0;
+  color: var(--color-text-soft);
+  line-height: 1.6;
+}
+
+.report-card button.btn {
+  white-space: nowrap;
+}
+
+.report-result {
+  display: grid;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.report-result-title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  letter-spacing: 0.02em;
+}
+
+.report-meta {
+  margin: 0;
+  color: var(--color-text-soft);
+}
+
+.report-actions {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.report-actions button {
+  white-space: nowrap;
+}
+
+.report-section-subtitle {
+  margin: var(--space-md) 0 var(--space-sm) 0;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-md);
+}
+
+.report-section {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.report-section:last-child {
+  border-bottom: none;
+}
+
+.report-divider {
+  height: 2px;
+  background: var(--color-border);
+  margin: var(--space-md) 0;
+}
+
+.report-section-title {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.report-list {
+  margin: 0;
+  padding-left: var(--space-lg);
+  color: var(--color-text);
+  line-height: 1.8;
+}
+
+.report-top-products {
+  list-style: decimal inside;
+}
+
+.report-summary-box {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-md);
+  background: var(--color-surface-2);
+  border-radius: var(--radius-sm);
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-table th,
+.report-table td {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.report-table th {
+  background: var(--color-surface-2);
+}
+
+.table-label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-soft);
+}
+
 .tab-button:hover {
   background: rgba(255, 255, 255, 0.6);
   color: var(--color-text);
