@@ -75,13 +75,19 @@ export class Sidebar {
   get backButtonLink(): string[] {
     const role = this.getRole();
 
-    if (this.isCashRegisterSessionView() && role === 'employee') {
+    if (this.isCashRegisterSessionView()) {
       const companyId = this.companyId || this.getCompanyIdFromUrl(role);
       const branchId = this.branchId || this.getBranchIdFromUrl();
 
+      if (role === 'employee') {
+        return companyId && branchId
+          ? ['/employee/company', companyId, 'branch', branchId, 'cash_registers']
+          : ['/employee/my-companies'];
+      }
+
       return companyId && branchId
-        ? ['/employee/company', companyId, 'branch', branchId, 'cash_registers']
-        : ['/employee/my-companies'];
+        ? ['/administrator/company', companyId, 'branch', branchId, 'cash-register']
+        : ['/administrator/my-companies'];
     }
 
     if (this.isBranchView()) {
@@ -161,6 +167,41 @@ export class Sidebar {
           label: 'Cajas',
           link: ['/employee/company', companyId, 'branch', branchId, 'cash_registers'],
           active: this.isActiveItem('Cajas'),
+        },
+      ];
+    }
+
+    if (this.isCashRegisterSessionView()) {
+      const salesLink = [
+        '/administrator/company',
+        companyId,
+        'branch',
+        branchId,
+        'cash-register',
+        cashRegisterId,
+        'sales',
+      ];
+
+      const sharedQueryParams = this.cashRegisterSessionId ? { sessionId: this.cashRegisterSessionId } : undefined;
+
+      return [
+        {
+          label: 'Ventas',
+          link: salesLink,
+          queryParams: {
+            section: 'sales',
+            ...(sharedQueryParams ?? {}),
+          },
+          active: this.isActiveItem('Ventas'),
+        },
+        {
+          label: 'Movimientos',
+          link: salesLink,
+          queryParams: {
+            section: 'movimientos',
+            ...(sharedQueryParams ?? {}),
+          },
+          active: this.isActiveItem('Movimientos'),
         },
       ];
     }
@@ -378,7 +419,7 @@ export class Sidebar {
   }
 
   private getCashRegisterIdFromUrl(): string {
-    const match = this.router.url.match(/\/cash_register\/([^/]+)/);
+    const match = this.router.url.match(/\/cash[-_]register\/([^/]+)/);
     return match?.[1] ?? '';
   }
 
@@ -386,8 +427,7 @@ export class Sidebar {
     const activeItem = this.activeItemLabel.toLowerCase();
 
     return (
-      this.getRole() === 'employee' &&
-      this.router.url.includes('/cash_register/') &&
+      this.router.url.match(/\/cash[-_]register\//) !== null &&
       (this.router.url.endsWith('/sales') || activeItem === 'ventas' || activeItem === 'movimientos')
     );
   }

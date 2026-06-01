@@ -127,6 +127,19 @@
   text-align: right;
 }
 
+.cash-register-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+.cash-register-actions .disabled,
+.cash-register-actions .conflict-disabled {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
 .btn-sm {
   min-height: 34px;
   padding: 8px 12px;

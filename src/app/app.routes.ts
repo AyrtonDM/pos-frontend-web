@@ -6,10 +6,13 @@ import { Branches } from './features/administrator/companies/sections/branches/p
 import { EditBranch } from './features/administrator/companies/sections/branches/pages/edit-branch/edit-branch';
 import { ViewBranch } from './features/administrator/companies/sections/branches/pages/view-branch/view-branch';
 import { CashRegister } from './features/administrator/companies/sections/branches/sections/cash_register/cash_register';
+import { CloseCashRegister as AdminCloseCashRegister } from './features/administrator/companies/sections/branches/sections/close_cash_register/close_cash_register';
 import { Staff } from './features/administrator/companies/sections/users/staff/staff';
 import { Rols } from './features/administrator/companies/sections/users/rols/rols';
 
 import { Inventario } from './features/administrator/companies/sections/branches/sections/inventario/inventario';
+import { OpenCashRegister as AdminOpenCashRegister } from './features/administrator/companies/sections/branches/sections/open_cash_register/open_cash_register';
+import { Sales as AdminSales } from './features/administrator/companies/sections/branches/sections/sales/sales';
 import { DynamicReports } from './features/administrator/companies/sections/reports/dynamic/dynamic';
 import { ParameterizedReports } from './features/administrator/companies/sections/reports/parameterized/parameterized';
 import { StaticReports } from './features/administrator/companies/sections/reports/static/static';
@@ -90,6 +93,21 @@ export const routes: Routes = [
   {
     path: 'administrator/company/:id/branch/:branchId/cash-register',
     component: CashRegister,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/branch/:branchId/cash-register/:cashRegisterId/open-cash-register',
+    component: AdminOpenCashRegister,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/branch/:branchId/cash-register/:cashRegisterId/close-cash-register',
+    component: AdminCloseCashRegister,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/company/:id/branch/:branchId/cash-register/:cashRegisterId/sales',
+    component: AdminSales,
     canActivate: [authGuard],
   },
   {
