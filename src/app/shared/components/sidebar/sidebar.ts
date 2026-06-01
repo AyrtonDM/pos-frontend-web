@@ -208,18 +208,9 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
   private buildCashRegisterItems(context: SidebarResolvedContext): SidebarItem[] {
     const cashRegisterPath = ['/company', context.companyId, 'branch', context.branchId, 'cash-register', context.cashRegisterId];
 
-    if (!context.cashRegisterSessionId) {
-      return [
-        {
-          label: 'Apertura de caja',
-          link: [...cashRegisterPath, 'open-cash-register'],
-        },
-      ];
-    }
-
     return [
       {
-        label: 'Venta rapida',
+        label: 'Ventas',
         link: [...cashRegisterPath, 'sales'],
         queryParams: {
           section: 'sales',
@@ -227,17 +218,10 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
         },
       },
       {
-        label: 'Movimientos de caja',
+        label: 'Movimientos',
         link: [...cashRegisterPath, 'sales'],
         queryParams: {
           section: 'movimientos',
-          sessionId: context.cashRegisterSessionId,
-        },
-      },
-      {
-        label: 'Cierre de caja',
-        link: [...cashRegisterPath, 'close-cash-register'],
-        queryParams: {
           sessionId: context.cashRegisterSessionId,
         },
       },

@@ -12,7 +12,6 @@ import {
 } from '../../../../../../core/services/cash-register.service';
 
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
-import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
 interface CashRegisterClosePolicy {
   mode: 'none' | 'single-allowed';
@@ -34,7 +33,7 @@ interface ClosingMethodRow {
 
 @Component({
   selector: 'app-close-cash-register',
-  imports: [CommonModule, FormsModule, Navbar, Sidebar],
+  imports: [CommonModule, FormsModule, Navbar],
   templateUrl: './close_cash_register.html',
   styleUrl: './close_cash_register.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -6,7 +6,8 @@
 
 .close-cash-register-layout {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
   gap: var(--space-lg);
   width: min(1120px, 100%);
   margin: 0 auto;
@@ -17,6 +18,7 @@
   min-width: 0;
   flex-direction: column;
   gap: var(--space-lg);
+  width: min(100%, 960px);
 }
 
 .close-cash-register-header {
@@ -88,7 +90,7 @@
 
 .close-modal-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: var(--space-md);
 }
 
