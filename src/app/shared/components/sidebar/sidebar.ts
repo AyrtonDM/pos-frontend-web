@@ -124,6 +124,7 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
     return [
       {
         label: 'Panel',
+        link: ['/company', context.companyId, 'dashboard'],
       },
       {
         label: 'Sucursales',

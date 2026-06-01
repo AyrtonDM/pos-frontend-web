@@ -16,6 +16,7 @@ import { Sales } from './features/companies/sections/branches/sections/sales/sal
 import { DynamicReports } from './features/companies/sections/reports/dynamic/dynamic';
 import { ParameterizedReports } from './features/companies/sections/reports/parameterized/parameterized';
 import { StaticReports } from './features/companies/sections/reports/static/static';
+import { Dashboard } from './features/companies/sections/dashboard/dashboard';
 import { CategoriasPanel } from './features/companies/sections/products/pages/categories/my-categories/my-categories';
 import { EditCategory } from './features/companies/sections/products/pages/categories/edit-category/edit-category';
 import { EditProduct } from './features/companies/sections/products/pages/catalog/edit-product/edit-product';
@@ -107,6 +108,11 @@ export const routes: Routes = [
   {
     path: 'company/:id/branch/:branchId/inventario',
     component: Inventario,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'company/:id/dashboard',
+    component: Dashboard,
     canActivate: [authGuard],
   },
   {
