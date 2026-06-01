@@ -6,6 +6,7 @@ import {
   Branch,
   CompanyService,
   EmployeeRole,
+  RoleListItem,
 } from '../../../../../core/services/company.service';
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
 import { Sidebar, SidebarItem } from '../../../../../shared/components/sidebar/sidebar';
@@ -40,14 +41,11 @@ export class Staff implements OnInit {
   protected errorSucursales = '';
   protected errorInvitacion = '';
   protected errorPersonal = '';
+  protected errorRoles = '';
   protected mensajeInvitacion = '';
   protected branches: Branch[] = [];
   protected staffMembers: EmployeeRole[] = [];
-  protected readonly roles = [
-    { value: '1', label: 'Empleado' },
-    { value: '2', label: 'Cajero' },
-    { value: '3', label: 'Supervisor' },
-  ];
+  protected roles: Array<{ value: string; label: string }> = [];
 
   protected readonly sidebarItems: SidebarItem[] = [
     {
@@ -81,6 +79,7 @@ export class Staff implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.cargarRoles();
     this.cargarSucursales();
   }
 
@@ -253,6 +252,46 @@ export class Staff implements OnInit {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  private cargarRoles(): void {
+    this.errorRoles = '';
+
+    if (!this.companyId) {
+      this.roles = [];
+      this.errorRoles = 'No se encontro la empresa para cargar sus roles.';
+      return;
+    }
+
+    this.companyService.getRoles(this.companyId).subscribe({
+      next: (roles) => {
+        this.roles = roles
+          .filter((role) => this.shouldShowRole(role))
+          .map((role) => ({
+            value: String(role.id_rol),
+            label: role.nombre,
+          }));
+
+        if (!this.roles.some((role) => role.value === this.selectedRole)) {
+          this.selectedRole = this.roles[0]?.value ?? '';
+        }
+
+        if (!this.roles.some((role) => role.value === this.editRole)) {
+          this.editRole = this.selectedRole;
+        }
+
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.roles = [];
+        this.errorRoles = 'No se pudieron cargar los roles de la empresa.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private shouldShowRole(role: RoleListItem): boolean {
+    return role.nombre.trim().toUpperCase() !== 'CLIENTE';
   }
 
   private cargarPersonal(): void {

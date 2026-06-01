@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiService } from './api.service';
+import { CompanyPermission } from './company-permissions.service';
 
 export interface Company {
   idEmpresa?: string | number;
@@ -15,6 +16,11 @@ export interface Company {
   fecha_registro?: string;
   fecha_creacion?: string;
   activo?: boolean;
+  suscripcion_activa?: {
+    estado: string;
+    fecha_fin: string;
+    plan_nombre: string;
+  } | null;
 }
 
 export interface CreateCompanyRequest {
@@ -193,6 +199,54 @@ export interface CashRegisterMovementType {
   descripcion?: string | null;
 }
 
+export interface PermissionByModulePermission {
+  id_permiso: number;
+  codigo: string;
+  nombre: string;
+}
+
+export interface PermissionModuleWithPermissions {
+  id_modulo: number;
+  codigo: string;
+  nombre: string;
+  permisos: PermissionByModulePermission[];
+}
+
+export interface RoleListItem {
+  id_rol: number;
+  nombre: string;
+  tipo: string;
+  descripcion: string;
+  activo: boolean;
+}
+
+export interface RolePermissionDetail {
+  id_rol_permiso: number;
+  id_rol: number;
+  id_permiso: number;
+  activo: boolean;
+}
+
+export interface RoleDetailResponse extends RoleListItem {
+  rol_permisos: RolePermissionDetail[];
+}
+
+export interface CreateRoleRequest {
+  nombre: string;
+  permiso_ids: number[];
+}
+
+export interface CreateRoleResponse {
+  rol: RoleListItem;
+  permiso_ids: number[];
+}
+
+export interface UpdateRoleRequest {
+  nombre: string;
+  permiso_ids: number[];
+  activo: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -205,6 +259,30 @@ export class CompanyService {
 
   getMisEmpresasEmpleado(): Observable<Company[]> {
     return this.apiService.get<Company[]>('/api/empresas/mis-empresas-empleado');
+  }
+
+  getMisPermisos(idEmpresa: string | number): Observable<CompanyPermission[]> {
+    return this.apiService.get<CompanyPermission[]>(`/api/empresas/${idEmpresa}/mis-permisos`);
+  }
+
+  getPermisosPorModulo(): Observable<PermissionModuleWithPermissions[]> {
+    return this.apiService.get<PermissionModuleWithPermissions[]>('/api/empresas/permisos-por-modulo');
+  }
+
+  getRoles(idEmpresa: string | number): Observable<RoleListItem[]> {
+    return this.apiService.get<RoleListItem[]>(`/api/roles/empresa/${idEmpresa}`);
+  }
+
+  getRoleById(idRol: string | number): Observable<RoleDetailResponse> {
+    return this.apiService.get<RoleDetailResponse>(`/api/roles/${idRol}`);
+  }
+
+  actualizarRol(idRol: string | number, payload: UpdateRoleRequest): Observable<RoleDetailResponse> {
+    return this.apiService.put<RoleDetailResponse, UpdateRoleRequest>(`/api/roles/${idRol}`, payload);
+  }
+
+  crearRol(idEmpresa: string | number, payload: CreateRoleRequest): Observable<CreateRoleResponse> {
+    return this.apiService.post<CreateRoleResponse, CreateRoleRequest>(`/api/roles/empresa/${idEmpresa}`, payload);
   }
 
   obtenerEmpresa(idEmpresa: string): Observable<Company> {

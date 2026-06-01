@@ -1,12 +1,16 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Navbar } from '../../../../shared/components/navbar/navbar';
 
+
 import { Company, CompanyService } from '../../../../core/services/company.service';
+import { CompanyPermissionsService } from '../../../../core/services/company-permissions.service';
+import { PlanSelectorModalComponent } from '../../../administrator/companies/sections/payments/plan-selector-modal/plan-selector-modal';
 
 @Component({
   selector: 'app-my-companies',
-  imports: [Navbar, RouterLink],
+  standalone: true,
+  imports: [Navbar, RouterLink, PlanSelectorModalComponent],
   templateUrl: './my-companies.html',
   styleUrl: './my-companies.css',
 })
@@ -14,11 +18,23 @@ export class MyCompanies implements OnInit {
   protected companies: Company[] = [];
   protected cargandoEmpresas = false;
   protected errorEmpresas = '';
+  protected empresaEntrandoId: string | number | null = null;
+  protected empresaSeleccionadaId: number | null = null;
 
   constructor(
     private readonly companyService: CompanyService,
+    private readonly companyPermissionsService: CompanyPermissionsService,
+    private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
   ) {}
+
+  abrirModalPago(idEmpresa: string | number): void {
+    this.empresaSeleccionadaId = typeof idEmpresa === 'string' ? parseInt(idEmpresa, 10) : idEmpresa;
+  }
+
+  cerrarModalPago(): void {
+    this.empresaSeleccionadaId = null;
+  }
 
   ngOnInit(): void {
     this.cargarMisEmpresas();
@@ -28,6 +44,28 @@ export class MyCompanies implements OnInit {
     return (
       company.idEmpresa ?? company.id_empresa ?? company.empresa_id ?? company.id ?? company.nit
     );
+  }
+
+  protected entrarEmpresa(company: Company): void {
+    const idEmpresa = this.obtenerIdEmpresa(company);
+
+    this.empresaEntrandoId = idEmpresa;
+    this.errorEmpresas = '';
+
+    this.companyService.getMisPermisos(idEmpresa).subscribe({
+      next: (permissions) => {
+        this.companyPermissionsService.savePermissions(permissions);
+        this.empresaEntrandoId = null;
+        this.cdr.detectChanges();
+        void this.router.navigate(['/company', idEmpresa, 'branches']);
+      },
+      error: () => {
+        this.companyPermissionsService.clearPermissions();
+        this.empresaEntrandoId = null;
+        this.errorEmpresas = 'No se pudieron cargar tus permisos. Intenta nuevamente.';
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   private cargarMisEmpresas(): void {
