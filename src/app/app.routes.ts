@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { EditCompany } from './features/companies/pages/edit-company/edit-company';
 import { MyCompanies } from './features/companies/pages/my-companies/my-companies';
+import { PaymentResultComponent } from './features/administrator/companies/pages/payment-result/payment-result';
 import { RegisterCompany } from './features/companies/pages/register-company/register-company';
 import { Branches } from './features/companies/sections/branches/pages/branches/branches';
 import { EditBranch } from './features/companies/sections/branches/pages/edit-branch/edit-branch';
@@ -51,7 +52,17 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'register-company',
+    path: 'administrator/payment/success',
+    component: PaymentResultComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/payment/cancel',
+    component: PaymentResultComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/register-company',
     component: RegisterCompany,
     canActivate: [authGuard],
   },

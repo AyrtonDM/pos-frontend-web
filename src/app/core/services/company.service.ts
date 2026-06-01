@@ -16,6 +16,11 @@ export interface Company {
   fecha_registro?: string;
   fecha_creacion?: string;
   activo?: boolean;
+  suscripcion_activa?: {
+    estado: string;
+    fecha_fin: string;
+    plan_nombre: string;
+  } | null;
 }
 
 export interface CreateCompanyRequest {
