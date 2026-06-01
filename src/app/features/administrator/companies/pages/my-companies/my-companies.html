@@ -42,7 +42,7 @@
                 <span class="badge badge-danger">Inactivo</span>
               }
               @if (company.suscripcion_activa) {
-                <span class="badge" [class.badge-success]="company.suscripcion_activa.estado === 'activa'">Plan: {{ company.suscripcion_activa.plan_nombre }}</span>
+                <span class="badge" [class.badge-success]="company.suscripcion_activa.estado === 'activa' || company.suscripcion_activa.estado === 'activo'">Plan: {{ company.suscripcion_activa.plan_nombre }}</span>
               } @else {
                 <span class="badge badge-warning">Sin plan</span>
               }
@@ -64,7 +64,7 @@
             </dl>
 
             <div class="company-actions">
-              @if (company.suscripcion_activa && company.suscripcion_activa.estado === 'activa') {
+              @if (company.suscripcion_activa && (company.suscripcion_activa.estado === 'activa' || company.suscripcion_activa.estado === 'activo')) {
                 <a
                   class="btn btn-primary"
                   [routerLink]="['/administrator/company', obtenerIdEmpresa(company), 'branches']"
