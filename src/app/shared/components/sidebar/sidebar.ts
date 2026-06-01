@@ -50,18 +50,14 @@ export class Sidebar {
 
   get displayedItems(): SidebarItem[] {
     if (this.items.length > 0) {
-      return this.getRole() === 'administrator'
-        ? this.withAdministratorCompanyNavigation(this.items)
-        : this.items;
+      return this.withAdministratorCompanyNavigation(this.items);
     }
 
     if (!this.isBranchView()) {
       return [];
     }
 
-    return this.getRole() === 'administrator'
-      ? this.withAdministratorCompanyNavigation(this.buildBranchItems())
-      : this.buildBranchItems();
+    return this.withAdministratorCompanyNavigation(this.buildBranchItems());
   }
 
   get backButtonLabel(): string {
@@ -73,34 +69,22 @@ export class Sidebar {
   }
 
   get backButtonLink(): string[] {
-    const role = this.getRole();
-
     if (this.isCashRegisterSessionView()) {
-      const companyId = this.companyId || this.getCompanyIdFromUrl(role);
+      const companyId = this.companyId || this.getCompanyIdFromUrl();
       const branchId = this.branchId || this.getBranchIdFromUrl();
 
-      if (role === 'employee') {
-        return companyId && branchId
-          ? ['/employee/company', companyId, 'branch', branchId, 'cash_registers']
-          : ['/employee/my-companies'];
-      }
-
       return companyId && branchId
-        ? ['/administrator/company', companyId, 'branch', branchId, 'cash-register']
-        : ['/administrator/my-companies'];
+        ? ['/company', companyId, 'branch', branchId, 'cash-register']
+        : ['/my-companies'];
     }
 
     if (this.isBranchView()) {
-      const companyId = this.companyId || this.getCompanyIdFromUrl(role);
+      const companyId = this.companyId || this.getCompanyIdFromUrl();
 
-      if (role === 'employee') {
-        return companyId ? ['/employee/company', companyId, 'branches'] : ['/employee/my-companies'];
-      }
-
-      return companyId ? ['/administrator/company', companyId, 'branches'] : ['/administrator/my-companies'];
+      return companyId ? ['/company', companyId, 'branches'] : ['/my-companies'];
     }
 
-    return role === 'employee' ? ['/employee/my-companies'] : ['/administrator/my-companies'];
+    return ['/my-companies'];
   }
 
   private isBranchView(): boolean {
@@ -112,68 +96,22 @@ export class Sidebar {
       return this.role;
     }
 
-    return this.router.url.startsWith('/employee/') ? 'employee' : 'administrator';
+    return 'administrator';
   }
 
-  private getCompanyIdFromUrl(role: SidebarRole): string {
-    const match = this.router.url.match(new RegExp(`/${role}/company/([^/]+)`));
+  private getCompanyIdFromUrl(): string {
+    const match = this.router.url.match(/\/company\/([^/]+)/);
     return match?.[1] ?? '';
   }
 
   private buildBranchItems(): SidebarItem[] {
-    const role = this.getRole();
-    const companyId = this.companyId || this.getCompanyIdFromUrl(role);
+    const companyId = this.companyId || this.getCompanyIdFromUrl();
     const branchId = this.branchId || this.getBranchIdFromUrl();
     const cashRegisterId = this.cashRegisterId || this.getCashRegisterIdFromUrl();
 
-    if (role === 'employee') {
-      if (this.isCashRegisterSessionView()) {
-        const salesLink = [
-          '/employee/company',
-          companyId,
-          'branch',
-          branchId,
-          'cash_register',
-          cashRegisterId,
-          'sales',
-        ];
-
-        const sharedQueryParams = this.cashRegisterSessionId ? { sessionId: this.cashRegisterSessionId } : undefined;
-
-        return [
-          {
-            label: 'Ventas',
-            link: salesLink,
-            queryParams: {
-              section: 'sales',
-              ...(sharedQueryParams ?? {}),
-            },
-            active: this.isActiveItem('Ventas'),
-          },
-          {
-            label: 'Movimientos',
-            link: salesLink,
-            queryParams: {
-              section: 'movimientos',
-              ...(sharedQueryParams ?? {}),
-            },
-            active: this.isActiveItem('Movimientos'),
-          },
-        ];
-      }
-
-      return [
-        {
-          label: 'Cajas',
-          link: ['/employee/company', companyId, 'branch', branchId, 'cash_registers'],
-          active: this.isActiveItem('Cajas'),
-        },
-      ];
-    }
-
     if (this.isCashRegisterSessionView()) {
       const salesLink = [
-        '/administrator/company',
+        '/company',
         companyId,
         'branch',
         branchId,
@@ -209,12 +147,12 @@ export class Sidebar {
     return [
       {
         label: 'Cajas',
-        link: ['/administrator/company', companyId, 'branch', branchId, 'cash-register'],
+        link: ['/company', companyId, 'branch', branchId, 'cash-register'],
         active: this.isActiveItem('Cajas'),
       },
       {
         label: 'Inventario',
-        link: ['/administrator/company', companyId, 'branch', branchId, 'inventario'],
+        link: ['/company', companyId, 'branch', branchId, 'inventario'],
         active: this.isActiveItem('Inventario'),
       },
       {
@@ -225,7 +163,7 @@ export class Sidebar {
   }
 
   private withAdministratorCompanyNavigation(items: SidebarItem[]): SidebarItem[] {
-    const companyId = this.companyId || this.getCompanyIdFromUrl('administrator');
+    const companyId = this.companyId || this.getCompanyIdFromUrl();
 
     if (!companyId) {
       return items;
@@ -276,7 +214,7 @@ export class Sidebar {
     return {
       ...item,
       label: 'Reportes',
-      link: ['/administrator/company', companyId, 'reports', 'static'],
+      link: ['/company', companyId, 'reports', 'static'],
       active:
         this.router.url.includes('/reports') ||
         item.active ||
@@ -290,17 +228,17 @@ export class Sidebar {
         : [
             {
               label: 'Estaticos',
-              link: ['/administrator/company', companyId, 'reports', 'static'],
+              link: ['/company', companyId, 'reports', 'static'],
               active: this.router.url.endsWith('/reports/static') || this.isActiveItem('Estaticos'),
             },
             {
               label: 'Parametrizados',
-              link: ['/administrator/company', companyId, 'reports', 'parameterized'],
+              link: ['/company', companyId, 'reports', 'parameterized'],
               active: this.router.url.endsWith('/reports/parameterized') || this.isActiveItem('Parametrizados'),
             },
             {
               label: 'Dinamicos',
-              link: ['/administrator/company', companyId, 'reports', 'dynamic'],
+              link: ['/company', companyId, 'reports', 'dynamic'],
               active: this.router.url.endsWith('/reports/dynamic') || this.isActiveItem('Dinamicos'),
             },
           ],
@@ -315,7 +253,7 @@ export class Sidebar {
     return {
       ...item,
       label: 'Usuarios',
-      link: ['/administrator/company', companyId, 'users', 'staff'],
+      link: ['/company', companyId, 'users', 'staff'],
       active:
         this.router.url.includes('/users') ||
         item.active ||
@@ -328,12 +266,12 @@ export class Sidebar {
         : [
             {
               label: 'Personal',
-              link: ['/administrator/company', companyId, 'users', 'staff'],
+              link: ['/company', companyId, 'users', 'staff'],
               active: this.router.url.endsWith('/users/staff') || this.isActiveItem('Personal'),
             },
             {
               label: 'Roles',
-              link: ['/administrator/company', companyId, 'users', 'rols'],
+              link: ['/company', companyId, 'users', 'rols'],
               active: this.router.url.includes('/users/rols') || this.isActiveItem('Roles'),
             },
           ],
@@ -348,7 +286,7 @@ export class Sidebar {
     return {
       ...item,
       label: 'Clientes',
-      link: ['/administrator/company', companyId, 'clients'],
+      link: ['/company', companyId, 'clients'],
       active:
         this.router.url.includes('/clients') ||
         item.active ||
@@ -361,12 +299,12 @@ export class Sidebar {
         : [
             {
               label: 'Agenda',
-              link: ['/administrator/company', companyId, 'clients'],
+              link: ['/company', companyId, 'clients'],
               active: this.router.url.endsWith('/clients') || this.isActiveItem('Agenda'),
             },
             {
               label: 'Categorias',
-              link: ['/administrator/company', companyId, 'clients', 'categories'],
+              link: ['/company', companyId, 'clients', 'categories'],
               active: this.router.url.includes('/clients/categories') || this.isActiveItem('Categorias'),
             },
           ],
@@ -381,7 +319,7 @@ export class Sidebar {
     return {
       ...item,
       label: 'Productos',
-      link: ['/administrator/company', companyId, 'products'],
+      link: ['/company', companyId, 'products'],
       active:
         this.router.url.includes('/products') ||
         this.router.url.includes('/product/') ||
@@ -397,12 +335,12 @@ export class Sidebar {
         : [
             {
               label: 'Catalogo',
-              link: ['/administrator/company', companyId, 'products'],
+              link: ['/company', companyId, 'products'],
               active: this.router.url.endsWith('/products') || this.isActiveItem('Catalogo'),
             },
             {
               label: 'Categoria',
-              link: ['/administrator/company', companyId, 'products', 'categories'],
+              link: ['/company', companyId, 'products', 'categories'],
               active:
                 this.router.url.includes('/products/categories') ||
                 this.router.url.includes('/category/') ||
@@ -447,3 +385,4 @@ export class Sidebar {
     }
   }
 }
+
