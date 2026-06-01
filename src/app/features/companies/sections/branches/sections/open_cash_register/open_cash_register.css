@@ -6,7 +6,8 @@
 
 .open-cash-register-layout {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
   gap: var(--space-lg);
   width: min(1120px, 100%);
   margin: 0 auto;
@@ -17,6 +18,7 @@
   min-width: 0;
   flex-direction: column;
   gap: var(--space-lg);
+  width: min(100%, 960px);
 }
 
 .open-cash-register-header {

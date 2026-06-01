@@ -6,7 +6,6 @@ import { finalize } from 'rxjs';
 
 import { CashRegisterService } from '../../../../../../core/services/cash-register.service';
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
-import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
 interface OpenSessionConflictDetail {
   id_caja: number;
@@ -24,7 +23,7 @@ interface CashRegisterOpenPolicy {
 
 @Component({
   selector: 'app-open-cash-register',
-  imports: [CommonModule, FormsModule, Navbar, RouterLink, Sidebar],
+  imports: [CommonModule, FormsModule, Navbar, RouterLink],
   templateUrl: './open_cash_register.html',
   styleUrl: './open_cash_register.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
