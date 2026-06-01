@@ -2,7 +2,7 @@
   <app-navbar></app-navbar>
 
   <main class="edit-client-layout">
-    <app-sidebar [items]="sidebarItems"></app-sidebar>
+    <app-sidebar context="company" [companyId]="companyId"></app-sidebar>
 
     <section class="edit-client-content">
       <section class="edit-client-panel panel">

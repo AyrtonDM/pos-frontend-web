@@ -2,7 +2,7 @@
   <app-navbar />
 
   <main class="view-product-layout">
-    <app-sidebar [items]="sidebarItems" />
+    <app-sidebar context="company" [companyId]="companyId" />
 
     <section class="view-product-content">
       <section class="view-product-panel panel">

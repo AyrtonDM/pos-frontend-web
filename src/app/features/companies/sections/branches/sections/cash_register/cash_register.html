@@ -2,7 +2,7 @@
   <app-navbar />
 
   <main class="cash-register-layout">
-    <app-sidebar [items]="sidebarItems" />
+    <app-sidebar context="branch" [companyId]="companyId" [branchId]="branchId" />
 
     <section class="cash-register-content">
       <header class="cash-register-header panel">

@@ -2,12 +2,7 @@
   <app-navbar />
 
   <main class="open-cash-register-layout">
-    <app-sidebar
-      role="administrator"
-      [companyId]="companyId"
-      [branchId]="branchId"
-      activeItemLabel="Cajas"
-    />
+    <app-sidebar context="cash_register" [companyId]="companyId" [branchId]="branchId" [cashRegisterId]="cashRegisterId" />
 
     <section class="open-cash-register-content">
       <section class="open-cash-register-header panel">
