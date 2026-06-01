@@ -98,17 +98,28 @@
 
               <div class="form-group branches-checklist-field">
                 <p class="label">Sucursal(es)</p>
-                <div class="branches-checklist">
-                  @for (branch of branches; track obtenerIdSucursal(branch)) {
-                    <label class="checkbox-row">
-                      <input
-                        type="checkbox"
-                        [name]="'invite-branch-' + obtenerIdSucursal(branch)"
-                        [checked]="isInvitationBranchSelected(obtenerIdSucursal(branch))"
-                        (change)="toggleInvitationBranch(obtenerIdSucursal(branch), $any($event.target).checked)"
-                      />
-                      <span>{{ branch.nombre }}</span>
-                    </label>
+
+                <div class="branches-checklist-panel">
+                  @if (cargandoSucursales) {
+                    <p class="text-muted">Cargando sucursales...</p>
+                  } @else if (errorSucursales) {
+                    <p class="feedback feedback-error">{{ errorSucursales }}</p>
+                  } @else if (branches.length === 0) {
+                    <p class="text-muted">No hay sucursales registradas.</p>
+                  } @else {
+                    <div class="branches-checklist">
+                      @for (branch of branches; track obtenerIdSucursal(branch)) {
+                        <label class="checkbox-row">
+                          <input
+                            type="checkbox"
+                            [name]="'invite-branch-' + obtenerIdSucursal(branch)"
+                            [checked]="isInvitationBranchSelected(obtenerIdSucursal(branch))"
+                            (change)="toggleInvitationBranch(obtenerIdSucursal(branch), $any($event.target).checked)"
+                          />
+                          <span>{{ branch.nombre }}</span>
+                        </label>
+                      }
+                    </div>
                   }
                 </div>
               </div>

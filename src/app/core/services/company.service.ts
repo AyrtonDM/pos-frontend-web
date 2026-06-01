@@ -59,11 +59,17 @@ export interface Branch {
 
 export interface InviteEmployeeRequest {
   email: string;
+  id_sucursales: number[];
+  id_rol: number;
 }
 
 export interface InviteEmployeeResponse {
   mensaje?: string;
   message?: string;
+  email?: string;
+  link_invitacion?: string;
+  id_sucursales?: number[];
+  id_rol?: number;
   [key: string]: unknown;
 }
 
@@ -324,11 +330,10 @@ export class CompanyService {
 
   invitarEmpleado(
     idEmpresa: string,
-    idSucursal: string,
     payload: InviteEmployeeRequest,
   ): Observable<InviteEmployeeResponse> {
     return this.apiService.post<InviteEmployeeResponse, InviteEmployeeRequest>(
-      `/api/empresas/${idEmpresa}/sucursales/${idSucursal}/invitar-empleado`,
+      `/api/empresas/${idEmpresa}/invitar-empleado`,
       payload,
     );
   }

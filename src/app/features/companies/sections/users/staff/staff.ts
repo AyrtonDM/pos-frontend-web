@@ -1,7 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { forkJoin } from 'rxjs';
 import {
   Branch,
   CompanyService,
@@ -101,9 +100,18 @@ export class Staff implements OnInit {
     this.mensajeInvitacion = '';
 
     const email = this.emailInvitacion.trim();
+    const idSucursales = this.selectedInvitationBranchIds
+      .map((branchId) => Number(branchId))
+      .filter((branchId) => Number.isFinite(branchId));
+    const idRol = Number(this.selectedRole);
 
-    if (!this.companyId || this.selectedInvitationBranchIds.length === 0) {
+    if (!this.companyId || idSucursales.length === 0) {
       this.errorInvitacion = 'Selecciona al menos una sucursal para enviar la invitacion.';
+      return;
+    }
+
+    if (!Number.isFinite(idRol)) {
+      this.errorInvitacion = 'Selecciona un rol para enviar la invitacion.';
       return;
     }
 
@@ -114,28 +122,29 @@ export class Staff implements OnInit {
 
     this.cargandoInvitacion = true;
 
-    const invitations = this.selectedInvitationBranchIds.map((branchId) =>
-      this.companyService.invitarEmpleado(this.companyId, branchId, { email }),
-    );
-
-    forkJoin(invitations).subscribe({
-      next: (responses) => {
-        this.cargandoInvitacion = false;
-        const firstResponse = responses[0];
-        this.mensajeInvitacion =
-          firstResponse?.mensaje ??
-          firstResponse?.message ??
-          `Invitacion enviada correctamente a ${responses.length} sucursal(es).`;
-        this.emailInvitacion = '';
-        this.cargarPersonal();
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.cargandoInvitacion = false;
-        this.errorInvitacion = 'No se pudo enviar la invitacion. Intenta nuevamente.';
-        this.cdr.detectChanges();
-      },
-    });
+    this.companyService
+      .invitarEmpleado(this.companyId, {
+        email,
+        id_sucursales: idSucursales,
+        id_rol: idRol,
+      })
+      .subscribe({
+        next: (response) => {
+          this.cargandoInvitacion = false;
+          this.mensajeInvitacion =
+            response?.mensaje ??
+            response?.message ??
+            `Invitacion enviada correctamente a ${idSucursales.length} sucursal(es).`;
+          this.emailInvitacion = '';
+          this.cargarPersonal();
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.cargandoInvitacion = false;
+          this.errorInvitacion = 'No se pudo enviar la invitacion. Intenta nuevamente.';
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   protected onBranchChange(): void {
