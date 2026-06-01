@@ -1,12 +1,14 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
+import { PlanSelectorModalComponent } from '../../sections/payments/plan-selector-modal/plan-selector-modal';
 
 import { Company, CompanyService } from '../../../../../core/services/company.service';
 
 @Component({
   selector: 'app-my-companies',
-  imports: [Navbar, RouterLink],
+  standalone: true,
+  imports: [Navbar, RouterLink, PlanSelectorModalComponent],
   templateUrl: './my-companies.html',
   styleUrl: './my-companies.css',
 })
@@ -14,11 +16,20 @@ export class MyCompanies implements OnInit {
   protected companies: Company[] = [];
   protected cargandoEmpresas = false;
   protected errorEmpresas = '';
+  protected empresaSeleccionadaId: number | null = null;
 
   constructor(
     private readonly companyService: CompanyService,
     private readonly cdr: ChangeDetectorRef,
   ) {}
+
+  abrirModalPago(idEmpresa: string | number): void {
+    this.empresaSeleccionadaId = typeof idEmpresa === 'string' ? parseInt(idEmpresa, 10) : idEmpresa;
+  }
+
+  cerrarModalPago(): void {
+    this.empresaSeleccionadaId = null;
+  }
 
   ngOnInit(): void {
     this.cargarMisEmpresas();
