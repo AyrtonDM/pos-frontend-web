@@ -95,9 +95,66 @@
                             }
                           </td>
                           <td class="cash-register-actions-cell">
-                            <button class="btn btn-primary btn-sm" type="button" (click)="abrirEdicion(cashRegister)">
-                              Editar
-                            </button>
+                            <div class="cash-register-actions">
+                              <a
+                                class="btn btn-primary btn-sm"
+                                [class.disabled]="!cashRegister.canOpen"
+                                [class.conflict-disabled]="cashRegister.activo && !cashRegister.canOpen"
+                                [attr.aria-disabled]="!cashRegister.canOpen"
+                                [routerLink]="
+                                  cashRegister.canOpen && cashRegister.actionLabel === 'Abrir Caja'
+                                    ? [
+                                        '/administrator/company',
+                                        companyId,
+                                        'branch',
+                                        branchId,
+                                        'cash-register',
+                                        cashRegister.id,
+                                        'open-cash-register',
+                                      ]
+                                    : cashRegister.canOpen && cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId
+                                      ? [
+                                          '/administrator/company',
+                                          companyId,
+                                          'branch',
+                                          branchId,
+                                          'cash-register',
+                                          cashRegister.id,
+                                          'sales',
+                                        ]
+                                      : null
+                                "
+                                [queryParams]="
+                                  cashRegister.canOpen && cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId
+                                    ? { sessionId: cashRegister.sessionId }
+                                    : null
+                                "
+                              >
+                                {{ cashRegister.actionLabel }}
+                              </a>
+
+                              @if (cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId) {
+                                <a
+                                  class="btn btn-sm btn-secondary"
+                                  [routerLink]="[
+                                    '/administrator/company',
+                                    companyId,
+                                    'branch',
+                                    branchId,
+                                    'cash-register',
+                                    cashRegister.id,
+                                    'close-cash-register',
+                                  ]"
+                                  [queryParams]="{ sessionId: cashRegister.sessionId }"
+                                >
+                                  Cerrar caja
+                                </a>
+                              }
+
+                              <button class="btn btn-secondary btn-sm" type="button" (click)="abrirEdicion(cashRegister)">
+                                Editar
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       }
