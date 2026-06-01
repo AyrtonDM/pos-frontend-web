@@ -191,24 +191,22 @@ export class Staff implements OnInit {
       return;
     }
 
-    this.staffMembers = this.staffMembers
-      .map((member) => {
-        if (member.id_usuario_rol !== this.editingStaffId) {
-          return member;
-        }
+    this.staffMembers = this.staffMembers.map((member) => {
+      if (member.id_usuario_rol !== this.editingStaffId) {
+        return member;
+      }
 
-        return {
-          ...member,
-          id_rol: Number(this.editRole),
-          id_sucursal: Number(this.editBranchIds[0]),
+      return {
+        ...member,
+        id_rol: Number(this.editRole),
+        id_sucursal: Number(this.editBranchIds[0]),
+        activo: this.editStaffActive,
+        usuario: {
+          ...member.usuario,
           activo: this.editStaffActive,
-          usuario: {
-            ...member.usuario,
-            activo: this.editStaffActive,
-          },
-        };
-      })
-      .filter((member) => String(member.id_sucursal) === this.selectedBranchId);
+        },
+      };
+    });
 
     this.cancelarEdicion();
   }
@@ -306,15 +304,15 @@ export class Staff implements OnInit {
   private cargarPersonal(): void {
     this.errorPersonal = '';
 
-    if (!this.companyId || !this.selectedBranchId) {
+    if (!this.companyId) {
       this.staffMembers = [];
-      this.errorPersonal = 'Selecciona una sucursal para cargar el personal.';
+      this.errorPersonal = 'No se encontro la empresa para cargar el personal.';
       return;
     }
 
     this.cargandoPersonal = true;
 
-    this.companyService.getEmpleadosSucursal(this.companyId, this.selectedBranchId).subscribe({
+    this.companyService.getPersonalEmpresa(this.companyId).subscribe({
       next: (staffMembers) => {
         this.staffMembers = staffMembers;
         this.cargandoPersonal = false;
@@ -323,7 +321,7 @@ export class Staff implements OnInit {
       error: () => {
         this.staffMembers = [];
         this.cargandoPersonal = false;
-        this.errorPersonal = 'No se pudo cargar el personal de la sucursal.';
+        this.errorPersonal = 'No se pudo cargar el personal de la empresa.';
         this.cdr.detectChanges();
       },
     });

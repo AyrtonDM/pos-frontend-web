@@ -391,6 +391,10 @@ export class CompanyService {
     );
   }
 
+  getPersonalEmpresa(idEmpresa: string): Observable<EmployeeRole[]> {
+    return this.apiService.get<EmployeeRole[]>(`/api/empresas/${idEmpresa}/personal`);
+  }
+
   getTiposMovimientoCaja(): Observable<CashRegisterMovementType[]> {
     return this.apiService.get<CashRegisterMovementType[]>('/api/empresas/tipos-movimiento-caja');
   }
