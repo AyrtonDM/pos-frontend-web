@@ -39,39 +39,7 @@
       <button class="btn btn-danger" type="button" (click)="cerrarSesion()">Cerrar sesion</button>
     } @else {
       <a class="btn btn-secondary" routerLink="/register"> Registrar </a>
-      <div class="login-menu">
-        <button
-          class="btn btn-primary login-trigger"
-          type="button"
-          aria-haspopup="menu"
-          [attr.aria-expanded]="menuLoginAbierto()"
-          (click)="alternarMenuLogin()"
-        >
-          Iniciar sesion
-          <span aria-hidden="true">▾</span>
-        </button>
-
-        @if (menuLoginAbierto()) {
-          <div class="login-dropdown panel" role="menu">
-            <a
-              routerLink="/login"
-              [queryParams]="{ rol: 'administrador' }"
-              role="menuitem"
-              (click)="cerrarMenuLogin()"
-            >
-              Administrador
-            </a>
-            <a
-              routerLink="/login"
-              [queryParams]="{ rol: 'empleado' }"
-              role="menuitem"
-              (click)="cerrarMenuLogin()"
-            >
-              Empleado
-            </a>
-          </div>
-        }
-      </div>
+      <a class="btn btn-primary login-trigger" routerLink="/login">Iniciar sesion</a>
     }
   </div>
 </nav>
@@ -81,4 +49,5 @@
   [detail]="activeDetail"
   (closeRequested)="cerrarDetalleAlerta()"
 ></app-notification-detail-modal>
+
 

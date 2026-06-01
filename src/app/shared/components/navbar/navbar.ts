@@ -16,7 +16,6 @@ import { NotificationDetailModel } from '../notification-center/stock-alerts/sto
   styleUrls: ['./navbar.css'],
 })
 export class Navbar implements OnInit, OnDestroy {
-  protected readonly menuLoginAbierto = signal(false);
   protected readonly notifsOpen = signal(false);
   protected readonly unreadNotifications = signal(0);
   protected activeDetail: NotificationDetailModel | null = null;
@@ -56,17 +55,8 @@ export class Navbar implements OnInit, OnDestroy {
     }
   }
 
-  protected alternarMenuLogin(): void {
-    this.menuLoginAbierto.update((abierto) => !abierto);
-  }
-
-  protected cerrarMenuLogin(): void {
-    this.menuLoginAbierto.set(false);
-  }
-
   protected cerrarSesion(): void {
     this.authService.logout();
-    this.cerrarMenuLogin();
     void this.router.navigate(['/']);
   }
 
