@@ -7,6 +7,10 @@ import {
   CashRegisterResponse,
   CashRegisterService,
 } from '../../../../../../core/services/cash-register.service';
+import {
+  CompanyPermissionCode,
+  CompanyPermissionsService,
+} from '../../../../../../core/services/company-permissions.service';
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
@@ -48,6 +52,7 @@ export class CashRegister implements OnInit {
 
   private readonly route = inject(ActivatedRoute);
   private readonly cashRegisterService = inject(CashRegisterService);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -88,7 +93,11 @@ export class CashRegister implements OnInit {
   }
 
   protected setActiveTab(tab: CashRegisterTab): void {
-    if (tab === 'edit' && this.editingCashRegisterId === null) {
+    if (tab === 'register' && !this.hasPermission('CAJA_EDITAR')) {
+      return;
+    }
+
+    if (tab === 'edit' && (this.editingCashRegisterId === null || !this.hasPermission('CAJA_EDITAR'))) {
       return;
     }
 
@@ -131,6 +140,11 @@ export class CashRegister implements OnInit {
   protected registrarCaja(event: SubmitEvent): void {
     event.preventDefault();
     this.clearMessages();
+
+    if (!this.hasPermission('CAJA_EDITAR')) {
+      this.error = 'No tienes permiso para registrar cajas.';
+      return;
+    }
 
     const codigo = this.registerForm.codigo.trim();
     const nombre = this.registerForm.nombre.trim();
@@ -190,6 +204,11 @@ export class CashRegister implements OnInit {
   }
 
   protected abrirEdicion(cashRegister: CashRegisterItem): void {
+    if (!this.hasPermission('CAJA_EDITAR')) {
+      this.error = 'No tienes permiso para editar cajas.';
+      return;
+    }
+
     this.clearMessages();
     this.editingCashRegisterId = cashRegister.id;
     this.editForm = {
@@ -214,6 +233,11 @@ export class CashRegister implements OnInit {
   protected guardarCambios(event: SubmitEvent): void {
     event.preventDefault();
     this.clearMessages();
+
+    if (!this.hasPermission('CAJA_EDITAR')) {
+      this.error = 'No tienes permiso para editar cajas.';
+      return;
+    }
 
     const codigo = this.editForm.codigo.trim();
     const nombre = this.editForm.nombre.trim();
@@ -402,6 +426,10 @@ export class CashRegister implements OnInit {
   private clearMessages(): void {
     this.error = '';
     this.mensaje = '';
+  }
+
+  protected hasPermission(permission: CompanyPermissionCode): boolean {
+    return this.companyPermissionsService.permissions()[permission] === true;
   }
 }
 

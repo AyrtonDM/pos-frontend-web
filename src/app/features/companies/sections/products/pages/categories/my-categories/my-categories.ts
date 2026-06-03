@@ -3,6 +3,10 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CompanyService } from '../../../../../../../core/services/company.service';
 import {
+  CompanyPermissionCode,
+  CompanyPermissionsService,
+} from '../../../../../../../core/services/company-permissions.service';
+import {
   CategoriaProducto,
   CrearCategoriaRequest,
   CrearSubcategoriaRequest,
@@ -22,6 +26,7 @@ import { Sidebar } from '../../../../../../../shared/components/sidebar/sidebar'
 export class CategoriasPanel implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly companyService = inject(CompanyService);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
   private readonly productService = inject(ProductService);
   private readonly cdr = inject(ChangeDetectorRef);
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -58,6 +63,10 @@ export class CategoriasPanel implements OnInit {
   }
 
   protected setActiveTab(tab: 'list' | 'register'): void {
+    if (tab === 'register' && !this.hasPermission('CATEGORIA_CREAR')) {
+      return;
+    }
+
     this.activeTab = tab;
     this.limpiarMensajes();
 
@@ -69,6 +78,11 @@ export class CategoriasPanel implements OnInit {
   protected registrarCategoria(event: SubmitEvent): void {
     event.preventDefault();
     this.limpiarMensajes();
+
+    if (!this.hasPermission('CATEGORIA_CREAR')) {
+      this.errorGeneral = 'No tienes permiso para registrar categorias.';
+      return;
+    }
 
     if (!this.companyId) {
       this.errorGeneral = 'No se encontro la empresa para registrar la categoria.';
@@ -101,6 +115,11 @@ export class CategoriasPanel implements OnInit {
 
 
   protected registrarSubcategoriaTemporal(): void {
+    if (!this.hasPermission('CATEGORIA_CREAR')) {
+      this.errorGeneral = 'No tienes permiso para registrar subcategorias.';
+      return;
+    }
+
     if (!this.subcategoriaForm.nombre.trim()) {
       this.errorGeneral = 'El nombre de la subcategoria es obligatorio.';
       return;
@@ -249,6 +268,10 @@ export class CategoriasPanel implements OnInit {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  protected hasPermission(permission: CompanyPermissionCode): boolean {
+    return this.companyPermissionsService.permissions()[permission] === true;
   }
 }
 

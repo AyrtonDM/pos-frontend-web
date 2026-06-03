@@ -30,7 +30,7 @@
           }
 
           <div class="action-row">
-            <button class="primary-action" type="submit" [disabled]="loading()">
+            <button class="primary-action" type="submit" [disabled]="loading() || !hasPermission('REPORTE_GENERAR')">
               {{ loading() ? 'Generando�' : 'Generar reporte' }}
             </button>
           </div>
@@ -65,6 +65,7 @@
               }
             </p>
           </div>
+          @if (hasPermission('REPORTE_EXPORTAR')) {
           <div class="export-actions" aria-label="Exportar reporte">
             <button class="secondary-action" type="button" (click)="exportReport('excel')" [disabled]="!hasRows() || exportingFormat() !== null">
               {{ exportingFormat() === 'excel' ? 'Exportando Excel�' : 'Excel' }}
@@ -73,6 +74,7 @@
               {{ exportingFormat() === 'pdf' ? 'Exportando PDF�' : 'PDF' }}
             </button>
           </div>
+          }
         </div>
 
         @if (!report() && !loading()) {

@@ -9,6 +9,10 @@ import {
   ClientCategoryResponse,
   CreateClientCategoryResponse,
 } from '../../../../../../../core/services/company.service';
+import {
+  CompanyPermissionCode,
+  CompanyPermissionsService,
+} from '../../../../../../../core/services/company-permissions.service';
 import { Navbar } from '../../../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../../../shared/components/sidebar/sidebar';
 
@@ -42,6 +46,7 @@ interface ClientCategory {
 export class CategoriasClientes {
   private readonly route = inject(ActivatedRoute);
   private readonly companyService = inject(CompanyService);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -68,6 +73,10 @@ export class CategoriasClientes {
   }
 
   protected setActiveTab(tab: ClientCategoryTab): void {
+    if (tab === 'register' && !this.hasPermission('CATEGORIA_CREAR')) {
+      return;
+    }
+
     this.activeTab = tab;
     if (tab === 'register') {
       this.errorRegistro = '';
@@ -82,6 +91,11 @@ export class CategoriasClientes {
 
     this.errorRegistro = '';
     this.mensajeRegistro = '';
+
+    if (!this.hasPermission('CATEGORIA_CREAR')) {
+      this.errorRegistro = 'No tienes permiso para registrar categorias.';
+      return;
+    }
 
     const nombre = this.categoryForm.nombre.trim();
     if (!nombre) {
@@ -182,6 +196,10 @@ export class CategoriasClientes {
       limiteCredito: Number(category.limite_credito),
       activo: category.activo,
     };
+  }
+
+  protected hasPermission(permission: CompanyPermissionCode): boolean {
+    return this.companyPermissionsService.permissions()[permission] === true;
   }
 }
 

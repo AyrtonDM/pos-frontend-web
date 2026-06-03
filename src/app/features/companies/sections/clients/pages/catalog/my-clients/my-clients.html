@@ -15,16 +15,18 @@
 
       <section class="tabs-panel panel">
         <div class="tabs" role="tablist" aria-label="Secciones de clientes">
-          <button
-            class="tab-button"
-            [class.active]="activeTab === 'invite'"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'invite'"
-            (click)="setActiveTab('invite')"
-          >
-            Invitar Cliente
-          </button>
+          @if (hasPermission('CLIENTE_CREAR')) {
+            <button
+              class="tab-button"
+              [class.active]="activeTab === 'invite'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'invite'"
+              (click)="setActiveTab('invite')"
+            >
+              Invitar Cliente
+            </button>
+          }
           <button
             class="tab-button"
             [class.active]="activeTab === 'list'"
@@ -103,12 +105,14 @@
                           <td>{{ client.nombre }}</td>
                           <td>{{ client.correo }}</td>
                           <td class="actions-cell">
-                            <a
-                              class="btn btn-primary btn-sm"
-                              [routerLink]="['/company', companyId, 'clients', client.idCliente, 'edit-client']"
-                            >
-                              Editar
-                            </a>
+                            @if (hasPermission('CLIENTE_EDITAR')) {
+                              <a
+                                class="btn btn-primary btn-sm"
+                                [routerLink]="['/company', companyId, 'clients', client.idCliente, 'edit-client']"
+                              >
+                                Editar
+                              </a>
+                            }
                           </td>
                         </tr>
                       }

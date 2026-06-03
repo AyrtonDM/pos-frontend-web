@@ -3,6 +3,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
+import {
+  CompanyPermissionCode,
+  CompanyPermissionsService,
+} from '../../../../../core/services/company-permissions.service';
 import { DynamicReportResponse, DynamicReportService, ReportExportFormat } from '../../../../../core/services/dynamic-report.service';
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../shared/components/sidebar/sidebar';
@@ -17,6 +21,7 @@ import { Sidebar } from '../../../../../shared/components/sidebar/sidebar';
 export class DynamicReports {
   private readonly route = inject(ActivatedRoute);
   private readonly reportService = inject(DynamicReportService);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
   protected readonly promptControl = new FormControl('', {
@@ -90,6 +95,11 @@ export class DynamicReports {
   });
 
   protected runReport(): void {
+    if (!this.hasPermission('REPORTE_GENERAR')) {
+      this.errorMessage.set('No tienes permiso para generar reportes.');
+      return;
+    }
+
     if (!this.companyId) {
       this.errorMessage.set('No se encontro el identificador de la empresa en la ruta.');
       return;
@@ -124,6 +134,11 @@ export class DynamicReports {
   }
   protected exportReport(format: ReportExportFormat): void {
     const report = this.report();
+
+    if (!this.hasPermission('REPORTE_EXPORTAR')) {
+      this.errorMessage.set('No tienes permiso para exportar reportes.');
+      return;
+    }
 
     if (!report || this.exportingFormat()) {
       return;
@@ -181,6 +196,10 @@ export class DynamicReports {
 
   protected formatLabel(value: string): string {
     return this.toLabel(value);
+  }
+
+  protected hasPermission(permission: CompanyPermissionCode): boolean {
+    return this.companyPermissionsService.permissions()[permission] === true;
   }
 
   private exportExcelReport(): void {

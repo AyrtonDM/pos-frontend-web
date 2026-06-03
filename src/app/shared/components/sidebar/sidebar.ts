@@ -127,6 +127,7 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
       {
         label: 'Panel',
         link: ['/company', context.companyId, 'dashboard'],
+        permission: 'DASHBOARD_VER',
       },
       {
         label: 'Sucursales',
@@ -151,47 +152,55 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
       },
       {
         label: 'Clientes',
-        link: ['/company', context.companyId, 'clients'],
+        permission: ['CLIENTE_VER', 'CATEGORIA_VER'],
         children: [
           {
             label: 'Agenda',
             link: ['/company', context.companyId, 'clients'],
+            permission: 'CLIENTE_VER',
           },
           {
             label: 'Categorias',
             link: ['/company', context.companyId, 'clients', 'categories'],
+            permission: 'CATEGORIA_VER',
           },
         ],
       },
       {
         label: 'Productos',
-        link: ['/company', context.companyId, 'products'],
+        permission: ['PRODUCTO_VER', 'CATEGORIA_VER'],
         children: [
           {
             label: 'Catalogo',
             link: ['/company', context.companyId, 'products'],
+            permission: 'PRODUCTO_VER',
           },
           {
             label: 'Categoria',
             link: ['/company', context.companyId, 'products', 'categories'],
+            permission: 'CATEGORIA_VER',
           },
         ],
       },
       {
         label: 'Reportes',
         link: ['/company', context.companyId, 'reports', 'static'],
+        permission: 'REPORTE_GENERAR',
         children: [
           {
             label: 'Estaticos',
             link: ['/company', context.companyId, 'reports', 'static'],
+            permission: 'REPORTE_GENERAR',
           },
           {
             label: 'Parametrizados',
             link: ['/company', context.companyId, 'reports', 'parameterized'],
+            permission: 'REPORTE_GENERAR',
           },
           {
             label: 'Dinamicos',
             link: ['/company', context.companyId, 'reports', 'dynamic'],
+            permission: 'REPORTE_GENERAR',
           },
         ],
       },
@@ -203,10 +212,12 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
       {
         label: 'Cajas',
         link: ['/company', context.companyId, 'branch', context.branchId, 'cash-register'],
+        permission: 'CAJA_VER',
       },
       {
         label: 'Inventario',
         link: ['/company', context.companyId, 'branch', context.branchId, 'inventario'],
+        permission: ['STOCK_VER', 'MOVIMIENTO_VER'],
       },
     ];
   }
@@ -218,6 +229,7 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
       {
         label: 'Ventas',
         link: [...cashRegisterPath, 'sales'],
+        permission: 'VENTA_VER',
         queryParams: {
           section: 'sales',
           sessionId: context.cashRegisterSessionId,
@@ -226,6 +238,7 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
       {
         label: 'Movimientos',
         link: [...cashRegisterPath, 'sales'],
+        permission: 'MOVIMIENTO_VER',
         queryParams: {
           section: 'movimientos',
           sessionId: context.cashRegisterSessionId,

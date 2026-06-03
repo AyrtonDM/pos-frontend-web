@@ -9,6 +9,10 @@ import {
   StockSucursalProducto,
   TipoMovimiento,
 } from '../../../../../../core/services/product.service';
+import {
+  CompanyPermissionCode,
+  CompanyPermissionsService,
+} from '../../../../../../core/services/company-permissions.service';
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
@@ -45,12 +49,13 @@ interface MovementRow {
 export class Inventario implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
   protected readonly branchId = this.route.snapshot.paramMap.get('branchId') ?? '';
 
-  protected activeTab: InventoryTab = 'stock';
+  protected activeTab: InventoryTab = this.hasPermission('STOCK_VER') ? 'stock' : 'movements';
   protected showRegisterMovementTab = false;
 
   protected cargandoStock = false;
@@ -86,6 +91,14 @@ export class Inventario implements OnInit {
   }
 
   protected setActiveTab(tab: InventoryTab): void {
+    if (tab === 'stock' && !this.hasPermission('STOCK_VER')) {
+      return;
+    }
+
+    if (tab === 'movements' && !this.hasPermission('MOVIMIENTO_VER')) {
+      return;
+    }
+
     this.activeTab = tab;
     this.limpiarMensajesMovimiento();
 
@@ -99,6 +112,11 @@ export class Inventario implements OnInit {
   }
 
   protected openRegisterMovementTab(): void {
+    if (!this.hasPermission('MOVIMIENTO_REGISTRAR')) {
+      this.errorMovimiento = 'No tienes permiso para registrar movimientos.';
+      return;
+    }
+
     this.activeTab = 'movements';
     this.showRegisterMovementTab = true;
     this.limpiarMensajesMovimiento();
@@ -116,6 +134,11 @@ export class Inventario implements OnInit {
   protected registrarMovimiento(event: SubmitEvent): void {
     event.preventDefault();
     this.limpiarMensajesMovimiento();
+
+    if (!this.hasPermission('MOVIMIENTO_REGISTRAR')) {
+      this.errorMovimiento = 'No tienes permiso para registrar movimientos.';
+      return;
+    }
 
     if (!this.companyId || !this.branchId) {
       this.errorMovimiento = 'No se encontro la empresa o sucursal para registrar el movimiento.';
@@ -157,6 +180,11 @@ export class Inventario implements OnInit {
   }
 
   protected iniciarEdicionStock(item: StockItemRow): void {
+    if (!this.hasPermission('STOCK_CONFIGURAR')) {
+      this.errorStock = 'No tienes permiso para configurar stock.';
+      return;
+    }
+
     this.limpiarMensajesStock();
     this.editandoStockProductoId = item.idProducto;
     this.stockEditForm = {
@@ -176,6 +204,11 @@ export class Inventario implements OnInit {
 
   protected guardarStock(item: StockItemRow): void {
     this.limpiarMensajesStock();
+
+    if (!this.hasPermission('STOCK_CONFIGURAR')) {
+      this.errorStock = 'No tienes permiso para configurar stock.';
+      return;
+    }
 
     if (!this.companyId || !this.branchId) {
       this.errorStock = 'No se encontro la empresa o sucursal para actualizar el stock.';
@@ -232,6 +265,10 @@ export class Inventario implements OnInit {
 
   protected isStockWarning(item: StockItemRow): boolean {
     return this.isStockNearMin(item) || this.isStockNearMax(item);
+  }
+
+  protected hasPermission(permission: CompanyPermissionCode): boolean {
+    return this.companyPermissionsService.permissions()[permission] === true;
   }
 
   private cargarInventario(): void {

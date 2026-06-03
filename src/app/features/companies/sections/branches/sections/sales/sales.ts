@@ -10,6 +10,10 @@ import {
   ClientCategoryResponse,
 } from '../../../../../../core/services/company.service';
 import {
+  CompanyPermissionCode,
+  CompanyPermissionsService,
+} from '../../../../../../core/services/company-permissions.service';
+import {
   CreateSaleRequest,
   CashRegisterMovementResponse,
   CashRegisterMovementListItem,
@@ -124,6 +128,7 @@ export class Sales implements OnInit {
   private readonly productService = inject(ProductService);
   private readonly companyService = inject(CompanyService);
   private readonly cashRegisterService = inject(CashRegisterService);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -135,8 +140,8 @@ export class Sales implements OnInit {
   protected viewMode: SessionViewMode = this.resolveViewMode(this.route.snapshot.queryParamMap.get('section'));
   protected sidebarActiveItemLabel = this.viewMode === 'movements' ? 'Movimientos' : 'Ventas';
 
-  protected activeTab: SalesTab = 'register';
-  protected movementActiveTab: MovementTab = 'register';
+  protected activeTab: SalesTab = this.hasPermission('VENTA_CREAR') ? 'register' : 'history';
+  protected movementActiveTab: MovementTab = this.hasPermission('MOVIMIENTO_REGISTRAR') ? 'register' : 'list';
   protected searchTerm = '';
   protected selectedClientId: number | null = null;
   protected selectedSaleTypeId: number | null = null;
@@ -203,6 +208,10 @@ export class Sales implements OnInit {
   }
 
   protected setActiveTab(tab: SalesTab): void {
+    if (tab === 'register' && !this.hasPermission('VENTA_CREAR')) {
+      return;
+    }
+
     if (tab !== 'payment') {
       this.closePaymentTab();
     }
@@ -215,6 +224,14 @@ export class Sales implements OnInit {
   }
 
   protected setMovementTab(tab: MovementTab): void {
+    if (tab === 'register' && !this.hasPermission('MOVIMIENTO_REGISTRAR')) {
+      return;
+    }
+
+    if (tab === 'list' && !this.hasPermission('MOVIMIENTO_VER')) {
+      return;
+    }
+
     this.movementActiveTab = tab;
     this.limpiarMensajesMovimientoCaja();
 
@@ -256,6 +273,11 @@ export class Sales implements OnInit {
   }
 
   protected addProduct(product: ProductSearchItem): void {
+    if (!this.hasPermission('VENTA_CREAR')) {
+      this.registerError = 'No tienes permiso para registrar ventas.';
+      return;
+    }
+
     this.registerError = '';
     this.registerMessage = '';
 
@@ -266,7 +288,7 @@ export class Sales implements OnInit {
       return;
     }
 
-    const clientDiscount = this.getClientDiscountPercentage();
+    const clientDiscount = this.hasPermission('VENTA_DESCUENTO') ? this.getClientDiscountPercentage() : 0;
 
     this.saleDetails = [
       ...this.saleDetails,
@@ -302,6 +324,12 @@ export class Sales implements OnInit {
   }
 
   protected updateItemDiscount(item: SaleDetailItem, value: number | string): void {
+    if (!this.hasPermission('VENTA_DESCUENTO')) {
+      item.descuento = 0;
+      item.descuentoTipo = 'fixed';
+      return;
+    }
+
     const discount = this.normalizeMoney(value);
     item.descuento = item.descuentoTipo === 'percentage'
       ? Math.min(discount, 100)
@@ -309,6 +337,12 @@ export class Sales implements OnInit {
   }
 
   protected updateItemDiscountType(item: SaleDetailItem, type: DiscountType): void {
+    if (!this.hasPermission('VENTA_DESCUENTO')) {
+      item.descuentoTipo = 'fixed';
+      item.descuento = 0;
+      return;
+    }
+
     item.descuentoTipo = type;
     this.updateItemDiscount(item, item.descuento);
   }
@@ -334,6 +368,11 @@ export class Sales implements OnInit {
   protected cobrar(): void {
     this.registerError = '';
     this.registerMessage = '';
+
+    if (!this.hasPermission('VENTA_CREAR')) {
+      this.registerError = 'No tienes permiso para registrar ventas.';
+      return;
+    }
 
     if (this.saleDetails.length === 0) {
       this.registerError = 'Agrega al menos un producto al detalle de venta.';
@@ -365,6 +404,11 @@ export class Sales implements OnInit {
 
   protected registrarPago(): void {
     this.registerError = '';
+
+    if (!this.hasPermission('VENTA_CREAR')) {
+      this.registerError = 'No tienes permiso para registrar ventas.';
+      return;
+    }
 
     if (!this.cashRegisterSessionId) {
       this.registerError = 'No se encontro la sesion de caja para registrar la venta.';
@@ -486,6 +530,11 @@ export class Sales implements OnInit {
   protected registrarMovimientoCaja(event: SubmitEvent): void {
     event.preventDefault();
     this.limpiarMensajesMovimientoCaja();
+
+    if (!this.hasPermission('MOVIMIENTO_REGISTRAR')) {
+      this.movementError = 'No tienes permiso para registrar movimientos de caja.';
+      return;
+    }
 
     const concepto = this.movementConcept.trim();
     const monto = Number(this.movementAmount);
@@ -753,7 +802,7 @@ export class Sales implements OnInit {
 
         // If a category with a base discount exists, apply it to current sale details
         const pct = this.getClientDiscountPercentage();
-        if (pct > 0) {
+        if (pct > 0 && this.hasPermission('VENTA_DESCUENTO')) {
           this.applyClientDiscountToSaleDetails(pct);
         }
 
@@ -984,8 +1033,8 @@ export class Sales implements OnInit {
   private resetViewState(): void {
     this.clearSalesMessages();
     this.limpiarMensajesMovimientoCaja();
-    this.activeTab = 'register';
-    this.movementActiveTab = 'register';
+    this.activeTab = this.hasPermission('VENTA_CREAR') ? 'register' : 'history';
+    this.movementActiveTab = this.hasPermission('MOVIMIENTO_REGISTRAR') ? 'register' : 'list';
     this.closePaymentTab();
   }
 
@@ -1001,6 +1050,10 @@ export class Sales implements OnInit {
 
   private stringifyOptional(value: string | number | null | undefined): string {
     return value === null || value === undefined ? '' : String(value);
+  }
+
+  protected hasPermission(permission: CompanyPermissionCode): boolean {
+    return this.companyPermissionsService.permissions()[permission] === true;
   }
 
 }

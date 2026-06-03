@@ -27,27 +27,31 @@
       <section class="tabs-panel panel">
         @if (viewMode === 'sales') {
           <div class="tabs" role="tablist" aria-label="Secciones de ventas">
-            <button
-              class="tab-button"
-              [class.active]="activeTab === 'register'"
-              type="button"
-              role="tab"
-              [attr.aria-selected]="activeTab === 'register'"
-              (click)="setActiveTab('register')"
-            >
-              Registrar Ventas
-            </button>
+            @if (hasPermission('VENTA_CREAR')) {
+              <button
+                class="tab-button"
+                [class.active]="activeTab === 'register'"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeTab === 'register'"
+                (click)="setActiveTab('register')"
+              >
+                Registrar Ventas
+              </button>
+            }
 
-            <button
-              class="tab-button"
-              [class.active]="activeTab === 'history'"
-              type="button"
-              role="tab"
-              [attr.aria-selected]="activeTab === 'history'"
-              (click)="setActiveTab('history')"
-            >
-              Historial de Ventas
-            </button>
+            @if (hasPermission('VENTA_VER')) {
+              <button
+                class="tab-button"
+                [class.active]="activeTab === 'history'"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeTab === 'history'"
+                (click)="setActiveTab('history')"
+              >
+                Historial de Ventas
+              </button>
+            }
 
             @if (showPaymentTab) {
               <button
@@ -106,7 +110,7 @@
                       } @else {
                         <div class="product-results" aria-label="Resultados de productos">
                           @for (product of filteredProducts; track trackProduct($index, product)) {
-                            <button class="product-result" type="button" (click)="addProduct(product)">
+                            <button class="product-result" type="button" [disabled]="!hasPermission('VENTA_CREAR')" (click)="addProduct(product)">
                               <span>
                                 <strong>{{ product.nombre }}</strong>
                                 <small>
@@ -244,6 +248,7 @@
                                       step="0.01"
                                       [ngModel]="item.descuento"
                                       [ngModelOptions]="{ standalone: true }"
+                                      [disabled]="!hasPermission('VENTA_DESCUENTO')"
                                       (ngModelChange)="updateItemDiscount(item, $event)"
                                     />
 
@@ -255,6 +260,7 @@
                                           value="percentage"
                                           [ngModel]="item.descuentoTipo"
                                           [ngModelOptions]="{ standalone: true }"
+                                          [disabled]="!hasPermission('VENTA_DESCUENTO')"
                                           (ngModelChange)="updateItemDiscountType(item, 'percentage')"
                                         />
                                         %
@@ -266,6 +272,7 @@
                                           value="fixed"
                                           [ngModel]="item.descuentoTipo"
                                           [ngModelOptions]="{ standalone: true }"
+                                          [disabled]="!hasPermission('VENTA_DESCUENTO')"
                                           (ngModelChange)="updateItemDiscountType(item, 'fixed')"
                                         />
                                         Bs
@@ -420,27 +427,31 @@
           </div>
         } @else {
           <div class="tabs" role="tablist" aria-label="Secciones de movimientos de caja">
-            <button
-              class="tab-button"
-              [class.active]="movementActiveTab === 'register'"
-              type="button"
-              role="tab"
-              [attr.aria-selected]="movementActiveTab === 'register'"
-              (click)="setMovementTab('register')"
-            >
-              Registrar un movimiento caja
-            </button>
+              @if (hasPermission('MOVIMIENTO_REGISTRAR')) {
+                <button
+                  class="tab-button"
+                  [class.active]="movementActiveTab === 'register'"
+                  type="button"
+                  role="tab"
+                  [attr.aria-selected]="movementActiveTab === 'register'"
+                  (click)="setMovementTab('register')"
+                >
+                  Registrar un movimiento caja
+                </button>
+              }
 
-            <button
-              class="tab-button"
-              [class.active]="movementActiveTab === 'list'"
-              type="button"
-              role="tab"
-              [attr.aria-selected]="movementActiveTab === 'list'"
-              (click)="setMovementTab('list')"
-            >
-              Listar movimientos
-            </button>
+            @if (hasPermission('MOVIMIENTO_VER')) {
+              <button
+                class="tab-button"
+                [class.active]="movementActiveTab === 'list'"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="movementActiveTab === 'list'"
+                (click)="setMovementTab('list')"
+              >
+                Listar movimientos
+              </button>
+            }
           </div>
 
           <div class="tab-content">

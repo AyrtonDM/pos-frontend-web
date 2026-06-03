@@ -25,18 +25,20 @@
           >
             Cajas Registradoras
           </button>
-          <button
-            class="tab-button"
-            [class.active]="activeTab === 'register'"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'register'"
-            (click)="setActiveTab('register')"
-          >
-            Registrar nueva caja
-          </button>
+          @if (hasPermission('CAJA_EDITAR')) {
+            <button
+              class="tab-button"
+              [class.active]="activeTab === 'register'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'register'"
+              (click)="setActiveTab('register')"
+            >
+              Registrar nueva caja
+            </button>
+          }
 
-          @if (editingCashRegisterId !== null) {
+          @if (editingCashRegisterId !== null && hasPermission('CAJA_EDITAR')) {
             <button
               class="tab-button"
               [class.active]="activeTab === 'edit'"
@@ -96,23 +98,14 @@
                           </td>
                           <td class="cash-register-actions-cell">
                             <div class="cash-register-actions">
-                              <a
-                                class="btn btn-primary btn-sm"
-                                [class.disabled]="!cashRegister.canOpen"
-                                [class.conflict-disabled]="cashRegister.activo && !cashRegister.canOpen"
-                                [attr.aria-disabled]="!cashRegister.canOpen"
-                                [routerLink]="
-                                  cashRegister.canOpen && cashRegister.actionLabel === 'Abrir Caja'
-                                    ? [
-                                        '/company',
-                                        companyId,
-                                        'branch',
-                                        branchId,
-                                        'cash-register',
-                                        cashRegister.id,
-                                        'open-cash-register',
-                                      ]
-                                    : cashRegister.canOpen && cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId
+                              @if (hasPermission('CAJA_ABRIR')) {
+                                <a
+                                  class="btn btn-primary btn-sm"
+                                  [class.disabled]="!cashRegister.canOpen"
+                                  [class.conflict-disabled]="cashRegister.activo && !cashRegister.canOpen"
+                                  [attr.aria-disabled]="!cashRegister.canOpen"
+                                  [routerLink]="
+                                    cashRegister.canOpen && cashRegister.actionLabel === 'Abrir Caja'
                                       ? [
                                           '/company',
                                           companyId,
@@ -120,20 +113,31 @@
                                           branchId,
                                           'cash-register',
                                           cashRegister.id,
-                                          'sales',
+                                          'open-cash-register',
                                         ]
+                                      : cashRegister.canOpen && cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId
+                                        ? [
+                                            '/company',
+                                            companyId,
+                                            'branch',
+                                            branchId,
+                                            'cash-register',
+                                            cashRegister.id,
+                                            'sales',
+                                          ]
+                                        : null
+                                  "
+                                  [queryParams]="
+                                    cashRegister.canOpen && cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId
+                                      ? { sessionId: cashRegister.sessionId }
                                       : null
-                                "
-                                [queryParams]="
-                                  cashRegister.canOpen && cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId
-                                    ? { sessionId: cashRegister.sessionId }
-                                    : null
-                                "
-                              >
-                                {{ cashRegister.actionLabel }}
-                              </a>
+                                  "
+                                >
+                                  {{ cashRegister.actionLabel }}
+                                </a>
+                              }
 
-                              @if (cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId) {
+                              @if (cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId && hasPermission('CAJA_CERRAR')) {
                                 <a
                                   class="btn btn-sm btn-secondary"
                                   [routerLink]="[
@@ -151,9 +155,11 @@
                                 </a>
                               }
 
-                              <button class="btn btn-secondary btn-sm" type="button" (click)="abrirEdicion(cashRegister)">
-                                Editar
-                              </button>
+                              @if (hasPermission('CAJA_EDITAR')) {
+                                <button class="btn btn-secondary btn-sm" type="button" (click)="abrirEdicion(cashRegister)">
+                                  Editar
+                                </button>
+                              }
                             </div>
                           </td>
                         </tr>

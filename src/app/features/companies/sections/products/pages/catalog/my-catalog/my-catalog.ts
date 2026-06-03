@@ -3,6 +3,10 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CompanyService } from '../../../../../../../core/services/company.service';
 import {
+  CompanyPermissionCode,
+  CompanyPermissionsService,
+} from '../../../../../../../core/services/company-permissions.service';
+import {
   CrearProductoRequest,
   ProductService,
   Producto,
@@ -21,12 +25,13 @@ import { Sidebar } from '../../../../../../../shared/components/sidebar/sidebar'
 export class ProductosPanel implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly companyService = inject(CompanyService);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
   private readonly productService = inject(ProductService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
   protected companyName = 'Empresa';
-  protected activeTab: 'register' | 'list' = 'register';
+  protected activeTab: 'register' | 'list' = this.hasPermission('PRODUCTO_CREAR') ? 'register' : 'list';
 
   protected readonly productoForm: CrearProductoRequest = {
     id_subcategoria: 0,
@@ -54,6 +59,10 @@ export class ProductosPanel implements OnInit {
   }
 
   protected setActiveTab(tab: 'register' | 'list'): void {
+    if (tab === 'register' && !this.hasPermission('PRODUCTO_CREAR')) {
+      return;
+    }
+
     this.activeTab = tab;
     this.limpiarMensajes();
 
@@ -65,6 +74,11 @@ export class ProductosPanel implements OnInit {
   protected registrarProducto(event: SubmitEvent): void {
     event.preventDefault();
     this.limpiarMensajes();
+
+    if (!this.hasPermission('PRODUCTO_CREAR')) {
+      this.errorGeneral = 'No tienes permiso para registrar productos.';
+      return;
+    }
 
     if (!this.companyId) {
       this.errorGeneral = 'No se encontro la empresa para registrar el producto.';
@@ -216,6 +230,10 @@ export class ProductosPanel implements OnInit {
     formData.append('activo', 'true');
     formData.append('imagen', imagen);
     return formData;
+  }
+
+  protected hasPermission(permission: CompanyPermissionCode): boolean {
+    return this.companyPermissionsService.permissions()[permission] === true;
   }
 }
 

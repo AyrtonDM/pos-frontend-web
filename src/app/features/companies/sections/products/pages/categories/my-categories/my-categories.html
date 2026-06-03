@@ -25,16 +25,18 @@
     >
       Lista de categorias
     </button>
-    <button
-      class="tab-button"
-      [class.active]="activeTab === 'register'"
-      type="button"
-      role="tab"
-      [attr.aria-selected]="activeTab === 'register'"
-      (click)="setActiveTab('register')"
-    >
-      Registrar categoria
-    </button>
+    @if (hasPermission('CATEGORIA_CREAR')) {
+      <button
+        class="tab-button"
+        [class.active]="activeTab === 'register'"
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab === 'register'"
+        (click)="setActiveTab('register')"
+      >
+        Registrar categoria
+      </button>
+    }
   </div>
 
   <div class="tab-content">
@@ -69,11 +71,13 @@
                   [routerLink]="['/company', companyId, 'category', categoria.id_categoria_producto, 'view-category']"
                   >Ver</a
                 >
-                <a
-                  class="btn btn-primary"
-                  [routerLink]="['/company', companyId, 'category', categoria.id_categoria_producto, 'edit-category']"
-                  >Editar</a
-                >
+                @if (hasPermission('CATEGORIA_EDITAR')) {
+                  <a
+                    class="btn btn-primary"
+                    [routerLink]="['/company', companyId, 'category', categoria.id_categoria_producto, 'edit-category']"
+                    >Editar</a
+                  >
+                }
               </div>
             </article>
           }

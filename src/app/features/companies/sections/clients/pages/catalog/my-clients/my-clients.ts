@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -8,6 +8,10 @@ import {
   CompanyService,
   InviteClientResponse,
 } from '../../../../../../../core/services/company.service';
+import {
+  CompanyPermissionCode,
+  CompanyPermissionsService,
+} from '../../../../../../../core/services/company-permissions.service';
 import { Navbar } from '../../../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../../../shared/components/sidebar/sidebar';
 
@@ -41,14 +45,15 @@ interface ClientRow {
   styleUrl: './my-clients.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ClientesCatalogo {
+export class ClientesCatalogo implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly companyService = inject(CompanyService);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
   protected companyName = 'Empresa';
-  protected activeTab: ClientCatalogTab = 'invite';
+  protected activeTab: ClientCatalogTab = this.hasPermission('CLIENTE_CREAR') ? 'invite' : 'list';
   protected cargandoClientes = false;
   protected cargandoInvitacion = false;
   protected errorClientes = '';
@@ -69,7 +74,17 @@ export class ClientesCatalogo {
 
   protected clients: ClientRow[] = [];
 
+  ngOnInit(): void {
+    if (this.activeTab === 'list') {
+      this.cargarClientes();
+    }
+  }
+
   protected setActiveTab(tab: ClientCatalogTab): void {
+    if (tab === 'invite' && !this.hasPermission('CLIENTE_CREAR')) {
+      return;
+    }
+
     this.activeTab = tab;
     this.errorInvitacion = '';
     this.mensajeInvitacion = '';
@@ -84,6 +99,11 @@ export class ClientesCatalogo {
 
     this.errorInvitacion = '';
     this.mensajeInvitacion = '';
+
+    if (!this.hasPermission('CLIENTE_CREAR')) {
+      this.errorInvitacion = 'No tienes permiso para invitar clientes.';
+      return;
+    }
 
     if (!this.companyId) {
       this.errorInvitacion = 'No se encontro la empresa para invitar al cliente.';
@@ -169,5 +189,9 @@ export class ClientesCatalogo {
       limiteCredito: Number(client.cliente.limite_credito ?? 0),
       activo: client.cliente.activo,
     };
+  }
+
+  protected hasPermission(permission: CompanyPermissionCode): boolean {
+    return this.companyPermissionsService.permissions()[permission] === true;
   }
 }

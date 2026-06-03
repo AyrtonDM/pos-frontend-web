@@ -25,16 +25,18 @@
           >
             Lista de categorias
           </button>
-          <button
-            class="tab-button"
-            [class.active]="activeTab === 'register'"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'register'"
-            (click)="setActiveTab('register')"
-          >
-            Registrar categoria
-          </button>
+          @if (hasPermission('CATEGORIA_CREAR')) {
+            <button
+              class="tab-button"
+              [class.active]="activeTab === 'register'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'register'"
+              (click)="setActiveTab('register')"
+            >
+              Registrar categoria
+            </button>
+          }
         </div>
 
         <div class="tab-content">
@@ -69,14 +71,16 @@
                       <span class="detail-item">Limite credito: Bs {{ category.limiteCredito | number:'1.2-2' }}</span>
                     </div>
                   </div>
-                  <div class="row-actions">
-                    <a
-                      class="btn btn-primary"
-                      [routerLink]="['/company', companyId, 'clients', 'categories', category.id, 'edit-category']"
-                    >
-                      Editar
-                    </a>
-                  </div>
+                  @if (hasPermission('CATEGORIA_EDITAR')) {
+                    <div class="row-actions">
+                      <a
+                        class="btn btn-primary"
+                        [routerLink]="['/company', companyId, 'clients', 'categories', category.id, 'edit-category']"
+                      >
+                        Editar
+                      </a>
+                    </div>
+                  }
                 </article>
               }
             </section>

@@ -2,6 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
+import {
+  CompanyPermissionCode,
+  CompanyPermissionsService,
+} from '../../../../../core/services/company-permissions.service';
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../shared/components/sidebar/sidebar';
 
@@ -15,6 +19,7 @@ type StaticReportTab = 'sales' | 'inventory' | 'cash-registers';
 })
 export class StaticReports {
   private readonly route = inject(ActivatedRoute);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
   protected readonly branchId = this.route.snapshot.paramMap.get('branchId') ?? '';
@@ -237,19 +242,35 @@ export class StaticReports {
   };
 
   protected showSalesReport(type: 'summary' | 'details'): void {
+    if (!this.hasPermission('REPORTE_GENERAR')) {
+      return;
+    }
+
     this.salesReportType = type;
   }
 
   protected showInventoryReport(type: 'status' | 'movements'): void {
+    if (!this.hasPermission('REPORTE_GENERAR')) {
+      return;
+    }
+
     this.inventoryReportType = type;
   }
 
   protected showCashReport(type: 'summary' | 'movements'): void {
+    if (!this.hasPermission('REPORTE_GENERAR')) {
+      return;
+    }
+
     this.cashReportType = type;
   }
 
   protected setActiveTab(tab: StaticReportTab): void {
     this.activeTab = tab;
+  }
+
+  protected hasPermission(permission: CompanyPermissionCode): boolean {
+    return this.companyPermissionsService.permissions()[permission] === true;
   }
 }
 
