@@ -45,12 +45,14 @@ export class Navbar implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.notificationsEnabled = this.authService.isAuthenticated();
+    const companyId = this.getCompanyIdFromUrl();
+
+    this.notificationsEnabled = this.authService.isAuthenticated() && companyId !== null;
     if (!this.notificationsEnabled) {
       return;
     }
 
-    await this.fcmService.registerToken();
+    await this.fcmService.registerToken(undefined, companyId);
     window.addEventListener('stock-notification', this.stockNotificationListener);
 
     if (this.canViewAlerts()) {
@@ -125,19 +127,22 @@ export class Navbar implements OnInit, OnDestroy {
   }
 
   protected canViewAlerts(): boolean {
-    return this.companyPermissionsService.permissions().ALERTA_VER === true;
+    return this.getCompanyIdFromUrl() !== null && this.companyPermissionsService.permissions().ALERTA_VER === true;
   }
 
   private async loadUnreadNotifications(): Promise<void> {
-    if (!this.canViewAlerts()) {
+    const companyId = this.getCompanyIdFromUrl();
+
+    if (!this.canViewAlerts() || companyId === null) {
       this.unreadNotifications.set(0);
       return;
     }
 
     try {
-      const idsEmpresa = await this.fcmService.obtenerEmpresasContexto();
       const base = this.fcmService.getApiBase();
-      const responses = await Promise.all(idsEmpresa.map((idEmpresa) => fetch(`${base}/notifications/history/empresas/${idEmpresa}`)),);
+      const responses = await Promise.all([
+        fetch(`${base}/notifications/history/empresas/${companyId}`),
+      ]);
 
       const payloads = await Promise.all(
         responses
@@ -152,5 +157,12 @@ export class Navbar implements OnInit, OnDestroy {
     } catch {
       this.unreadNotifications.set(0);
     }
+  }
+
+  private getCompanyIdFromUrl(): number | null {
+    const match = this.router.url.match(/\/company\/([^/?#]+)/);
+    const companyId = Number(match?.[1]);
+
+    return Number.isFinite(companyId) ? companyId : null;
   }
 }
