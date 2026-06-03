@@ -25,10 +25,11 @@ export class PaymentResultComponent implements OnInit {
   ngOnInit(): void {
     if (this.router.url.includes('/cancel')) {
       this.estado = 'cancelado';
+      this.pagoService.limpiarSesionStripe();
       return;
     }
 
-    const sessionId = this.route.snapshot.queryParamMap.get('session_id');
+    const sessionId = this.route.snapshot.queryParamMap.get('session_id') ?? this.pagoService.obtenerSesionStripe();
 
     if (!sessionId) {
       this.estado = 'error';
@@ -46,17 +47,20 @@ export class PaymentResultComponent implements OnInit {
     this.pagoService.confirmarPago({ session_id: sessionId }).subscribe({
       next: (response: ConfirmarResponse) => {
         if (response.mensaje?.includes('ya fue procesado')) {
+          this.pagoService.limpiarSesionStripe();
           this.volverMisEmpresas();
           return;
         }
 
         this.estado = 'exito';
         this.suscripcion = response.suscripcion ?? null;
+        this.pagoService.limpiarSesionStripe();
       },
       error: (err: any) => {
         const errorBody = err.error?.detail || err.error;
 
         if (errorBody?.mensaje?.includes('ya fue procesado')) {
+          this.pagoService.limpiarSesionStripe();
           this.volverMisEmpresas();
           return;
         }
