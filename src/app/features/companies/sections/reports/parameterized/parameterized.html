@@ -64,43 +64,45 @@
                 <div class="form-group">
                   <label class="label" for="reportBranch">Sucursal</label>
                   <select class="select" id="reportBranch" name="branch" [(ngModel)]="saleFilters.branch">
-                    <option>Central</option>
-                    <option>Todas</option>
+                    @for (branch of branchOptions; track branch) {
+                      <option [ngValue]="branch">{{ branch }}</option>
+                    }
                   </select>
                 </div>
 
                 <div class="form-group">
                   <label class="label" for="reportSaleType">Tipo de venta</label>
                   <select class="select" id="reportSaleType" name="saleType" [(ngModel)]="saleFilters.saleType">
-                    <option>Todas</option>
-                    <option>Contado</option>
-                    <option>Crédito</option>
+                    @for (saleType of saleTypeOptions; track saleType) {
+                      <option [ngValue]="saleType">{{ saleType }}</option>
+                    }
                   </select>
                 </div>
 
                 <div class="form-group">
                   <label class="label" for="reportPaymentMethod">Método de pago</label>
                   <select class="select" id="reportPaymentMethod" name="paymentMethod" [(ngModel)]="saleFilters.paymentMethod">
-                    <option>Efectivo</option>
-                    <option>Tarjeta</option>
-                    <option>QR</option>
+                    @for (paymentMethod of paymentMethodOptions; track paymentMethod) {
+                      <option [ngValue]="paymentMethod">{{ paymentMethod }}</option>
+                    }
                   </select>
                 </div>
 
                 <div class="form-group">
                   <label class="label" for="reportProduct">Producto</label>
                   <select class="select" id="reportProduct" name="product" [(ngModel)]="saleFilters.product">
-                    <option>Todos</option>
+                    @for (product of productOptions; track product) {
+                      <option [ngValue]="product">{{ product }}</option>
+                    }
                   </select>
                 </div>
 
                 <div class="form-group">
                   <label class="label" for="reportStaff">Personal</label>
                   <select class="select" id="reportStaff" name="staff" [(ngModel)]="saleFilters.staff">
-                    <option>Todos</option>
-                    <option>María Pérez</option>
-                    <option>Carlos Rojas</option>
-                    <option>Laura Gómez</option>
+                    @for (staff of staffOptions; track staff) {
+                      <option [ngValue]="staff">{{ staff }}</option>
+                    }
                   </select>
                 </div>
               </div>
@@ -239,36 +241,36 @@
                 <div class="form-group">
                   <label class="label" for="inventoryBranch">Sucursal</label>
                   <select class="select" id="inventoryBranch" name="branch" [(ngModel)]="inventoryFilters.branch">
-                    <option>Central</option>
-                    <option>Todas</option>
+                    @for (branch of branchOptions; track branch) {
+                      <option [ngValue]="branch">{{ branch }}</option>
+                    }
                   </select>
                 </div>
 
                 <div class="form-group">
                   <label class="label" for="inventoryMovementType">Tipo de movimiento</label>
                   <select class="select" id="inventoryMovementType" name="movementType" [(ngModel)]="inventoryFilters.movementType">
-                    <option>Todos</option>
-                    <option>Entrada</option>
-                    <option>Salida</option>
-                    <option>Ajuste</option>
+                    @for (movementType of inventoryMovementTypeOptions; track movementType) {
+                      <option [ngValue]="movementType">{{ movementType }}</option>
+                    }
                   </select>
                 </div>
 
                 <div class="form-group">
                   <label class="label" for="inventoryProduct">Producto</label>
                   <select class="select" id="inventoryProduct" name="product" [(ngModel)]="inventoryFilters.product">
-                    <option>Todos</option>
+                    @for (product of productOptions; track product) {
+                      <option [ngValue]="product">{{ product }}</option>
+                    }
                   </select>
                 </div>
 
                 <div class="form-group">
                   <label class="label" for="inventoryCategory">Categoría</label>
                   <select class="select" id="inventoryCategory" name="category" [(ngModel)]="inventoryFilters.category">
-                    <option>Todas</option>
-                    <option>Bebidas</option>
-                    <option>Abarrotes</option>
-                    <option>Lácteos</option>
-                    <option>Limpieza</option>
+                    @for (category of categoryOptions; track category) {
+                      <option [ngValue]="category">{{ category }}</option>
+                    }
                   </select>
                 </div>
               </div>
@@ -405,30 +407,27 @@
                 <div class="form-group">
                   <label class="label" for="cashBranch">Sucursal</label>
                   <select class="select" id="cashBranch" name="branch" [(ngModel)]="cashFilters.branch">
-                    <option>Central</option>
-                    <option>Todas</option>
+                    @for (branch of branchOptions; track branch) {
+                      <option [ngValue]="branch">{{ branch }}</option>
+                    }
                   </select>
                 </div>
 
                 <div class="form-group">
                   <label class="label" for="cashRegister">Caja</label>
                   <select class="select" id="cashRegister" name="cash" [(ngModel)]="cashFilters.cash">
-                    <option>Todas</option>
-                    <option>Caja 01</option>
-                    <option>Caja 02</option>
-                    <option>Caja 03</option>
+                    @for (cash of cashOptions; track cash) {
+                      <option [ngValue]="cash">{{ cash }}</option>
+                    }
                   </select>
                 </div>
 
                 <div class="form-group">
                   <label class="label" for="cashMovementType">Tipo de movimiento</label>
                   <select class="select" id="cashMovementType" name="movementType" [(ngModel)]="cashFilters.movementType">
-                    <option>Todos</option>
-                    <option>Apertura</option>
-                    <option>Ingreso</option>
-                    <option>Egreso</option>
-                    <option>Ajuste</option>
-                    <option>Cierre</option>
+                    @for (movementType of cashMovementTypeOptions; track movementType) {
+                      <option [ngValue]="movementType">{{ movementType }}</option>
+                    }
                   </select>
                 </div>
 

@@ -1,9 +1,17 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../shared/components/sidebar/sidebar';
+import { Branch, CompanyService } from '../../../../../core/services/company.service';
+import { ProductService } from '../../../../../core/services/product.service';
+import {
+  CashRegisterListResponse,
+  CashRegisterResponse,
+  CashRegisterService,
+} from '../../../../../core/services/cash-register.service';
 
 type ParameterizedReportTab = 'sale' | 'inventory' | 'cash';
 
@@ -13,19 +21,31 @@ type ParameterizedReportTab = 'sale' | 'inventory' | 'cash';
   templateUrl: './parameterized.html',
   styleUrl: './parameterized.css',
 })
-export class ParameterizedReports {
+export class ParameterizedReports implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly companyService = inject(CompanyService);
+  private readonly productService = inject(ProductService);
+  private readonly cashRegisterService = inject(CashRegisterService);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
   protected readonly branchId = this.route.snapshot.paramMap.get('branchId') ?? '';
   protected activeTab: ParameterizedReportTab = 'sale';
+  protected branchOptions = ['Todas'];
+  protected saleTypeOptions = ['Todas'];
+  protected paymentMethodOptions = ['Todos'];
+  protected productOptions = ['Todos'];
+  protected staffOptions = ['Todos'];
+  protected inventoryMovementTypeOptions = ['Todos'];
+  protected categoryOptions = ['Todas'];
+  protected cashOptions = ['Todas'];
+  protected cashMovementTypeOptions = ['Todos'];
 
   protected saleFilters = {
     startDate: '01/05/2026',
     endDate: '31/05/2026',
-    branch: 'Central',
+    branch: 'Todas',
     saleType: 'Todas',
-    paymentMethod: 'Efectivo',
+    paymentMethod: 'Todos',
     product: 'Todos',
     staff: 'Todos',
   };
@@ -35,7 +55,7 @@ export class ParameterizedReports {
   protected inventoryFilters = {
     startDate: '01/05/2026',
     endDate: '31/05/2026',
-    branch: 'Central',
+    branch: 'Todas',
     movementType: 'Todos',
     product: 'Todos',
     category: 'Todas',
@@ -46,13 +66,17 @@ export class ParameterizedReports {
   protected cashFilters = {
     startDate: '01/05/2026',
     endDate: '31/05/2026',
-    branch: 'Central',
+    branch: 'Todas',
     cash: 'Todas',
     movementType: 'Todos',
     sessionStatus: 'Todas',
   };
 
   protected cashReport: null | any = null;
+
+  ngOnInit(): void {
+    this.loadFilterOptions();
+  }
 
   protected setActiveTab(tab: ParameterizedReportTab): void {
     this.activeTab = tab;
@@ -63,9 +87,9 @@ export class ParameterizedReports {
     this.saleFilters = {
       startDate: '01/05/2026',
       endDate: '31/05/2026',
-      branch: 'Central',
+      branch: 'Todas',
       saleType: 'Todas',
-      paymentMethod: 'Efectivo',
+      paymentMethod: 'Todos',
       product: 'Todos',
       staff: 'Todos',
     };
@@ -76,7 +100,7 @@ export class ParameterizedReports {
     this.inventoryFilters = {
       startDate: '01/05/2026',
       endDate: '31/05/2026',
-      branch: 'Central',
+      branch: 'Todas',
       movementType: 'Todos',
       product: 'Todos',
       category: 'Todas',
@@ -88,7 +112,7 @@ export class ParameterizedReports {
     this.cashFilters = {
       startDate: '01/05/2026',
       endDate: '31/05/2026',
-      branch: 'Central',
+      branch: 'Todas',
       cash: 'Todas',
       movementType: 'Todos',
       sessionStatus: 'Todas',
@@ -185,6 +209,149 @@ export class ParameterizedReports {
         { nro: 'MC-000781', datetime: '31/05/2026 08:00', cash: 'Caja 01', type: 'Apertura', concept: 'Fondo inicial', amount: formatCurrency(300) },
       ],
     };
+  }
+
+  private loadFilterOptions(): void {
+    if (!this.companyId) {
+      return;
+    }
+
+    this.companyService.getSucursales(this.companyId).subscribe({
+      next: (branches) => {
+        this.branchOptions = ['Todas', ...this.uniqueLabels(branches.map((branch) => branch.nombre))];
+        this.loadCashOptions(branches);
+      },
+      error: () => {
+        this.branchOptions = ['Todas'];
+        this.cashOptions = ['Todas'];
+      },
+    });
+
+    this.productService.getTiposVenta().subscribe({
+      next: (types) => {
+        this.saleTypeOptions = ['Todas', ...this.uniqueLabels(types.map((type) => type.nombre))];
+      },
+      error: () => {
+        this.saleTypeOptions = ['Todas'];
+      },
+    });
+
+    this.productService.getMetodosPago().subscribe({
+      next: (methods) => {
+        this.paymentMethodOptions = ['Todos', ...this.uniqueLabels(methods.map((method) => method.nombre))];
+      },
+      error: () => {
+        this.paymentMethodOptions = ['Todos'];
+      },
+    });
+
+    this.productService.getProductos(this.companyId).subscribe({
+      next: (products) => {
+        this.productOptions = ['Todos', ...this.uniqueLabels(products.map((product) => product.nombre))];
+      },
+      error: () => {
+        this.productOptions = ['Todos'];
+      },
+    });
+
+    this.companyService.getPersonalEmpresa(this.companyId).subscribe({
+      next: (staff) => {
+        this.staffOptions = [
+          'Todos',
+          ...this.uniqueLabels(staff.map((member) => member.usuario.persona?.nombre_completo ?? member.usuario.email)),
+        ];
+      },
+      error: () => {
+        this.staffOptions = ['Todos'];
+      },
+    });
+
+    this.productService.getTiposMovimiento().subscribe({
+      next: (types) => {
+        this.inventoryMovementTypeOptions = ['Todos', ...this.uniqueLabels(types.map((type) => type.nombre))];
+      },
+      error: () => {
+        this.inventoryMovementTypeOptions = ['Todos'];
+      },
+    });
+
+    this.productService.getCategorias(this.companyId).subscribe({
+      next: (categories) => {
+        this.categoryOptions = ['Todas', ...this.uniqueLabels(categories.map((category) => category.nombre))];
+      },
+      error: () => {
+        this.categoryOptions = ['Todas'];
+      },
+    });
+
+    this.companyService.getTiposMovimientoCaja().subscribe({
+      next: (types) => {
+        this.cashMovementTypeOptions = ['Todos', ...this.uniqueLabels(types.map((type) => type.nombre))];
+      },
+      error: () => {
+        this.cashMovementTypeOptions = ['Todos'];
+      },
+    });
+  }
+
+  private loadCashOptions(branches: Branch[]): void {
+    const branchIds = branches
+      .map((branch) => this.getBranchId(branch))
+      .filter((id): id is string => id !== null);
+
+    if (branchIds.length === 0) {
+      this.cashOptions = ['Todas'];
+      return;
+    }
+
+    forkJoin(branchIds.map((branchId) => this.cashRegisterService.getCajasSucursal(this.companyId, branchId))).subscribe({
+      next: (responses) => {
+        const cashRegisters = responses.flatMap((response) => this.normalizeCashRegisterListResponse(response));
+        this.cashOptions = ['Todas', ...this.uniqueLabels(cashRegisters.map((cashRegister) => cashRegister.nombre))];
+      },
+      error: () => {
+        this.cashOptions = ['Todas'];
+      },
+    });
+  }
+
+  private normalizeCashRegisterListResponse(response: CashRegisterListResponse): CashRegisterResponse[] {
+    if (Array.isArray(response)) {
+      return response;
+    }
+
+    if (Array.isArray(response.cajas)) {
+      return response.cajas;
+    }
+
+    if (Array.isArray(response.items)) {
+      return response.items;
+    }
+
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+
+    if (response.data && Array.isArray(response.data.cajas)) {
+      return response.data.cajas;
+    }
+
+    if (response.data && Array.isArray(response.data.items)) {
+      return response.data.items;
+    }
+
+    return [];
+  }
+
+  private getBranchId(branch: Branch): string | null {
+    const rawId = branch.id_sucursal ?? branch.idSucursal ?? branch.id;
+    const parsedId = typeof rawId === 'number' ? rawId : Number(rawId);
+
+    return Number.isFinite(parsedId) ? String(parsedId) : null;
+  }
+
+  private uniqueLabels(labels: Array<string | null | undefined>): string[] {
+    return Array.from(new Set(labels.map((label) => label?.trim()).filter((label): label is string => Boolean(label))));
   }
 }
 
