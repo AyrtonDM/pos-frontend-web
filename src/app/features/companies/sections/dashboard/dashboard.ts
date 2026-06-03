@@ -1,8 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 import { Navbar } from '../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../shared/components/sidebar/sidebar';
+import { CompanyService, Branch } from '../../../../core/services/company.service';
+import { CompanyWebSocketService } from '../../../../core/services/company-websocket.service';
 
 type DashboardState = 'loading' | 'ready' | 'empty' | 'error';
 
@@ -39,21 +42,75 @@ interface BranchSalesBar {
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
+  private readonly companyService = inject(CompanyService);
+  private readonly wsService = inject(CompanyWebSocketService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
-  protected readonly companyName = 'Comercial Nova';
+  protected companyName = 'Comercial Nova';
 
   protected uiState: DashboardState = 'loading';
   protected selectedBranchFilter = 'all';
 
   private readonly dayLabels = this.buildDayLabels();
   private branchData: BranchDashboardMock[] = [];
+  private realBranches: Branch[] = [];
+  private wsSubscription: Subscription | null = null;
+  protected receivedDashboardData: any = null;
 
   ngOnInit(): void {
     const mockState = this.route.snapshot.queryParamMap.get('mockState');
-    this.simulateLoad(mockState);
+
+    this.wsSubscription = this.wsService.messages$.subscribe({
+      next: (msg) => {
+        this.handleWsMessage(msg);
+      }
+    });
+
+    if (this.companyId) {
+      this.companyService.obtenerEmpresa(this.companyId).subscribe({
+        next: (company) => {
+          if (company && company.nombre) {
+            this.companyName = company.nombre;
+          }
+        },
+        error: (err) => {
+          console.error('Error fetching company details:', err);
+        }
+      });
+
+      this.companyService.getSucursales(this.companyId).subscribe({
+        next: (branches) => {
+          this.realBranches = branches;
+          this.simulateLoad(mockState);
+        },
+        error: (err) => {
+          console.error('Error fetching branches:', err);
+          this.realBranches = [];
+          this.simulateLoad(mockState);
+        }
+      });
+    } else {
+      this.simulateLoad(mockState);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.wsSubscription) {
+      this.wsSubscription.unsubscribe();
+    }
+  }
+
+  private handleWsMessage(msg: any): void {
+    if (msg && msg.tipo === 'dashboard') {
+      const data = Array.isArray(msg.datos) ? msg.datos[0] : msg.datos;
+      if (data) {
+        this.receivedDashboardData = data;
+        this.cdr.detectChanges();
+      }
+    }
   }
 
   protected onBranchFilterChange(value: string): void {
@@ -84,6 +141,33 @@ export class Dashboard implements OnInit {
   }
 
   protected get kpiCards(): KpiCard[] {
+    if (this.receivedDashboardData) {
+      const ind = this.receivedDashboardData.indicadores || {};
+      const salesToday = Number(ind.ventas_hoy ?? 0);
+      const averageTicket = Number(ind.ticket_promedio ?? 0);
+      const openRegisters = Number(ind.cajas_abiertas ?? 0);
+      const topProd = ind.producto_estrella
+        ? `${ind.producto_estrella.nombre || ''} (${ind.producto_estrella.unidades ?? 0} uds)`
+        : '-';
+      const lowStock = Number(ind.productos_bajo_stock ?? 0);
+      const outOfStock = Number(ind.productos_agotados ?? 0);
+      const income = Number(ind.ingresos_dia ?? 0);
+      const expenses = Number(ind.egresos_dia ?? 0);
+      const netFlow = Number(ind.flujo_neto ?? 0);
+
+      return [
+        { title: 'Ventas de hoy', value: this.formatCurrency(salesToday), icon: 'VEN' },
+        { title: 'Ticket promedio', value: this.formatCurrency(averageTicket), icon: 'AVG' },
+        { title: 'Cajas abiertas', value: this.formatInteger(openRegisters), icon: 'CAJ' },
+        { title: 'Producto estrella', value: topProd, icon: 'TOP' },
+        { title: 'Productos con bajo stock', value: this.formatInteger(lowStock), icon: 'LOW' },
+        { title: 'Productos agotados', value: this.formatInteger(outOfStock), icon: 'OUT' },
+        { title: 'Ingresos del dia', value: this.formatCurrency(income), icon: 'ING' },
+        { title: 'Egresos del dia', value: this.formatCurrency(expenses), icon: 'EGR' },
+        { title: 'Flujo neto', value: this.formatCurrency(netFlow), icon: 'NET' },
+      ];
+    }
+
     const selected = this.selectedData;
     const salesToday = this.sum(selected.map((branch) => this.getSalesToday(branch)));
     const ticketsToday = this.sum(selected.map((branch) => branch.ticketsToday));
@@ -130,10 +214,16 @@ export class Dashboard implements OnInit {
   }
 
   protected get salesSeriesTotalLabel(): string {
+    if (this.receivedDashboardData) {
+      return this.formatCurrency(this.receivedDashboardData.evolucion_ventas_30_dias?.total_periodo ?? 0);
+    }
     return this.formatCurrency(this.sum(this.salesSeriesLast30Days));
   }
 
   protected get salesSeriesPeakLabel(): string {
+    if (this.receivedDashboardData) {
+      return this.formatCurrency(this.receivedDashboardData.evolucion_ventas_30_dias?.pico_diario ?? 0);
+    }
     const values = this.salesSeriesLast30Days;
     return this.formatCurrency(values.length ? Math.max(...values) : 0);
   }
@@ -147,6 +237,32 @@ export class Dashboard implements OnInit {
   }
 
   protected get branchSalesBars(): BranchSalesBar[] {
+    if (this.receivedDashboardData) {
+      const rawBars = this.receivedDashboardData.ventas_por_sucursal || [];
+      let values = rawBars.map((item: any) => ({
+        name: item.nombre || item.name || 'Sucursal',
+        value: Number(item.ventas ?? item.sales ?? item.value ?? 0),
+        id: item.id_sucursal ?? item.id ?? null,
+      }));
+
+      if (!this.isAllBranchesSelected) {
+        values = values.filter((item: any) =>
+          String(item.id) === this.selectedBranchFilter ||
+          item.name === this.obtenerNombreSucursal(this.selectedBranchFilter)
+        );
+      }
+
+      values.sort((a: any, b: any) => b.value - a.value);
+      const max = Math.max(...values.map((item: any) => item.value), 1);
+
+      return values.map((item: any) => ({
+        name: item.name,
+        value: item.value,
+        percent: (item.value / max) * 100,
+        formattedValue: this.formatCurrency(item.value),
+      }));
+    }
+
     const branches = this.isAllBranchesSelected
       ? this.branchData
       : this.branchData.filter((branch) => String(branch.id) === this.selectedBranchFilter);
@@ -202,6 +318,11 @@ export class Dashboard implements OnInit {
   }
 
   private get salesSeriesLast30Days(): number[] {
+    if (this.receivedDashboardData) {
+      const puntos = this.receivedDashboardData.evolucion_ventas_30_dias?.puntos || [];
+      return puntos.map((p: any) => typeof p === 'number' ? p : Number(p.monto ?? p.valor ?? p.value ?? p.sales ?? 0));
+    }
+
     const selected = this.selectedData;
 
     if (selected.length === 0) {
@@ -209,6 +330,12 @@ export class Dashboard implements OnInit {
     }
 
     return this.dayLabels.map((_, index) => this.sum(selected.map((branch) => branch.salesLast30Days[index] ?? 0)));
+  }
+
+  private obtenerNombreSucursal(idSucursal: string): string {
+    return this.realBranches.find(
+      (branch) => String(branch.id ?? branch.idSucursal ?? branch.id_sucursal) === idSucursal
+    )?.nombre ?? idSucursal;
   }
 
   private getSalesToday(branch: BranchDashboardMock): number {
@@ -273,10 +400,8 @@ export class Dashboard implements OnInit {
   }
 
   private buildMockData(): BranchDashboardMock[] {
-    return [
+    const templates = [
       {
-        id: 1,
-        name: 'Sucursal Centro',
         ticketsToday: 74,
         openRegisters: 3,
         topProductName: 'Cafe Molido Premium 500g',
@@ -292,8 +417,6 @@ export class Dashboard implements OnInit {
         ],
       },
       {
-        id: 2,
-        name: 'Sucursal Norte',
         ticketsToday: 51,
         openRegisters: 2,
         topProductName: 'Gaseosa 2L',
@@ -309,8 +432,6 @@ export class Dashboard implements OnInit {
         ],
       },
       {
-        id: 3,
-        name: 'Sucursal Sur',
         ticketsToday: 39,
         openRegisters: 1,
         topProductName: 'Arroz 1kg',
@@ -326,5 +447,23 @@ export class Dashboard implements OnInit {
         ],
       },
     ];
+
+    if (!this.realBranches || this.realBranches.length === 0) {
+      return templates.map((t, i) => ({
+        ...t,
+        id: i + 1,
+        name: `Sucursal Muck ${i + 1}`,
+      }));
+    }
+
+    return this.realBranches.map((branch, index) => {
+      const template = templates[index % templates.length]!;
+      const branchId = branch.id ?? branch.idSucursal ?? branch.id_sucursal ?? index + 1;
+      return {
+        ...template,
+        id: Number(branchId),
+        name: branch.nombre,
+      };
+    });
   }
 }

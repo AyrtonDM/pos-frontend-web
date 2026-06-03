@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { CompanyWebSocketService } from './core/services/company-websocket.service';
 
 @Component({
   selector: 'app-root',
@@ -8,5 +9,6 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.css'
 })
 export class App {
+  private readonly wsService = inject(CompanyWebSocketService);
   protected readonly title = signal('pos-frontend-web');
 }
