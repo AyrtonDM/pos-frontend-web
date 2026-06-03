@@ -10,7 +10,7 @@ import {
   SubcategoriaProducto,
 } from '../../../../../../../core/services/product.service';
 import { Navbar } from '../../../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../../../shared/components/sidebar/sidebar';
 
 @Component({
   selector: 'app-categorias-panel',
@@ -26,7 +26,6 @@ export class CategoriasPanel implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
   protected companyName = 'Empresa';
-  protected sidebarItems: SidebarItem[] = [];
 
   protected activeTab: 'list' | 'register' = 'list';
 
@@ -54,7 +53,6 @@ export class CategoriasPanel implements OnInit {
   protected mensajeGeneral = '';
 
   ngOnInit(): void {
-    this.sidebarItems = this.buildSidebarItems();
     this.cargarNombreEmpresa();
     this.cargarDatos();
   }
@@ -251,49 +249,6 @@ export class CategoriasPanel implements OnInit {
         this.cdr.detectChanges();
       },
     });
-  }
-
-  private buildSidebarItems(): SidebarItem[] {
-    return [
-      {
-        label: 'Sucursales',
-        link: ['/company', this.companyId, 'branches'],
-      },
-      {
-      label: 'Usuarios',
-      link: ['/company', this.companyId, 'users', 'staff'],
-      },
-      {
-        label: 'Productos',
-        active: true,
-        expanded: true,
-        children: [
-          {
-            label: 'Catalogo',
-            link: ['/company', this.companyId, 'products'],
-          },
-          {
-            label: 'Categoria',
-            link: ['/company', this.companyId, 'products', 'categories'],
-            active: true,
-          },
-        ],
-      },
-      {
-        label: 'Clientes',
-        link: ['/company', this.companyId, 'clients'],
-        children: [
-          {
-            label: 'Catalogo',
-            link: ['/company', this.companyId, 'clients'],
-          },
-          {
-            label: 'Categorias',
-            link: ['/company', this.companyId, 'clients', 'categories'],
-          },
-        ],
-      },
-    ];
   }
 }
 

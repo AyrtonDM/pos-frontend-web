@@ -5,7 +5,7 @@ import {
   Producto,
 } from '../../../../../../../core/services/product.service';
 import { Navbar } from '../../../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../../../shared/components/sidebar/sidebar';
 
 @Component({
   selector: 'app-view-product',
@@ -24,47 +24,6 @@ export class ViewProduct implements OnInit {
   protected cargandoProducto = false;
   protected errorProducto = '';
   protected producto: Producto | null = null;
-
-  protected readonly sidebarItems: SidebarItem[] = [
-    {
-      label: 'Sucursales',
-      link: ['/company', this.companyId, 'branches'],
-    },
-    {
-      label: 'Usuarios',
-      link: ['/company', this.companyId, 'users', 'staff'],
-    },
-    {
-      label: 'Productos',
-      active: true,
-      expanded: true,
-      children: [
-        {
-          label: 'Catalogo',
-          link: ['/company', this.companyId, 'products'],
-          active: true,
-        },
-        {
-          label: 'Categoria',
-          link: ['/company', this.companyId, 'products', 'categories'],
-        },
-      ],
-    },
-    {
-      label: 'Clientes',
-      link: ['/company', this.companyId, 'clients'],
-      children: [
-        {
-          label: 'Agenda',
-          link: ['/company', this.companyId, 'clients'],
-        },
-        {
-          label: 'Categorias',
-          link: ['/company', this.companyId, 'clients', 'categories'],
-        },
-      ],
-    },
-  ];
 
   ngOnInit(): void {
     this.cargarProducto();

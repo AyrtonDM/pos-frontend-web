@@ -10,7 +10,7 @@ import {
   UpdateClientRequest,
 } from '../../../../../../core/services/company.service';
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
 interface ClientEditForm {
   id_categoria_cliente: number | null;
@@ -60,37 +60,6 @@ export class EditClient implements OnInit {
 
   protected clientName = 'Cliente';
   protected categories: ClientCategoryOption[] = [];
-
-  protected readonly sidebarItems: SidebarItem[] = [
-    {
-      label: 'Sucursales',
-      link: ['/company', this.companyId, 'branches'],
-    },
-    {
-      label: 'Usuarios',
-      link: ['/company', this.companyId, 'users', 'staff'],
-    },
-    {
-      label: 'Productos',
-      link: ['/company', this.companyId, 'products'],
-    },
-    {
-      label: 'Clientes',
-      active: true,
-      expanded: true,
-      children: [
-        {
-          label: 'Agenda',
-          link: ['/company', this.companyId, 'clients'],
-        },
-        {
-          label: 'Categorias',
-          link: ['/company', this.companyId, 'clients', 'categories'],
-          active: true,
-        },
-      ],
-    },
-  ];
 
   ngOnInit(): void {
     this.cargarDatos();

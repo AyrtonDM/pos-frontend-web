@@ -6,7 +6,7 @@ import {
   SubcategoriaProducto,
 } from '../../../../../../../core/services/product.service';
 import { Navbar } from '../../../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../../../shared/components/sidebar/sidebar';
 
 @Component({
   selector: 'app-view-category',
@@ -26,47 +26,6 @@ export class ViewCategory implements OnInit {
   protected errorCategoria = '';
   protected categoria: CategoriaProducto | null = null;
   protected subcategorias: SubcategoriaProducto[] = [];
-
-  protected readonly sidebarItems: SidebarItem[] = [
-    {
-      label: 'Sucursales',
-      link: ['/company', this.companyId, 'branches'],
-    },
-    {
-      label: 'Usuarios',
-      link: ['/company', this.companyId, 'users', 'staff'],
-    },
-    {
-      label: 'Productos',
-      active: true,
-      expanded: true,
-      children: [
-        {
-          label: 'Catalogo',
-          link: ['/company', this.companyId, 'products'],
-        },
-        {
-          label: 'Categoria',
-          link: ['/company', this.companyId, 'products', 'categories'],
-          active: true,
-        },
-      ],
-    },
-    {
-      label: 'Clientes',
-      link: ['/company', this.companyId, 'clients'],
-      children: [
-        {
-          label: 'Catalogo',
-          link: ['/company', this.companyId, 'clients'],
-        },
-        {
-          label: 'Categorias',
-          link: ['/company', this.companyId, 'clients', 'categories'],
-        },
-      ],
-    },
-  ];
 
   ngOnInit(): void {
     this.cargarCategoria();

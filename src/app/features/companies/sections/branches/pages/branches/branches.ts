@@ -8,7 +8,7 @@ import {
   CreateBranchRequest,
 } from '../../../../../../core/services/company.service';
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
 @Component({
   selector: 'app-branches',
@@ -35,30 +35,6 @@ export class Branches implements OnInit {
     telefono: '',
     ciudad: '',
   };
-
-  protected readonly sidebarItems: SidebarItem[] = [
-    {
-      label: 'Sucursales',
-      link: ['/company', this.companyId, 'branches'],
-      active: true,
-    },
-    {
-      label: 'Usuarios',
-      link: ['/company', this.companyId, 'users'],
-    },
-    {
-      label: 'Productos',
-      link: ['/company', this.companyId, 'products'],
-    },
-    {
-      label: 'Clientes',
-      link: ['/company', this.companyId, 'clients'],
-    },
-    {
-      label: 'Reportes',
-      link: ['/company', this.companyId, 'reports'],  
-    },
-  ];
 
   ngOnInit(): void {
     this.cargarSucursales();

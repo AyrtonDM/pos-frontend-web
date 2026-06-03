@@ -8,7 +8,7 @@ import {
   CashRegisterService,
 } from '../../../../../../core/services/cash-register.service';
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
 type CashRegisterTab = 'list' | 'register' | 'edit';
 
@@ -80,24 +80,6 @@ export class CashRegister implements OnInit {
     sessionId: null,
     blockedCashRegisterIds: [],
   };
-
-  protected readonly sidebarItems: SidebarItem[] = [
-    {
-      label: 'Personal',
-      link: ['/company', this.companyId, 'branch', this.branchId, 'staff'],
-    },
-    {
-      label: 'Cajas',
-      active: true,
-    },
-    {
-      label: 'Inventario',
-      link: ['/company', this.companyId, 'branch', this.branchId, 'inventario'],
-    },
-    {
-      label: 'Ventas',
-    },
-  ];
 
   ngOnInit(): void {
     this.openPolicy = this.getOpenPolicy();

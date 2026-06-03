@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { DynamicReportResponse, DynamicReportService, ReportExportFormat } from '../../../../../core/services/dynamic-report.service';
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../shared/components/sidebar/sidebar';
 
 @Component({
   selector: 'app-dynamic-reports',
@@ -88,46 +88,6 @@ export class DynamicReports {
 
     return Boolean(report) && !this.clarificationQuestion() && !this.hasRows() && !this.hasAggregates();
   });
-
-  protected readonly sidebarItems: SidebarItem[] = [
-    {
-      label: 'Sucursales',
-      link: ['/company', this.companyId, 'branches'],
-      active: true,
-    },
-    {
-      label: 'Usuarios',
-      link: ['/company', this.companyId, 'users'],
-    },
-    {
-      label: 'Productos',
-      link: ['/company', this.companyId, 'products'],
-    },
-    {
-      label: 'Clientes',
-      link: ['/company', this.companyId, 'clients'],
-    },
-    {
-      label: 'Reportes',
-      active: true,
-      expanded: true,
-      children: [
-        {
-          label: 'Estaticos',
-          link: ['/company', this.companyId, 'reports', 'static'],
-        },
-        {
-          label: 'Parametrizados',
-          link: ['/company', this.companyId, 'reports', 'parameterized'],
-        },
-        {
-          label: 'Dinamicos',
-          link: ['/company', this.companyId, 'reports', 'dynamic'],
-          active: true,
-        },
-      ],
-    },
-  ];
 
   protected runReport(): void {
     if (!this.companyId) {

@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../shared/components/sidebar/sidebar';
 import {
   CompanyService,
   CreateRoleResponse,
@@ -96,37 +96,6 @@ export class Rols implements OnInit {
   protected errorRoles = '';
   private availablePermissionModules: PermissionModuleWithPermissions[] = [];
   private editingRoleDetail: RoleDetailResponse | null = null;
-
-  protected readonly sidebarItems: SidebarItem[] = [
-    {
-      label: 'Sucursales',
-      link: ['/company', this.companyId, 'branches'],
-    },
-    {
-      label: 'Usuarios',
-      active: true,
-      expanded: true,
-      children: [
-        {
-          label: 'Personal',
-          link: ['/company', this.companyId, 'users', 'staff'],
-        },
-        {
-          label: 'Roles',
-          link: ['/company', this.companyId, 'users', 'rols'],
-          active: true,
-        },
-      ],
-    },
-    {
-      label: 'Productos',
-      link: ['/company', this.companyId, 'products'],
-    },
-    {
-      label: 'Clientes',
-      link: ['/company', this.companyId, 'clients'],
-    },
-  ];
 
   ngOnInit(): void {
     this.cargarRoles();

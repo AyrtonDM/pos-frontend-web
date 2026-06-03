@@ -9,7 +9,7 @@ import {
   InviteClientResponse,
 } from '../../../../../../../core/services/company.service';
 import { Navbar } from '../../../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../../../shared/components/sidebar/sidebar';
 
 type ClientCatalogTab = 'invite' | 'list';
 
@@ -68,37 +68,6 @@ export class ClientesCatalogo {
   ];
 
   protected clients: ClientRow[] = [];
-
-  protected readonly sidebarItems: SidebarItem[] = [
-    {
-      label: 'Sucursales',
-      link: ['/company', this.companyId, 'branches'],
-    },
-    {
-      label: 'Usuarios',
-      link: ['/company', this.companyId, 'users', 'staff'],
-    },
-    {
-      label: 'Productos',
-      link: ['/company', this.companyId, 'products'],
-    },
-    {
-      label: 'Clientes',
-      active: true,
-      expanded: true,
-      children: [
-        {
-          label: 'Agenda',
-          link: ['/company', this.companyId, 'clients'],
-          active: true,
-        },
-        {
-          label: 'Categorias',
-          link: ['/company', this.companyId, 'clients', 'categories'],
-        },
-      ],
-    },
-  ];
 
   protected setActiveTab(tab: ClientCatalogTab): void {
     this.activeTab = tab;

@@ -10,7 +10,7 @@ import {
   TipoMovimiento,
 } from '../../../../../../core/services/product.service';
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
 type InventoryTab = 'stock' | 'movements';
 
@@ -79,24 +79,6 @@ export class Inventario implements OnInit {
     stockMin: null,
     stockMax: null,
   };
-
-  protected readonly sidebarItems: SidebarItem[] = [
-    {
-      label: 'Personal',
-      link: ['/company', this.companyId, 'branch', this.branchId, 'staff'],
-    },
-    {
-      label: 'Cajas',
-      link: ['/company', this.companyId, 'branch', this.branchId, 'cash-register'],
-    },
-    {
-      label: 'Inventario',
-      active: true,
-    },
-    {
-      label: 'Ventas',
-    },
-  ];
 
   ngOnInit(): void {
     this.cargarTiposMovimiento();

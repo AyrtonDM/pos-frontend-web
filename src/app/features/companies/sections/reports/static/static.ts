@@ -3,7 +3,7 @@ import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../shared/components/sidebar/sidebar';
 
 type StaticReportTab = 'sales' | 'inventory' | 'cash-registers';
 
@@ -247,46 +247,6 @@ export class StaticReports {
   protected showCashReport(type: 'summary' | 'movements'): void {
     this.cashReportType = type;
   }
-
-  protected readonly sidebarItems: SidebarItem[] = [
-    {
-      label: 'Sucursales',
-      link: ['/company', this.companyId, 'branches'],
-      active: true,
-    },
-    {
-      label: 'Usuarios',
-      link: ['/company', this.companyId, 'users'],
-    },
-    {
-      label: 'Productos',
-      link: ['/company', this.companyId, 'products'],
-    },
-    {
-      label: 'Clientes',
-      link: ['/company', this.companyId, 'clients'],
-    },
-    {
-      label: 'Reportes',
-      active: true,
-      expanded: true,
-      children: [
-        {
-          label: 'Estaticos',
-          link: ['/company', this.companyId, 'reports', 'static'],
-          active: true,
-        },
-        {
-          label: 'Parametrizados',
-          link: ['/company', this.companyId, 'reports', 'parameterized'],
-        },
-        {
-          label: 'Dinamicos',
-          link: ['/company', this.companyId, 'reports', 'dynamic'],
-        },
-      ],
-    },
-  ];
 
   protected setActiveTab(tab: StaticReportTab): void {
     this.activeTab = tab;

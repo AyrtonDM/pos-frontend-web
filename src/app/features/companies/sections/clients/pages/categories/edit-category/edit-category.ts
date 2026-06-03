@@ -9,7 +9,7 @@ import {
   UpdateClientCategoryRequest,
 } from '../../../../../../../core/services/company.service';
 import { Navbar } from '../../../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../../../shared/components/sidebar/sidebar';
 
 @Component({
   selector: 'app-edit-client-category',
@@ -38,37 +38,6 @@ export class EditClientCategory implements OnInit {
     limite_credito: 0,
     activo: true,
   };
-
-  protected readonly sidebarItems: SidebarItem[] = [
-    {
-      label: 'Sucursales',
-      link: ['/company', this.companyId, 'branches'],
-    },
-    {
-      label: 'Usuarios',
-      link: ['/company', this.companyId, 'users', 'staff'],
-    },
-    {
-      label: 'Productos',
-      link: ['/company', this.companyId, 'products'],
-    },
-    {
-      label: 'Clientes',
-      active: true,
-      expanded: true,
-      children: [
-        {
-          label: 'Catalogo',
-          link: ['/company', this.companyId, 'clients'],
-        },
-        {
-          label: 'Categorias',
-          link: ['/company', this.companyId, 'clients', 'categories'],
-          active: true,
-        },
-      ],
-    },
-  ];
 
   ngOnInit(): void {
     this.cargarCategoria();

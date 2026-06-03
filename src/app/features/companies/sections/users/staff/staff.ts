@@ -8,7 +8,7 @@ import {
   RoleListItem,
 } from '../../../../../core/services/company.service';
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
-import { Sidebar, SidebarItem } from '../../../../../shared/components/sidebar/sidebar';
+import { Sidebar } from '../../../../../shared/components/sidebar/sidebar';
 
 type StaffTab = 'invite' | 'list' | 'edit';
 
@@ -48,37 +48,6 @@ export class Staff implements OnInit {
   protected branches: Branch[] = [];
   protected staffMembers: CompanyStaffMember[] = [];
   protected roles: Array<{ value: string; label: string }> = [];
-
-  protected readonly sidebarItems: SidebarItem[] = [
-    {
-      label: 'Sucursales',
-      link: ['/company', this.companyId, 'branches'],
-    },
-    {
-      label: 'Usuarios',
-      active: true,
-      expanded: true,
-      children: [
-        {
-          label: 'Personal',
-          link: ['/company', this.companyId, 'users', 'staff'],
-          active: true,
-        },
-        {
-          label: 'Roles',
-          link: ['/company', this.companyId, 'users', 'rols'],
-        },
-      ],
-    },
-    {
-      label: 'Productos',
-      link: ['/company', this.companyId, 'products'],
-    },
-    {
-      label: 'Clientes',
-      link: ['/company', this.companyId, 'clients'],
-    },
-  ];
 
   ngOnInit(): void {
     this.cargarRoles();
