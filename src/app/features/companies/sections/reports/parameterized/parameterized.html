@@ -221,8 +221,8 @@
                 </div>
 
                 <div class="report-actions">
-                  <button class="btn btn-secondary" type="button">PDF</button>
-                  <button class="btn btn-secondary" type="button">Excel</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportSalesReport('pdf')">PDF</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportSalesReport('excel')">Excel</button>
                 </div>
               </section>
             }
@@ -389,8 +389,8 @@
                 </div>
 
                 <div class="report-actions">
-                  <button class="btn btn-secondary" type="button">PDF</button>
-                  <button class="btn btn-secondary" type="button">Excel</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportInventoryReport('pdf')">PDF</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportInventoryReport('excel')">Excel</button>
                 </div>
               </section>
             }
@@ -569,8 +569,8 @@
                 </div>
 
                 <div class="report-actions">
-                  <button class="btn btn-secondary" type="button">PDF</button>
-                  <button class="btn btn-secondary" type="button">Excel</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportCashReport('pdf')">PDF</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportCashReport('excel')">Excel</button>
                 </div>
               </section>
             }

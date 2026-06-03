@@ -645,6 +645,460 @@ export class ParameterizedReports implements OnInit {
     return Number.isFinite(parsedId) ? String(parsedId) : null;
   }
 
+  protected exportSalesReport(format: 'pdf' | 'excel'): void {
+    console.log('exportSalesReport clicked with format:', format);
+    if (!this.salesReport) {
+      console.warn('exportSalesReport: salesReport data is null');
+      return;
+    }
+    if (format === 'pdf') {
+      this.exportSalesReportPdf();
+    } else {
+      this.exportSalesReportExcel();
+    }
+  }
+
+  private exportSalesReportPdf(): void {
+    const r = this.salesReport;
+    const lines: string[] = [
+      'REPORTE DE VENTAS PARAMETRIZADO',
+      '================================',
+      `Empresa: ${r.company}`,
+      `Fecha de generacion: ${r.generatedAt}`,
+      '',
+      'Filtros aplicados:',
+      `- Periodo: ${r.filters.startDate} al ${r.filters.endDate}`,
+      `- Sucursal: ${r.filters.branch}`,
+      `- Tipo de venta: ${r.filters.saleType}`,
+      `- Metodo de pago: ${r.filters.paymentMethod}`,
+      `- Producto: ${r.filters.product}`,
+      `- Personal: ${r.filters.staff}`,
+      '',
+      'Resumen gerencial:',
+      `- Total de ventas realizadas: ${r.summary.totalSales}`,
+      `- Monto total vendido: ${r.summary.totalAmount}`,
+      `- Productos vendidos: ${r.summary.totalProducts}`,
+      '',
+      'Detalle Analitico de Ventas:',
+      'N. Venta | Fecha y hora | Personal | Tipo | Metodo pago | Productos | Total',
+      '--------------------------------------------------------------------------------------------'
+    ];
+
+    r.details.forEach((item: any) => {
+      lines.push(`${item.nro} | ${item.datetime} | ${item.staff} | ${item.type} | ${item.method} | ${item.products} | ${item.total}`);
+    });
+
+    const pdf = this.createPdfDocument(lines);
+    this.downloadBlob(new Blob([pdf.buffer as ArrayBuffer], { type: 'application/pdf' }), `${this.slugify('reporte-ventas')}.pdf`);
+  }
+
+  private exportSalesReportExcel(): void {
+    const r = this.salesReport;
+    const headers = ['N. venta', 'Fecha y hora', 'Personal', 'Tipo', 'Metodo pago', 'Productos', 'Total'];
+    const headerCells = headers.map(h => `<th>${this.escapeHtml(h)}</th>`).join('');
+    const bodyRows = r.details.map((item: any) => {
+      return `<tr>
+        <td>${this.escapeHtml(String(item.nro))}</td>
+        <td>${this.escapeHtml(String(item.datetime))}</td>
+        <td>${this.escapeHtml(String(item.staff))}</td>
+        <td>${this.escapeHtml(String(item.type))}</td>
+        <td>${this.escapeHtml(String(item.method))}</td>
+        <td style="text-align:center;">${this.escapeHtml(String(item.products))}</td>
+        <td style="text-align:right;">${this.escapeHtml(String(item.total))}</td>
+      </tr>`;
+    }).join('');
+
+    const worksheet = this.buildExcelHtml('Reporte de Ventas Parametrizado', r, headerCells, bodyRows, [
+      { label: 'Total de ventas realizadas', value: r.summary.totalSales },
+      { label: 'Monto total vendido', value: r.summary.totalAmount },
+      { label: 'Productos vendidos', value: r.summary.totalProducts }
+    ]);
+
+    this.downloadBlob(
+      new Blob([worksheet], { type: 'application/vnd.ms-excel;charset=utf-8' }),
+      `${this.slugify('reporte-ventas')}.xls`
+    );
+  }
+
+  protected exportInventoryReport(format: 'pdf' | 'excel'): void {
+    console.log('exportInventoryReport clicked with format:', format);
+    if (!this.inventoryReport) {
+      console.warn('exportInventoryReport: inventoryReport data is null');
+      return;
+    }
+    if (format === 'pdf') {
+      this.exportInventoryReportPdf();
+    } else {
+      this.exportInventoryReportExcel();
+    }
+  }
+
+  private exportInventoryReportPdf(): void {
+    const r = this.inventoryReport;
+    const lines: string[] = [
+      'REPORTE DE INVENTARIO PARAMETRIZADO',
+      '====================================',
+      `Empresa: ${r.company}`,
+      `Fecha de generacion: ${r.generatedAt}`,
+      '',
+      'Filtros aplicados:',
+      `- Periodo: ${r.filters.startDate} al ${r.filters.endDate}`,
+      `- Sucursal: ${r.filters.branch}`,
+      `- Tipo de movimiento: ${r.filters.movementType}`,
+      `- Producto: ${r.filters.product}`,
+      `- Categoria: ${r.filters.category}`,
+      '',
+      'Resumen gerencial:',
+      `- Movimientos registrados: ${r.summary.totalMovements}`,
+      `- Productos con stock disponible: ${r.summary.availableStock}`,
+      `- Productos con stock bajo: ${r.summary.lowStock}`,
+      `- Productos agotados: ${r.summary.outOfStock}`,
+      '',
+      'Detalle Analitico de Movimientos de Inventario:',
+      'N. Movimiento | Fecha y hora | Producto | Categoria | Tipo | Cantidad',
+      '--------------------------------------------------------------------------------------------'
+    ];
+
+    r.details.forEach((item: any) => {
+      lines.push(`${item.nro} | ${item.datetime} | ${item.product} | ${item.category} | ${item.type} | ${item.quantity}`);
+    });
+
+    const pdf = this.createPdfDocument(lines);
+    this.downloadBlob(new Blob([pdf.buffer as ArrayBuffer], { type: 'application/pdf' }), `${this.slugify('reporte-inventario')}.pdf`);
+  }
+
+  private exportInventoryReportExcel(): void {
+    const r = this.inventoryReport;
+    const headers = ['N. movimiento', 'Fecha y hora', 'Producto', 'Categoria', 'Tipo', 'Cantidad'];
+    const headerCells = headers.map(h => `<th>${this.escapeHtml(h)}</th>`).join('');
+    const bodyRows = r.details.map((item: any) => {
+      return `<tr>
+        <td>${this.escapeHtml(String(item.nro))}</td>
+        <td>${this.escapeHtml(String(item.datetime))}</td>
+        <td>${this.escapeHtml(String(item.product))}</td>
+        <td>${this.escapeHtml(String(item.category))}</td>
+        <td>${this.escapeHtml(String(item.type))}</td>
+        <td style="text-align:center;">${this.escapeHtml(String(item.quantity))}</td>
+      </tr>`;
+    }).join('');
+
+    const worksheet = this.buildExcelHtml('Reporte de Inventario Parametrizado', r, headerCells, bodyRows, [
+      { label: 'Movimientos registrados', value: r.summary.totalMovements },
+      { label: 'Productos con stock disponible', value: r.summary.availableStock },
+      { label: 'Productos con stock bajo', value: r.summary.lowStock },
+      { label: 'Productos agotados', value: r.summary.outOfStock }
+    ]);
+
+    this.downloadBlob(
+      new Blob([worksheet], { type: 'application/vnd.ms-excel;charset=utf-8' }),
+      `${this.slugify('reporte-inventario')}.xls`
+    );
+  }
+
+  protected exportCashReport(format: 'pdf' | 'excel'): void {
+    console.log('exportCashReport clicked with format:', format);
+    if (!this.cashReport) {
+      console.warn('exportCashReport: cashReport data is null');
+      return;
+    }
+    if (format === 'pdf') {
+      this.exportCashReportPdf();
+    } else {
+      this.exportCashReportExcel();
+    }
+  }
+
+  private exportCashReportPdf(): void {
+    const r = this.cashReport;
+    const lines: string[] = [
+      'REPORTE DE CAJAS PARAMETRIZADO',
+      '===============================',
+      `Empresa: ${r.company}`,
+      `Fecha de generacion: ${r.generatedAt}`,
+      '',
+      'Filtros aplicados:',
+      `- Periodo: ${r.filters.startDate} al ${r.filters.endDate}`,
+      `- Sucursal: ${r.filters.branch}`,
+      `- Caja: ${r.filters.cash}`,
+      `- Tipo de movimiento: ${r.filters.movementType}`,
+      `- Estado de sesion: ${r.filters.sessionStatus}`,
+      '',
+      'Resumen gerencial:',
+      `- Sesiones de caja registradas: ${r.summary.totalSessions}`,
+      `- Sesiones abiertas: ${r.summary.openSessions}`,
+      `- Sesiones cerradas: ${r.summary.closedSessions}`,
+      `- Monto total de aperturas: ${r.summary.totalOpeningAmount}`,
+      `- Monto total esperado al cierre: ${r.summary.expectedTotalAmount}`,
+      `- Monto total declarado al cierre: ${r.summary.declaredTotalAmount}`,
+      `- Diferencia total: ${r.summary.totalDifference}`,
+      '',
+      'Detalle Analitico de Movimientos de Caja:',
+      'N. Movimiento | Fecha y hora | Caja | Tipo | Concepto | Monto',
+      '--------------------------------------------------------------------------------------------'
+    ];
+
+    r.details.forEach((item: any) => {
+      lines.push(`${item.nro} | ${item.datetime} | ${item.cash} | ${item.type} | ${item.concept} | ${item.amount}`);
+    });
+
+    const pdf = this.createPdfDocument(lines);
+    this.downloadBlob(new Blob([pdf.buffer as ArrayBuffer], { type: 'application/pdf' }), `${this.slugify('reporte-cajas')}.pdf`);
+  }
+
+  private exportCashReportExcel(): void {
+    const r = this.cashReport;
+    const headers = ['N. movimiento', 'Fecha y hora', 'Caja', 'Tipo', 'Concepto', 'Monto'];
+    const headerCells = headers.map(h => `<th>${this.escapeHtml(h)}</th>`).join('');
+    const bodyRows = r.details.map((item: any) => {
+      return `<tr>
+        <td>${this.escapeHtml(String(item.nro))}</td>
+        <td>${this.escapeHtml(String(item.datetime))}</td>
+        <td>${this.escapeHtml(String(item.cash))}</td>
+        <td>${this.escapeHtml(String(item.type))}</td>
+        <td>${this.escapeHtml(String(item.concept))}</td>
+        <td style="text-align:right;">${this.escapeHtml(String(item.amount))}</td>
+      </tr>`;
+    }).join('');
+
+    const worksheet = this.buildExcelHtml('Reporte de Cajas Parametrizado', r, headerCells, bodyRows, [
+      { label: 'Sesiones de caja registradas', value: r.summary.totalSessions },
+      { label: 'Sesiones abiertas', value: r.summary.openSessions },
+      { label: 'Sesiones cerradas', value: r.summary.closedSessions },
+      { label: 'Monto total de aperturas', value: r.summary.totalOpeningAmount },
+      { label: 'Monto total esperado al cierre', value: r.summary.expectedTotalAmount },
+      { label: 'Monto total declarado al cierre', value: r.summary.declaredTotalAmount },
+      { label: 'Diferencia total', value: r.summary.totalDifference }
+    ]);
+
+    this.downloadBlob(
+      new Blob([worksheet], { type: 'application/vnd.ms-excel;charset=utf-8' }),
+      `${this.slugify('reporte-cajas')}.xls`
+    );
+  }
+
+  private buildExcelHtml(
+    title: string,
+    report: any,
+    headerCells: string,
+    bodyRows: string,
+    summaryItems: { label: string; value: any }[]
+  ): string {
+    const filterLabels: Record<string, string> = {
+      startDate: 'Fecha Inicial',
+      endDate: 'Fecha Final',
+      branch: 'Sucursal',
+      saleType: 'Tipo de Venta',
+      paymentMethod: 'Metodo de Pago',
+      product: 'Producto',
+      staff: 'Personal',
+      movementType: 'Tipo de Movimiento',
+      category: 'Categoria',
+      cash: 'Caja',
+      sessionStatus: 'Estado de Sesi\u00F3n'
+    };
+
+    const filterItems = Object.entries(report.filters)
+      .map(([key, value]) => {
+        const label = filterLabels[key] || key;
+        return `<tr><td style="font-weight:bold;">${this.escapeHtml(label)}</td><td>${this.escapeHtml(String(value))}</td></tr>`;
+      })
+      .join('');
+
+    const summaryRows = summaryItems
+      .map(item => `<tr><td>${this.escapeHtml(item.label)}</td><td style="text-align:right;">${this.escapeHtml(String(item.value))}</td></tr>`)
+      .join('');
+
+    return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; }
+    table { border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
+    th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; }
+    th { background: #e2e8f0; font-weight: 700; }
+    .title-cell { font-size: 16px; font-weight: bold; padding: 10px 0; }
+  </style>
+</head>
+<body>
+  <table>
+    <tr><td colspan="4" class="title-cell">${this.escapeHtml(title)}</td></tr>
+    <tr><td colspan="4">Empresa: ${this.escapeHtml(report.company)}</td></tr>
+    <tr><td colspan="4">Fecha de generacion: ${this.escapeHtml(report.generatedAt)}</td></tr>
+  </table>
+
+  <h3>Filtros Aplicados</h3>
+  <table>
+    <tbody>
+      ${filterItems}
+    </tbody>
+  </table>
+
+  <h3>Resumen Gerencial</h3>
+  <table>
+    <thead>
+      <tr><th>Indicador</th><th>Valor</th></tr>
+    </thead>
+    <tbody>
+      ${summaryRows}
+    </tbody>
+  </table>
+
+  <h3>Detalle Analitico</h3>
+  <table>
+    <thead><tr>${headerCells}</tr></thead>
+    <tbody>${bodyRows}</tbody>
+  </table>
+</body>
+</html>`;
+  }
+
+  private createPdfDocument(lines: string[]): Uint8Array {
+    const pageWidth = 595;
+    const pageHeight = 842;
+    const marginX = 42;
+    const startY = 800;
+    const lineHeight = 16;
+    const maxChars = 92;
+    const pages: string[][] = [[]];
+
+    lines.flatMap((line) => this.wrapPdfLine(line, maxChars)).forEach((line) => {
+      const currentPage = pages[pages.length - 1];
+
+      if (currentPage.length >= 46) {
+        pages.push([]);
+      }
+
+      pages[pages.length - 1].push(line);
+    });
+
+    const objects: string[] = [
+      '<< /Type /Catalog /Pages 2 0 R >>',
+      '',
+      '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+    ];
+    const pageObjectNumbers: number[] = [];
+    const fontObject = 3;
+    const addObject = (value: string): number => {
+      objects.push(value);
+      return objects.length;
+    };
+
+    pages.forEach((pageLines) => {
+      const streamLines = ['BT', '/F1 10 Tf'];
+
+      pageLines.forEach((line, index) => {
+        if (index === 0) {
+          streamLines.push(`${marginX} ${startY} Td (${this.escapePdfText(line)}) Tj`);
+        } else {
+          streamLines.push(`0 -${lineHeight} Td (${this.escapePdfText(line)}) Tj`);
+        }
+      });
+
+      streamLines.push('ET');
+      const stream = streamLines.join('\n');
+      const contentObject = addObject(`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`);
+      const pageObject = addObject(
+        `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 ${fontObject} 0 R >> >> /Contents ${contentObject} 0 R >>`,
+      );
+
+      pageObjectNumbers.push(pageObject);
+    });
+
+    const kids = pageObjectNumbers.map((objectNumber) => `${objectNumber} 0 R`).join(' ');
+    objects[1] = `<< /Type /Pages /Kids [${kids}] /Count ${pageObjectNumbers.length} >>`;
+
+    const chunks = ['%PDF-1.4\n'];
+    const offsets = [0];
+
+    objects.forEach((object, index) => {
+      offsets.push(chunks.join('').length);
+      chunks.push(`${index + 1} 0 obj\n${object}\nendobj\n`);
+    });
+
+    const xrefOffset = chunks.join('').length;
+    chunks.push(`xref\n0 ${objects.length + 1}\n`);
+    chunks.push('0000000000 65535 f \n');
+    offsets.slice(1).forEach((offset) => chunks.push(`${offset.toString().padStart(10, '0')} 00000 n \n`));
+    chunks.push(`trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
+
+    return new TextEncoder().encode(chunks.join(''));
+  }
+
+  private wrapPdfLine(value: string, maxChars: number): string[] {
+    const cleanValue = this.toPdfSafeText(value);
+
+    if (cleanValue.length <= maxChars) {
+      return [cleanValue];
+    }
+
+    const lines: string[] = [];
+    let remaining = cleanValue;
+
+    while (remaining.length > maxChars) {
+      const breakpoint = remaining.lastIndexOf(' ', maxChars);
+      const index = breakpoint > 20 ? breakpoint : maxChars;
+      lines.push(remaining.slice(0, index).trim());
+      remaining = remaining.slice(index).trim();
+    }
+
+    if (remaining) {
+      lines.push(remaining);
+    }
+
+    return lines;
+  }
+
+  private toPdfSafeText(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\x20-\x7E]/g, '')
+      .trim();
+  }
+
+  private escapePdfText(value: string): string {
+    return this.toPdfSafeText(value).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  private downloadBlob(blob: Blob, fileName: string): void {
+    console.log('downloadBlob: Generando descarga para:', fileName);
+    try {
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+
+      anchor.href = objectUrl;
+      anchor.download = fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+
+      setTimeout(() => {
+        URL.revokeObjectURL(objectUrl);
+      }, 100);
+    } catch (e) {
+      console.error('Error en downloadBlob:', e);
+    }
+  }
+
+  private slugify(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase() || 'reporte';
+  }
+
   private uniqueLabels(labels: Array<string | null | undefined>): string[] {
     return Array.from(new Set(labels.map((label) => label?.trim()).filter((label): label is string => Boolean(label))));
   }
