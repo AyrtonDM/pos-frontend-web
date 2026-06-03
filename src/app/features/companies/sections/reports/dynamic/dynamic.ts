@@ -95,11 +95,6 @@ export class DynamicReports {
   });
 
   protected runReport(): void {
-    if (!this.hasPermission('REPORTE_GENERAR')) {
-      this.errorMessage.set('No tienes permiso para generar reportes.');
-      return;
-    }
-
     if (!this.companyId) {
       this.errorMessage.set('No se encontro el identificador de la empresa en la ruta.');
       return;

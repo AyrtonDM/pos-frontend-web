@@ -52,7 +52,7 @@
             <article class="report-card">
               <div class="report-card-header">
                 <h2>Resumen de ventas de hoy</h2>
-                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" [disabled]="loadingSalesSummary" (click)="showSalesReport('summary')">
+                <button class="btn btn-primary" type="button" [disabled]="loadingSalesSummary" (click)="showSalesReport('summary')">
                   {{ loadingSalesSummary ? 'Generando...' : 'Generar' }}
                 </button>
               </div>
@@ -62,7 +62,7 @@
             <article class="report-card">
               <div class="report-card-header">
                 <h2>Detalle de ventas de hoy</h2>
-                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" [disabled]="loadingSalesDetails" (click)="showSalesReport('details')">
+                <button class="btn btn-primary" type="button" [disabled]="loadingSalesDetails" (click)="showSalesReport('details')">
                   {{ loadingSalesDetails ? 'Generando...' : 'Generar' }}
                 </button>
               </div>
@@ -233,7 +233,7 @@
             <article class="report-card">
               <div class="report-card-header">
                 <h2>Estado de inventario actual</h2>
-                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" [disabled]="loadingInventoryStatus" (click)="showInventoryReport('status')">
+                <button class="btn btn-primary" type="button" [disabled]="loadingInventoryStatus" (click)="showInventoryReport('status')">
                   {{ loadingInventoryStatus ? 'Generando...' : 'Generar' }}
                 </button>
               </div>
@@ -243,7 +243,7 @@
             <article class="report-card">
               <div class="report-card-header">
                 <h2>Movimientos de inventario de los últimos 7 días</h2>
-                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" [disabled]="loadingInventoryMovements" (click)="showInventoryReport('movements')">
+                <button class="btn btn-primary" type="button" [disabled]="loadingInventoryMovements" (click)="showInventoryReport('movements')">
                   {{ loadingInventoryMovements ? 'Generando...' : 'Generar' }}
                 </button>
               </div>
@@ -398,7 +398,7 @@
             <article class="report-card">
               <div class="report-card-header">
                 <h2>Resumen de cajas de hoy</h2>
-                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" [disabled]="loadingCashSummary" (click)="showCashReport('summary')">
+                <button class="btn btn-primary" type="button" [disabled]="loadingCashSummary" (click)="showCashReport('summary')">
                   {{ loadingCashSummary ? 'Generando...' : 'Generar' }}
                 </button>
               </div>
@@ -408,7 +408,7 @@
             <article class="report-card">
               <div class="report-card-header">
                 <h2>Movimientos de cajas de hoy</h2>
-                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" [disabled]="loadingCashMovements" (click)="showCashReport('movements')">
+                <button class="btn btn-primary" type="button" [disabled]="loadingCashMovements" (click)="showCashReport('movements')">
                   {{ loadingCashMovements ? 'Generando...' : 'Generar' }}
                 </button>
               </div>

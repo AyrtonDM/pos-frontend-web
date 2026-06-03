@@ -123,6 +123,8 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   private buildCompanyItems(context: SidebarResolvedContext): SidebarItem[] {
+    const reportItems = this.buildReportItems(context);
+
     return [
       {
         label: 'Panel',
@@ -182,29 +184,81 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
           },
         ],
       },
+      ...(reportItems.length > 0
+        ? [
+            {
+              label: 'Reportes',
+              link: reportItems[0].link,
+              permission: 'REPORTE_GENERAR',
+              children: reportItems,
+            },
+          ]
+        : []),
+    ];
+  }
+
+  private buildReportItems(context: SidebarResolvedContext): SidebarItem[] {
+    const enabledReports = this.getEnabledReportTypes();
+    const reportDefinitions = [
       {
-        label: 'Reportes',
+        key: 'static',
+        label: 'Estaticos',
         link: ['/company', context.companyId, 'reports', 'static'],
         permission: 'REPORTE_GENERAR',
-        children: [
-          {
-            label: 'Estaticos',
-            link: ['/company', context.companyId, 'reports', 'static'],
-            permission: 'REPORTE_GENERAR',
-          },
-          {
-            label: 'Parametrizados',
-            link: ['/company', context.companyId, 'reports', 'parameterized'],
-            permission: 'REPORTE_GENERAR',
-          },
-          {
-            label: 'Dinamicos',
-            link: ['/company', context.companyId, 'reports', 'dynamic'],
-            permission: 'REPORTE_GENERAR',
-          },
-        ],
+      },
+      {
+        key: 'parameterized',
+        label: 'Parametrizados',
+        link: ['/company', context.companyId, 'reports', 'parameterized'],
+        permission: 'REPORTE_GENERAR',
+      },
+      {
+        key: 'dynamic',
+        label: 'Dinamicos',
+        link: ['/company', context.companyId, 'reports', 'dynamic'],
+        permission: 'REPORTE_GENERAR',
       },
     ];
+
+    return reportDefinitions.filter((report) => enabledReports.has(report.key));
+  }
+
+  private getEnabledReportTypes(): Set<string> {
+    const reportConfiguration = this.companyPermissionsService.planConfiguration().reportes;
+    const normalizedConfiguration = reportConfiguration.trim().toLowerCase();
+
+    if (!normalizedConfiguration) {
+      return new Set(['static', 'parameterized', 'dynamic']);
+    }
+
+    const tokens = normalizedConfiguration
+      .split(/[^a-z0-9áéíóúñ]+/i)
+      .map((token) => token.trim().toLowerCase())
+      .filter(Boolean);
+
+    const reportTypes = new Set<string>();
+
+    for (const token of tokens) {
+      const normalizedToken = this.removeDiacritics(token);
+
+      if (['estatico', 'estaticos', 'static', 'statico', 'staticos'].includes(normalizedToken)) {
+        reportTypes.add('static');
+      }
+
+      if (['parametrizado', 'parametrizados', 'parameterized', 'parameterised'].includes(normalizedToken)) {
+        reportTypes.add('parameterized');
+      }
+
+      if (['dinamico', 'dinamicos', 'dynamic'].includes(normalizedToken)) {
+        reportTypes.add('dynamic');
+      }
+    }
+
+    return reportTypes;
+  }
+
+  private removeDiacritics(value: string): string {
+    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
 
   private buildBranchItems(context: SidebarResolvedContext): SidebarItem[] {

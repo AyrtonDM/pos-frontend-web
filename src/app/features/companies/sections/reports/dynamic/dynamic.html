@@ -30,7 +30,7 @@
           }
 
           <div class="action-row">
-            <button class="primary-action" type="submit" [disabled]="loading() || !hasPermission('REPORTE_GENERAR')">
+            <button class="primary-action" type="submit" [disabled]="loading()">
               {{ loading() ? 'Generando�' : 'Generar reporte' }}
             </button>
           </div>

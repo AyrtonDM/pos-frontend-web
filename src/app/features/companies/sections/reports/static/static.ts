@@ -587,10 +587,6 @@ export class StaticReports {
   };
 
   protected showSalesReport(type: 'summary' | 'details'): void {
-    if (!this.hasPermission('REPORTE_GENERAR')) {
-      return;
-    }
-
     this.salesReportType = type;
 
     if (type === 'summary') {
@@ -601,10 +597,6 @@ export class StaticReports {
   }
 
   protected showInventoryReport(type: 'status' | 'movements'): void {
-    if (!this.hasPermission('REPORTE_GENERAR')) {
-      return;
-    }
-
     this.inventoryReportType = type;
 
     if (type === 'status') {
@@ -615,10 +607,6 @@ export class StaticReports {
   }
 
   protected showCashReport(type: 'summary' | 'movements'): void {
-    if (!this.hasPermission('REPORTE_GENERAR')) {
-      return;
-    }
-
     this.cashReportType = type;
 
     if (type === 'summary') {
