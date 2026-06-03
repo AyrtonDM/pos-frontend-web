@@ -4,7 +4,6 @@ import { firstValueFrom } from 'rxjs';
 
 import { AuthService } from '../services/auth.service';
 import { CompanyService } from '../services/company.service';
-import { EmployeeBranchService } from '../services/employee-branch.service';
 import { ApiService } from '../services/api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -22,7 +21,6 @@ export class FcmService {
   constructor(
     private readonly authService: AuthService,
     private readonly companyService: CompanyService,
-    private readonly employeeBranchService: EmployeeBranchService,
     private readonly apiService: ApiService,
   ) {}
 
@@ -92,24 +90,13 @@ export class FcmService {
       return [];
     }
 
-    const roles = this.authService.getUserRoles();
     const idsEmpresa = new Set<number>();
+    const companies = await firstValueFrom(this.companyService.getMisEmpresas());
 
-    if (roles.includes('administrador') || roles.includes('admin')) {
-      const companies = await firstValueFrom(this.companyService.getMisEmpresas());
-      for (const company of companies) {
-        const companyId = this.extraerIdEmpresa(company);
-        if (companyId !== null) {
-          idsEmpresa.add(companyId);
-        }
-      }
-      return Array.from(idsEmpresa);
-    }
-
-    const assignments = await firstValueFrom(this.employeeBranchService.getMisSucursalesEmpleado());
-    for (const assignment of assignments) {
-      if (typeof assignment.id_empresa === 'number' && Number.isFinite(assignment.id_empresa)) {
-        idsEmpresa.add(assignment.id_empresa);
+    for (const company of companies) {
+      const companyId = this.extraerIdEmpresa(company);
+      if (companyId !== null) {
+        idsEmpresa.add(companyId);
       }
     }
 

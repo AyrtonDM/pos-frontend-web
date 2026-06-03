@@ -210,14 +210,25 @@ export interface CashRegisterResponse {
   activo: boolean;
 }
 
+export type CashRegisterListResponse =
+  | CashRegisterResponse[]
+  | {
+      cajas?: CashRegisterResponse[];
+      items?: CashRegisterResponse[];
+      data?: CashRegisterResponse[] | {
+        cajas?: CashRegisterResponse[];
+        items?: CashRegisterResponse[];
+      };
+    };
+
 @Injectable({
   providedIn: 'root',
 })
 export class CashRegisterService {
   constructor(private readonly apiService: ApiService) {}
 
-  getCajasSucursal(idEmpresa: string, idSucursal: string): Observable<CashRegisterResponse[]> {
-    return this.apiService.get<CashRegisterResponse[]>(
+  getCajasSucursal(idEmpresa: string, idSucursal: string): Observable<CashRegisterListResponse> {
+    return this.apiService.get<CashRegisterListResponse>(
       `/api/empresas/${idEmpresa}/sucursales/${idSucursal}/cajas`,
     );
   }

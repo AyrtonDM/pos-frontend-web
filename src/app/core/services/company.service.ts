@@ -2,7 +2,10 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiService } from './api.service';
-import { CompanyPermission } from './company-permissions.service';
+import {
+  CompanyActiveSubscription,
+  CompanyPermission,
+} from './company-permissions.service';
 
 export interface Company {
   idEmpresa?: string | number;
@@ -274,6 +277,11 @@ export interface UpdateRoleRequest {
   activo: boolean;
 }
 
+export interface CompanyAccessResponse {
+  permisos: CompanyPermission[];
+  suscripcion_activa: CompanyActiveSubscription | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -284,12 +292,8 @@ export class CompanyService {
     return this.apiService.get<Company[]>('/api/empresas/mis-empresas');
   }
 
-  getMisEmpresasEmpleado(): Observable<Company[]> {
-    return this.apiService.get<Company[]>('/api/empresas/mis-empresas-empleado');
-  }
-
-  getMisPermisos(idEmpresa: string | number): Observable<CompanyPermission[]> {
-    return this.apiService.get<CompanyPermission[]>(`/api/empresas/${idEmpresa}/mis-permisos`);
+  getMisPermisos(idEmpresa: string | number): Observable<CompanyAccessResponse> {
+    return this.apiService.get<CompanyAccessResponse>(`/api/empresas/${idEmpresa}/mis-permisos`);
   }
 
   getPermisosPorModulo(): Observable<PermissionModuleWithPermissions[]> {
