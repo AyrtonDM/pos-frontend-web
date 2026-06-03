@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { EditCompany } from './features/companies/pages/edit-company/edit-company';
 import { MyCompanies } from './features/companies/pages/my-companies/my-companies';
-import { PaymentResultComponent } from './features/administrator/companies/pages/payment-result/payment-result';
+import { PaymentResultComponent } from './features/companies/pages/payment-result/payment-result';
 import { RegisterCompany } from './features/companies/pages/register-company/register-company';
 import { Branches } from './features/companies/sections/branches/pages/branches/branches';
 import { EditBranch } from './features/companies/sections/branches/pages/edit-branch/edit-branch';
@@ -52,17 +52,17 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'administrator/payment/success',
+    path: 'payment/success',
     component: PaymentResultComponent,
     canActivate: [authGuard],
   },
   {
-    path: 'administrator/payment/cancel',
+    path: 'payment/cancel',
     component: PaymentResultComponent,
     canActivate: [authGuard],
   },
   {
-    path: 'administrator/register-company',
+    path: 'register-company',
     component: RegisterCompany,
     canActivate: [authGuard],
   },
@@ -194,6 +194,26 @@ export const routes: Routes = [
   {
     path: 'companie',
     redirectTo: 'my-companies',
+    pathMatch: 'full',
+  },
+  {
+    path: 'administrator/my-companies',
+    redirectTo: 'my-companies',
+    pathMatch: 'full',
+  },
+  {
+    path: 'administrator/register-company',
+    redirectTo: 'register-company',
+    pathMatch: 'full',
+  },
+  {
+    path: 'administrator/payment/success',
+    redirectTo: 'payment/success',
+    pathMatch: 'full',
+  },
+  {
+    path: 'administrator/payment/cancel',
+    redirectTo: 'payment/cancel',
     pathMatch: 'full',
   },
 ];

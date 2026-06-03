@@ -5,7 +5,7 @@ import { Navbar } from '../../../../shared/components/navbar/navbar';
 
 import { Company, CompanyService } from '../../../../core/services/company.service';
 import { CompanyPermissionsService } from '../../../../core/services/company-permissions.service';
-import { PlanSelectorModalComponent } from '../../../administrator/companies/sections/payments/plan-selector-modal/plan-selector-modal';
+import { PlanSelectorModalComponent } from '../../sections/payments/plan-selector-modal/plan-selector-modal';
 
 @Component({
   selector: 'app-my-companies',
@@ -44,6 +44,12 @@ export class MyCompanies implements OnInit {
     return (
       company.idEmpresa ?? company.id_empresa ?? company.empresa_id ?? company.id ?? company.nit
     );
+  }
+
+  protected tienePlanActivo(company: Company): boolean {
+    const estado = company.suscripcion_activa?.estado?.toLowerCase();
+
+    return estado === 'activa' || estado === 'activo';
   }
 
   protected entrarEmpresa(company: Company): void {

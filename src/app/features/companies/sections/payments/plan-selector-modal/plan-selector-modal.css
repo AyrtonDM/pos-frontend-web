@@ -165,7 +165,8 @@
   cursor: not-allowed;
 }
 
-.loading-state, .error-state {
+.loading-state,
+.error-state {
   text-align: center;
   padding: 48px 0;
   color: #4b5563;
