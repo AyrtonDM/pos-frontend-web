@@ -52,7 +52,9 @@
             <article class="report-card">
               <div class="report-card-header">
                 <h2>Resumen de ventas de hoy</h2>
-                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" (click)="showSalesReport('summary')">Generar</button>
+                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" [disabled]="loadingSalesSummary" (click)="showSalesReport('summary')">
+                  {{ loadingSalesSummary ? 'Generando...' : 'Generar' }}
+                </button>
               </div>
               <p class="report-card-description">Visualiza el resumen de ventas realizadas en tus sucursales durante el día de hoy.</p>
             </article>
@@ -60,7 +62,9 @@
             <article class="report-card">
               <div class="report-card-header">
                 <h2>Detalle de ventas de hoy</h2>
-                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" (click)="showSalesReport('details')">Generar</button>
+                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" [disabled]="loadingSalesDetails" (click)="showSalesReport('details')">
+                  {{ loadingSalesDetails ? 'Generando...' : 'Generar' }}
+                </button>
               </div>
               <p class="report-card-description">Consulta el detalle de cada ticket de venta generado en el día actual.</p>
             </article>
@@ -71,7 +75,13 @@
               </h1>
 
               <div *ngIf="salesReportType === 'summary'" class="report-summary">
+                <p *ngIf="loadingSalesSummary" class="text-muted">Generando resumen de ventas...</p>
+                <p *ngIf="salesSummaryError" class="feedback feedback-error">{{ salesSummaryError }}</p>
+                <p *ngIf="!loadingSalesSummary && !salesSummaryError && !hasSalesSummaryData()" class="text-muted">
+                  No hay datos suficientes para mostrar el resumen de ventas de hoy.
+                </p>
 
+                <ng-container *ngIf="!loadingSalesSummary && !salesSummaryError && hasSalesSummaryData()">
                 <p class="report-meta">Fecha: {{ salesSummaryReport.date }}</p>
 
                 <ng-container *ngFor="let branch of salesSummaryReport.branches; let isLast = last">
@@ -140,6 +150,10 @@
                           <td>{{ salesSummaryReport.companyTotal.amount }}</td>
                         </tr>
                         <tr>
+                          <td class="table-label">Ticket promedio</td>
+                          <td>{{ salesSummaryReport.companyTotal.averageTicket }}</td>
+                        </tr>
+                        <tr>
                           <td class="table-label">Productos vendidos</td>
                           <td>{{ salesSummaryReport.companyTotal.productsSold }}</td>
                         </tr>
@@ -151,9 +165,17 @@
                   <button class="btn btn-secondary" type="button">EXCEL</button>
                   <button class="btn btn-secondary" type="button">PDF</button>
                 </div>
+                </ng-container>
               </div>
 
               <div *ngIf="salesReportType === 'details'" class="report-details">
+                <p *ngIf="loadingSalesDetails" class="text-muted">Generando detalle de ventas...</p>
+                <p *ngIf="salesDetailsError" class="feedback feedback-error">{{ salesDetailsError }}</p>
+                <p *ngIf="!loadingSalesDetails && !salesDetailsError && !hasSalesDetailsData()" class="text-muted">
+                  No hay datos suficientes para mostrar el detalle de ventas de hoy.
+                </p>
+
+                <ng-container *ngIf="!loadingSalesDetails && !salesDetailsError && hasSalesDetailsData()">
                 <p class="report-meta">Fecha: {{ salesDetailsReport.date }}</p>
 
                 <ng-container *ngFor="let branch of salesDetailsReport.branches">
@@ -191,10 +213,18 @@
                     </div>
                   </div>
                 </ng-container>
+                <div class="report-section">
+                  <h3>TOTAL EMPRESA</h3>
+                  <div class="report-summary-box">
+                    <p>Total registros: {{ salesDetailsReport.companyTotal.records }}</p>
+                    <p>Total vendido: {{ salesDetailsReport.companyTotal.total }}</p>
+                  </div>
+                </div>
                <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
                   <button class="btn btn-secondary" type="button">EXCEL</button>
                   <button class="btn btn-secondary" type="button">PDF</button>
                 </div>
+                </ng-container>
               </div>
             </section>
           </div>
@@ -203,7 +233,9 @@
             <article class="report-card">
               <div class="report-card-header">
                 <h2>Estado de inventario actual</h2>
-                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" (click)="showInventoryReport('status')">Generar</button>
+                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" [disabled]="loadingInventoryStatus" (click)="showInventoryReport('status')">
+                  {{ loadingInventoryStatus ? 'Generando...' : 'Generar' }}
+                </button>
               </div>
               <p class="report-card-description">Obtén el estado actual del inventario de productos en todas las sucursales.</p>
             </article>
@@ -211,7 +243,9 @@
             <article class="report-card">
               <div class="report-card-header">
                 <h2>Movimientos de inventario de los últimos 7 días</h2>
-                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" (click)="showInventoryReport('movements')">Generar</button>
+                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" [disabled]="loadingInventoryMovements" (click)="showInventoryReport('movements')">
+                  {{ loadingInventoryMovements ? 'Generando...' : 'Generar' }}
+                </button>
               </div>
               <p class="report-card-description">Revisa los movimientos de inventario registrados en la última semana.</p>
             </article>
@@ -222,6 +256,13 @@
               </h1>
 
               <div *ngIf="inventoryReportType === 'status'" class="report-summary">
+                <p *ngIf="loadingInventoryStatus" class="text-muted">Generando estado de inventario...</p>
+                <p *ngIf="inventoryStatusError" class="feedback feedback-error">{{ inventoryStatusError }}</p>
+                <p *ngIf="!loadingInventoryStatus && !inventoryStatusError && !hasInventoryStatusData()" class="text-muted">
+                  No hay datos suficientes para mostrar el estado de inventario actual.
+                </p>
+
+                <ng-container *ngIf="!loadingInventoryStatus && !inventoryStatusError && hasInventoryStatusData()">
                 <p class="report-meta">Fecha: {{ inventoryStatusReport.date }}</p>
 
                 <ng-container *ngFor="let branch of inventoryStatusReport.branches; let isLast = last">
@@ -291,9 +332,17 @@
                   <button class="btn btn-secondary" type="button">Exportar como EXCEL</button>
                   <button class="btn btn-secondary" type="button">Exportar como PDF</button>
                 </div>
+                </ng-container>
               </div>
 
               <div *ngIf="inventoryReportType === 'movements'" class="report-details">
+                <p *ngIf="loadingInventoryMovements" class="text-muted">Generando movimientos de inventario...</p>
+                <p *ngIf="inventoryMovementsError" class="feedback feedback-error">{{ inventoryMovementsError }}</p>
+                <p *ngIf="!loadingInventoryMovements && !inventoryMovementsError && !hasInventoryMovementsData()" class="text-muted">
+                  No hay datos suficientes para mostrar los movimientos de inventario.
+                </p>
+
+                <ng-container *ngIf="!loadingInventoryMovements && !inventoryMovementsError && hasInventoryMovementsData()">
                 <p class="report-meta">Período: {{ inventoryMovementsReport.period }}</p>
 
                 <ng-container *ngFor="let branch of inventoryMovementsReport.branches; let isLast = last">
@@ -328,11 +377,19 @@
                   </div>
                   <div *ngIf="!isLast" class="report-divider"></div>
                 </ng-container>
+                <div class="report-section">
+                  <h3>TOTAL EMPRESA</h3>
+                  <div class="report-summary-box">
+                    <p>Total entradas: {{ inventoryMovementsReport.companyTotal.entries }}</p>
+                    <p>Total salidas: {{ inventoryMovementsReport.companyTotal.exits }}</p>
+                  </div>
+                </div>
 
                 <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
                   <button class="btn btn-secondary" type="button">Exportar como EXCEL</button>
                   <button class="btn btn-secondary" type="button">Exportar como PDF</button>
                 </div>
+                </ng-container>
               </div>
             </section>
           </div>
@@ -341,7 +398,9 @@
             <article class="report-card">
               <div class="report-card-header">
                 <h2>Resumen de cajas de hoy</h2>
-                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" (click)="showCashReport('summary')">Generar</button>
+                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" [disabled]="loadingCashSummary" (click)="showCashReport('summary')">
+                  {{ loadingCashSummary ? 'Generando...' : 'Generar' }}
+                </button>
               </div>
               <p class="report-card-description">Mira el resumen de las cajas activas durante el día.</p>
             </article>
@@ -349,7 +408,9 @@
             <article class="report-card">
               <div class="report-card-header">
                 <h2>Movimientos de cajas de hoy</h2>
-                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" (click)="showCashReport('movements')">Generar</button>
+                <button class="btn btn-primary" type="button" *ngIf="hasPermission('REPORTE_GENERAR')" [disabled]="loadingCashMovements" (click)="showCashReport('movements')">
+                  {{ loadingCashMovements ? 'Generando...' : 'Generar' }}
+                </button>
               </div>
               <p class="report-card-description">Consulta los movimientos de caja registrados en el día de hoy.</p>
             </article>
@@ -360,6 +421,13 @@
               </h1>
 
               <div *ngIf="cashReportType === 'summary'" class="report-summary">
+                <p *ngIf="loadingCashSummary" class="text-muted">Generando resumen de cajas...</p>
+                <p *ngIf="cashSummaryError" class="feedback feedback-error">{{ cashSummaryError }}</p>
+                <p *ngIf="!loadingCashSummary && !cashSummaryError && !hasCashSummaryData()" class="text-muted">
+                  No hay datos suficientes para mostrar el resumen de cajas de hoy.
+                </p>
+
+                <ng-container *ngIf="!loadingCashSummary && !cashSummaryError && hasCashSummaryData()">
                 <p class="report-meta">Fecha: {{ cashSummaryReport.date }}</p>
 
                 <ng-container *ngFor="let branch of cashSummaryReport.branches; let isLast = last">
@@ -437,9 +505,17 @@
                   <button class="btn btn-secondary" type="button">Exportar como EXCEL</button>
                   <button class="btn btn-secondary" type="button">Exportar como PDF</button>
                 </div>
+                </ng-container>
               </div>
 
               <div *ngIf="cashReportType === 'movements'" class="report-details">
+                <p *ngIf="loadingCashMovements" class="text-muted">Generando movimientos de caja...</p>
+                <p *ngIf="cashMovementsError" class="feedback feedback-error">{{ cashMovementsError }}</p>
+                <p *ngIf="!loadingCashMovements && !cashMovementsError && !hasCashMovementsData()" class="text-muted">
+                  No hay datos suficientes para mostrar los movimientos de caja de hoy.
+                </p>
+
+                <ng-container *ngIf="!loadingCashMovements && !cashMovementsError && hasCashMovementsData()">
                 <p class="report-meta">Fecha: {{ cashMovementsReport.date }}</p>
 
                 <ng-container *ngFor="let branch of cashMovementsReport.branches; let isLast = last">
@@ -477,11 +553,20 @@
                   </div>
                   <div *ngIf="!isLast" class="report-divider"></div>
                 </ng-container>
+                <div class="report-section">
+                  <h3>TOTAL EMPRESA</h3>
+                  <div class="report-summary-box">
+                    <p>Total movimientos: {{ cashMovementsReport.companyTotal.totalMovements }}</p>
+                    <p>Total ingresos: {{ cashMovementsReport.companyTotal.totalIncome }}</p>
+                    <p>Total egresos: {{ cashMovementsReport.companyTotal.totalExpenses }}</p>
+                  </div>
+                </div>
 
                 <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
                   <button class="btn btn-secondary" type="button">Exportar como EXCEL</button>
                   <button class="btn btn-secondary" type="button">Exportar como PDF</button>
                 </div>
+                </ng-container>
               </div>
             </section>
           </div>
