@@ -43,7 +43,6 @@
           <p>{{ errorMessage() }}</p>
         </section>
       }
-
       <section class="report-panel panel" aria-live="polite">
         <div class="report-panel-header">
           <div>
@@ -65,16 +64,6 @@
               }
             </p>
           </div>
-          @if (hasPermission('REPORTE_EXPORTAR')) {
-          <div class="export-actions" aria-label="Exportar reporte">
-            <button class="secondary-action" type="button" (click)="exportReport('excel')" [disabled]="!hasRows() || exportingFormat() !== null">
-              {{ exportingFormat() === 'excel' ? 'Exportando Excel�' : 'Excel' }}
-            </button>
-            <button class="secondary-action" type="button" (click)="exportReport('pdf')" [disabled]="!hasReport() || exportingFormat() !== null">
-              {{ exportingFormat() === 'pdf' ? 'Exportando PDF�' : 'PDF' }}
-            </button>
-          </div>
-          }
         </div>
 
         @if (!report() && !loading()) {
@@ -87,7 +76,7 @@
         @if (report()) {
           @if (clarificationQuestion()) {
             <section class="clarification-box">
-              <p class="section-kicker">Aclaraci�n requerida</p>
+              <p class="section-kicker">Aclaración requerida</p>
               <h3 class="title-md">{{ clarificationQuestion() }}</h3>
               <p class="text-muted">
                 Responde la pregunta en el prompt y vuelve a generar el reporte para desbloquear la tabla.
@@ -95,118 +84,29 @@
             </section>
           }
 
-          @if (hasAggregates()) {
-            <section class="aggregates-section">
-              <div class="section-heading">
-                <p class="section-kicker">Resumen</p>
-                <h3 class="title-md">Agregados</h3>
-              </div>
-
-              <div class="aggregate-grid">
-                @for (aggregate of reportAggregates(); track aggregate.name) {
-                  <article class="aggregate-card">
-                    <span class="aggregate-label">{{ aggregate.label }}</span>
-                    <strong class="aggregate-value">{{ formatValue(aggregate.value) }}</strong>
-                  </article>
-                }
-              </div>
-            </section>
-          }
-
-          @if (hasWarnings()) {
-            <section class="warnings-box" aria-label="Advertencias del reporte">
-              <p class="section-kicker">Advertencias</p>
-              <ul class="warnings-list">
-                @for (warning of reportWarnings(); track warning) {
-                  <li>{{ warning }}</li>
-                }
-              </ul>
-            </section>
-          }
-
-          <section class="response-overview">
-            <div class="section-heading">
-              <p class="section-kicker">Respuesta del backend</p>
-              <h3 class="title-md">Datos recibidos</h3>
-            </div>
-
-            <div class="response-grid">
-              <article class="response-card">
-                <span class="aggregate-label">ID reporte</span>
-                <strong class="aggregate-value">{{ reportId() || 'Sin ID' }}</strong>
-              </article>
-              <article class="response-card">
-                <span class="aggregate-label">Plantilla</span>
-                <strong class="aggregate-value">{{ reportIdentifier() ? formatLabel(reportIdentifier()) : 'Sin plantilla' }}</strong>
-              </article>
-              <article class="response-card">
-                <span class="aggregate-label">Estado</span>
-                <strong class="aggregate-value">{{ reportStatus() ? formatLabel(reportStatus()) : 'Sin estado' }}</strong>
-              </article>
-              <article class="response-card">
-                <span class="aggregate-label">Fecha</span>
-                <strong class="aggregate-value">{{ reportDate() || 'Sin fecha' }}</strong>
-              </article>
-            </div>
-
-            @if (reportSpecification()) {
-              <div class="specification-grid">
-                <article class="spec-card">
-                  <p class="section-kicker">Especificacion</p>
-                  <div class="spec-list">
-                    <div>
-                      <span class="spec-label">Confianza</span>
-                      <strong>{{ reportSpecification()?.confianza ?? 'Sin dato' }}</strong>
-                    </div>
-                    <div>
-                      <span class="spec-label">Formato</span>
-                      <strong>{{ reportSpecification()?.formato ? formatLabel(reportSpecification()!.formato!) : 'Sin dato' }}</strong>
-                    </div>
-                    <div>
-                      <span class="spec-label">Solicita aclaracion</span>
-                      <strong>{{ reportSpecification()?.solicita_aclaracion ? 'S�' : 'No' }}</strong>
-                    </div>
-                    <div>
-                      <span class="spec-label">Pregunta</span>
-                      <strong>{{ reportSpecification()?.pregunta || 'Ninguna' }}</strong>
-                    </div>
-                  </div>
-                </article>
-
-                <article class="spec-card">
-                  <p class="section-kicker">M�tricas y dimensiones</p>
-                  <div class="chips-row">
-                    @for (metrica of specificationMetricas(); track metrica) {
-                      <span class="chip">{{ formatLabel(metrica) }}</span>
-                    }
-                    @for (dimension of specificationDimensiones(); track dimension) {
-                      <span class="chip chip-soft">{{ formatLabel(dimension) }}</span>
+          @if (reportSpecification() && specificationFilters().length > 0) {
+            <section class="response-overview" style="margin-top: var(--space-md); margin-bottom: var(--space-md);">
+              <div class="specification-grid" style="grid-template-columns: 1fr; margin-bottom: 0;">
+                <article class="spec-card spec-card-full">
+                  <p class="section-kicker">Filtros</p>
+                  <div class="filters-grid">
+                    @for (filter of specificationFilters(); track filter.key) {
+                      <div class="filter-item">
+                        <span class="spec-label">{{ filter.label }}</span>
+                        <strong>{{ formatValue(filter.value) }}</strong>
+                      </div>
                     }
                   </div>
                 </article>
-
-                @if (specificationFilters().length > 0) {
-                  <article class="spec-card spec-card-full">
-                    <p class="section-kicker">Filtros</p>
-                    <div class="filters-grid">
-                      @for (filter of specificationFilters(); track filter.key) {
-                        <div class="filter-item">
-                          <span class="spec-label">{{ filter.label }}</span>
-                          <strong>{{ formatValue(filter.value) }}</strong>
-                        </div>
-                      }
-                    </div>
-                  </article>
-                }
               </div>
-            }
-          </section>
+            </section>
+          }
 
           @if (showEmptyState()) {
             <section class="empty-state">
               <h3 class="title-md">Sin filas para mostrar</h3>
               <p class="text-muted">
-                El backend devolvi� una estructura v�lida, pero no hay filas ni agregados para este prompt.
+                El backend devolvió una estructura válida, pero no hay filas ni agregados para este prompt.
               </p>
             </section>
           } @else if (hasRows() && !clarificationQuestion()) {
@@ -238,6 +138,17 @@
                 </table>
               </div>
             </section>
+          }
+
+          @if (hasPermission('REPORTE_EXPORTAR')) {
+            <div class="export-actions" style="margin-top: var(--space-lg); justify-content: flex-end;" aria-label="Exportar reporte">
+              <button class="secondary-action" type="button" (click)="exportReport('excel')" [disabled]="!hasRows() || exportingFormat() !== null">
+                {{ exportingFormat() === 'excel' ? 'Exportando Excel...' : 'Excel' }}
+              </button>
+              <button class="secondary-action" type="button" (click)="exportReport('pdf')" [disabled]="!hasReport() || exportingFormat() !== null">
+                {{ exportingFormat() === 'pdf' ? 'Exportando PDF...' : 'PDF' }}
+              </button>
+            </div>
           }
         }
       </section>

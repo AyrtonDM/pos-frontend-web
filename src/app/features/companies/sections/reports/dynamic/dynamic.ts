@@ -83,7 +83,7 @@ export class DynamicReports {
       return null;
     }
 
-    return specification.pregunta?.trim() || 'El backend necesita una aclaración adicional para generar el reporte.';
+    return specification.pregunta?.trim() || 'El backend necesita una aclaraciï¿½n adicional para generar el reporte.';
   });
   protected readonly hasRows = computed(() => this.reportRows().length > 0);
   protected readonly hasAggregates = computed(() => this.reportAggregates().length > 0);
@@ -188,7 +188,7 @@ export class DynamicReports {
     }
 
     if (type === 'booleano') {
-      return value ? 'Sí' : 'No';
+      return value ? 'Sï¿½' : 'No';
     }
 
     return String(value);
@@ -329,9 +329,11 @@ export class DynamicReports {
       const streamLines = ['BT', '/F1 10 Tf'];
 
       pageLines.forEach((line, index) => {
-        const y = startY - index * lineHeight;
-        streamLines.push(`${marginX} ${y} Td (${this.escapePdfText(line)}) Tj`);
-        streamLines.push(`${-marginX} 0 Td`);
+        if (index === 0) {
+          streamLines.push(`${marginX} ${startY} Td (${this.escapePdfText(line)}) Tj`);
+        } else {
+          streamLines.push(`0 -${lineHeight} Td (${this.escapePdfText(line)}) Tj`);
+        }
       });
 
       streamLines.push('ET');

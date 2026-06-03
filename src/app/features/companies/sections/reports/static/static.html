@@ -162,8 +162,8 @@
                   </div>
                 </div>
                 <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
-                  <button class="btn btn-secondary" type="button">EXCEL</button>
-                  <button class="btn btn-secondary" type="button">PDF</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportSalesSummaryReport('excel')">EXCEL</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportSalesSummaryReport('pdf')">PDF</button>
                 </div>
                 </ng-container>
               </div>
@@ -221,8 +221,8 @@
                   </div>
                 </div>
                <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
-                  <button class="btn btn-secondary" type="button">EXCEL</button>
-                  <button class="btn btn-secondary" type="button">PDF</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportSalesDetailsReport('excel')">EXCEL</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportSalesDetailsReport('pdf')">PDF</button>
                 </div>
                 </ng-container>
               </div>
@@ -328,9 +328,9 @@
                   </div>
                 </div>
 
-                <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
-                  <button class="btn btn-secondary" type="button">Exportar como EXCEL</button>
-                  <button class="btn btn-secondary" type="button">Exportar como PDF</button>
+                 <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
+                  <button class="btn btn-secondary" type="button" (click)="exportInventoryStatusReport('excel')">Exportar como EXCEL</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportInventoryStatusReport('pdf')">Exportar como PDF</button>
                 </div>
                 </ng-container>
               </div>
@@ -385,9 +385,9 @@
                   </div>
                 </div>
 
-                <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
-                  <button class="btn btn-secondary" type="button">Exportar como EXCEL</button>
-                  <button class="btn btn-secondary" type="button">Exportar como PDF</button>
+                 <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
+                  <button class="btn btn-secondary" type="button" (click)="exportInventoryMovementsReport('excel')">Exportar como EXCEL</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportInventoryMovementsReport('pdf')">Exportar como PDF</button>
                 </div>
                 </ng-container>
               </div>
@@ -501,9 +501,9 @@
                   </div>
                 </div>
 
-                <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
-                  <button class="btn btn-secondary" type="button">Exportar como EXCEL</button>
-                  <button class="btn btn-secondary" type="button">Exportar como PDF</button>
+                 <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
+                  <button class="btn btn-secondary" type="button" (click)="exportCashSummaryReport('excel')">Exportar como EXCEL</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportCashSummaryReport('pdf')">Exportar como PDF</button>
                 </div>
                 </ng-container>
               </div>
@@ -562,9 +562,9 @@
                   </div>
                 </div>
 
-                <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
-                  <button class="btn btn-secondary" type="button">Exportar como EXCEL</button>
-                  <button class="btn btn-secondary" type="button">Exportar como PDF</button>
+                 <div class="report-actions" *ngIf="hasPermission('REPORTE_EXPORTAR')">
+                  <button class="btn btn-secondary" type="button" (click)="exportCashMovementsReport('excel')">Exportar como EXCEL</button>
+                  <button class="btn btn-secondary" type="button" (click)="exportCashMovementsReport('pdf')">Exportar como PDF</button>
                 </div>
                 </ng-container>
               </div>
