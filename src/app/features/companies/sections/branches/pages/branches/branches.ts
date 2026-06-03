@@ -7,6 +7,10 @@ import {
   CompanyService,
   CreateBranchRequest,
 } from '../../../../../../core/services/company.service';
+import {
+  CompanyPermissionCode,
+  CompanyPermissionsService,
+} from '../../../../../../core/services/company-permissions.service';
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
@@ -19,6 +23,7 @@ import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 export class Branches implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly companyService = inject(CompanyService);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -41,6 +46,10 @@ export class Branches implements OnInit {
   }
 
   protected setActiveTab(tab: 'register' | 'list'): void {
+    if (tab === 'register' && !this.hasPermission('SUCURSAL_CREAR')) {
+      return;
+    }
+
     this.activeTab = tab;
 
     if (tab === 'list') {
@@ -52,10 +61,19 @@ export class Branches implements OnInit {
     return branch.idSucursal ?? branch.id_sucursal ?? branch.id ?? branch.nombre;
   }
 
+  protected hasPermission(permission: CompanyPermissionCode): boolean {
+    return this.companyPermissionsService.permissions()[permission] === true;
+  }
+
   protected registrarSucursal(event: SubmitEvent): void {
     event.preventDefault();
     this.errorRegistro = '';
     this.mensajeRegistro = '';
+
+    if (!this.hasPermission('SUCURSAL_CREAR')) {
+      this.errorRegistro = 'No tienes permiso para registrar sucursales.';
+      return;
+    }
 
     if (!this.companyId) {
       this.errorRegistro = 'No se encontro la empresa para registrar la sucursal.';

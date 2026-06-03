@@ -15,16 +15,18 @@
 
       <section class="tabs-panel panel">
         <div class="tabs" role="tablist" aria-label="Secciones de roles">
-          <button
-            class="tab-button"
-            [class.active]="activeTab === 'create'"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'create'"
-            (click)="setActiveTab('create')"
-          >
-            Crear rol
-          </button>
+          @if (hasPermission('ROL_CREAR')) {
+            <button
+              class="tab-button"
+              [class.active]="activeTab === 'create'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'create'"
+              (click)="setActiveTab('create')"
+            >
+              Crear rol
+            </button>
+          }
           <button
             class="tab-button"
             [class.active]="activeTab === 'list'"
@@ -35,7 +37,7 @@
           >
             Lista de roles
           </button>
-          @if (editingRoleIndex !== null) {
+          @if (editingRoleIndex !== null && hasPermission('ROL_EDITAR')) {
             <button
               class="tab-button"
               [class.active]="activeTab === 'edit'"
@@ -144,7 +146,7 @@
                       } @else {
                         <span class="badge badge-danger">Inactivo</span>
                       }
-                      @if (role.tipo.toUpperCase() !== 'SISTEMA') {
+                      @if (role.tipo.toUpperCase() !== 'SISTEMA' && hasPermission('ROL_EDITAR')) {
                         <button class="btn btn-secondary" type="button" (click)="editarRol($index)">
                           Editar
                         </button>

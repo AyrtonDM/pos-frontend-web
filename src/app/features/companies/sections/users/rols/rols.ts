@@ -5,6 +5,10 @@ import { ActivatedRoute } from '@angular/router';
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../shared/components/sidebar/sidebar';
 import {
+  CompanyPermissionCode,
+  CompanyPermissionsService,
+} from '../../../../../core/services/company-permissions.service';
+import {
   CompanyService,
   CreateRoleResponse,
   RoleDetailResponse,
@@ -75,6 +79,7 @@ interface RoleRow {
 export class Rols implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly companyService = inject(CompanyService);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -98,12 +103,20 @@ export class Rols implements OnInit {
   private editingRoleDetail: RoleDetailResponse | null = null;
 
   ngOnInit(): void {
+    if (!this.hasPermission('ROL_CREAR')) {
+      this.activeTab = 'list';
+    }
+
     this.cargarRoles();
     this.cargarPermisosPorModulo();
   }
 
   protected setActiveTab(tab: RolesTab): void {
-    if (tab === 'edit' && this.editingRoleIndex === null) {
+    if (tab === 'create' && !this.hasPermission('ROL_CREAR')) {
+      return;
+    }
+
+    if (tab === 'edit' && (this.editingRoleIndex === null || !this.hasPermission('ROL_EDITAR'))) {
       return;
     }
 
@@ -137,6 +150,11 @@ export class Rols implements OnInit {
 
   protected crearRol(event: SubmitEvent): void {
     event.preventDefault();
+
+    if (!this.hasPermission('ROL_CREAR')) {
+      this.errorRoles = 'No tienes permiso para crear roles.';
+      return;
+    }
 
     const nombre = this.roleName.trim();
     const permisoIds = this.obtenerPermisoIdsSeleccionados();
@@ -173,6 +191,10 @@ export class Rols implements OnInit {
   }
 
   protected editarRol(index: number): void {
+    if (!this.hasPermission('ROL_EDITAR')) {
+      return;
+    }
+
     const role = this.roles[index];
 
     this.editingRoleIndex = index;
@@ -221,6 +243,11 @@ export class Rols implements OnInit {
 
   protected guardarEdicion(event: SubmitEvent): void {
     event.preventDefault();
+
+    if (!this.hasPermission('ROL_EDITAR')) {
+      this.errorRoles = 'No tienes permiso para editar roles.';
+      return;
+    }
 
     if (this.editingRoleIndex === null) {
       return;
@@ -510,6 +537,10 @@ export class Rols implements OnInit {
 
   private formatPermissionLabel(moduleLabel: string, permissionLabel: string): string {
     return `${moduleLabel}: ${permissionLabel}`;
+  }
+
+  protected hasPermission(permission: CompanyPermissionCode): boolean {
+    return this.companyPermissionsService.permissions()[permission] === true;
   }
 }
 

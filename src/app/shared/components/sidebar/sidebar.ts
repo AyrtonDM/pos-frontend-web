@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, inject } from '@angular/core';
 import { NavigationEnd, Params, Router, RouterLink } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
+import { CompanyPermissionsService } from '../../../core/services/company-permissions.service';
 import { SidebarStateService } from './sidebar-state.service';
 
 export type SidebarContext = 'company' | 'branch' | 'cash_register';
@@ -35,6 +36,7 @@ type SidebarResolvedContext = {
 export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly sidebarState = inject(SidebarStateService);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
   private readonly navigationSubscription = new Subscription();
   private currentStateKey = '';
 
@@ -129,18 +131,21 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
       {
         label: 'Sucursales',
         link: ['/company', context.companyId, 'branches'],
+        permission: 'SUCURSAL_VER',
       },
       {
         label: 'Usuarios',
-        link: ['/company', context.companyId, 'users', 'staff'],
+        permission: ['USUARIO_VER', 'ROL_VER'],
         children: [
           {
             label: 'Personal',
             link: ['/company', context.companyId, 'users', 'staff'],
+            permission: 'USUARIO_VER',
           },
           {
             label: 'Roles',
             link: ['/company', context.companyId, 'users', 'rols'],
+            permission: 'ROL_VER',
           },
         ],
       },
@@ -236,7 +241,7 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   private decorateItem(item: SidebarItem, context: SidebarResolvedContext): SidebarItem | undefined {
-    if (!this.hasPermission(item)) {
+    if (!this.hasPermission(item, context.permissions)) {
       return undefined;
     }
 
@@ -294,13 +299,13 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
     return url.split('?')[0].split('#')[0].replace(/\/+$/, '');
   }
 
-  private hasPermission(item: SidebarItem): boolean {
-    if (!item.permission || this.permissions.length === 0) {
+  private hasPermission(item: SidebarItem, permissions: string[]): boolean {
+    if (!item.permission) {
       return true;
     }
 
     const requiredPermissions = Array.isArray(item.permission) ? item.permission : [item.permission];
-    return requiredPermissions.some((permission) => this.permissions.includes(permission));
+    return requiredPermissions.some((permission) => permissions.includes(permission));
   }
 
   private resolveContext(): SidebarResolvedContext {
@@ -311,7 +316,7 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
       cashRegisterId: this.cashRegisterId || this.getCashRegisterIdFromUrl(),
       cashRegisterSessionId: this.cashRegisterSessionId,
       activeItemLabel: this.activeItemLabel,
-      permissions: this.permissions,
+      permissions: this.permissions.length > 0 ? this.permissions : this.companyPermissionsService.getPermissionCodes(),
     };
   }
 

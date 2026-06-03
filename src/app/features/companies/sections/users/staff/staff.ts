@@ -7,6 +7,10 @@ import {
   CompanyService,
   RoleListItem,
 } from '../../../../../core/services/company.service';
+import {
+  CompanyPermissionCode,
+  CompanyPermissionsService,
+} from '../../../../../core/services/company-permissions.service';
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../shared/components/sidebar/sidebar';
 
@@ -21,6 +25,7 @@ type StaffTab = 'invite' | 'list' | 'edit';
 export class Staff implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly companyService = inject(CompanyService);
+  private readonly companyPermissionsService = inject(CompanyPermissionsService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -55,7 +60,11 @@ export class Staff implements OnInit {
   }
 
   protected setActiveTab(tab: StaffTab): void {
-    if (tab === 'edit' && this.editingStaffId === null) {
+    if (tab === 'invite' && !this.hasPermission('USUARIO_CREAR')) {
+      return;
+    }
+
+    if (tab === 'edit' && (this.editingStaffId === null || !this.hasPermission('USUARIO_EDITAR'))) {
       return;
     }
 
@@ -70,6 +79,11 @@ export class Staff implements OnInit {
     event.preventDefault();
     this.errorInvitacion = '';
     this.mensajeInvitacion = '';
+
+    if (!this.hasPermission('USUARIO_CREAR')) {
+      this.errorInvitacion = 'No tienes permiso para invitar personal.';
+      return;
+    }
 
     const email = this.emailInvitacion.trim();
     const idSucursales = this.selectedInvitationBranchIds
@@ -139,6 +153,10 @@ export class Staff implements OnInit {
   }
 
   protected editarPersonal(member: CompanyStaffMember): void {
+    if (!this.hasPermission('USUARIO_EDITAR')) {
+      return;
+    }
+
     const firstRelation = member.relaciones[0];
 
     this.errorEdicion = '';
@@ -169,6 +187,11 @@ export class Staff implements OnInit {
     event.preventDefault();
     this.errorEdicion = '';
     this.mensajeEdicion = '';
+
+    if (!this.hasPermission('USUARIO_EDITAR')) {
+      this.errorEdicion = 'No tienes permiso para editar personal.';
+      return;
+    }
 
     const email = this.editEmail.trim();
     const idSucursales = this.editBranchIds
@@ -265,6 +288,10 @@ export class Staff implements OnInit {
 
   protected estaPersonalActivo(member: CompanyStaffMember): boolean {
     return member.usuario.activo && member.relaciones.some((relation) => relation.activo);
+  }
+
+  protected hasPermission(permission: CompanyPermissionCode): boolean {
+    return this.companyPermissionsService.permissions()[permission] === true;
   }
 
   private cargarSucursales(): void {

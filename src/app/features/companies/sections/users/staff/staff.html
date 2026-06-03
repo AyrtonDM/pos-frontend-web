@@ -19,16 +19,18 @@
 
       <section class="tabs-panel panel">
         <div class="tabs" role="tablist" aria-label="Secciones de personal">
-          <button
-            class="tab-button"
-            [class.active]="activeTab === 'invite'"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'invite'"
-            (click)="setActiveTab('invite')"
-          >
-            Invitar personal
-          </button>
+          @if (hasPermission('USUARIO_CREAR')) {
+            <button
+              class="tab-button"
+              [class.active]="activeTab === 'invite'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'invite'"
+              (click)="setActiveTab('invite')"
+            >
+              Invitar personal
+            </button>
+          }
           <button
             class="tab-button"
             [class.active]="activeTab === 'list'"
@@ -39,7 +41,7 @@
           >
             Lista de personal
           </button>
-          @if (editingStaffId !== null) {
+          @if (editingStaffId !== null && hasPermission('USUARIO_EDITAR')) {
             <button
               class="tab-button"
               [class.active]="activeTab === 'edit'"
@@ -173,9 +175,11 @@
                       } @else {
                         <span class="badge badge-danger">Inactivo</span>
                       }
-                      <button class="btn btn-secondary" type="button" (click)="editarPersonal(member)">
-                        Editar
-                      </button>
+                      @if (hasPermission('USUARIO_EDITAR')) {
+                        <button class="btn btn-secondary" type="button" (click)="editarPersonal(member)">
+                          Editar
+                        </button>
+                      }
                     </div>
                   </article>
                 }

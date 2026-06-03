@@ -15,16 +15,18 @@
 
       <section class="tabs-panel panel">
         <div class="tabs" role="tablist" aria-label="Secciones de sucursales">
-          <button
-            class="tab-button"
-            [class.active]="activeTab === 'register'"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'register'"
-            (click)="setActiveTab('register')"
-          >
-            Registrar Nueva Sucursal
-          </button>
+          @if (hasPermission('SUCURSAL_CREAR')) {
+            <button
+              class="tab-button"
+              [class.active]="activeTab === 'register'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'register'"
+              (click)="setActiveTab('register')"
+            >
+              Registrar Nueva Sucursal
+            </button>
+          }
           <button
             class="tab-button"
             [class.active]="activeTab === 'list'"
@@ -153,17 +155,19 @@
                         ]"
                         >Ver</a
                       >
-                      <a
-                        class="btn btn-secondary"
-                        [routerLink]="[
-                          '/company',
-                          companyId,
-                          'branch',
-                          obtenerIdSucursal(branch),
-                          'edit-branch',
-                        ]"
-                        >Editar</a
-                      >
+                      @if (hasPermission('SUCURSAL_EDITAR')) {
+                        <a
+                          class="btn btn-secondary"
+                          [routerLink]="[
+                            '/company',
+                            companyId,
+                            'branch',
+                            obtenerIdSucursal(branch),
+                            'edit-branch',
+                          ]"
+                          >Editar</a
+                        >
+                      }
                       <a
                         class="btn btn-primary"
                         [routerLink]="[
