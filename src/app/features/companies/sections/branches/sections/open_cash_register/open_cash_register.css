@@ -9,7 +9,7 @@
   grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   gap: var(--space-lg);
-  width: min(1120px, 100%);
+  width: min(var(--content-max-width), 100%);
   margin: 0 auto;
 }
 
