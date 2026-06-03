@@ -1,4 +1,3 @@
-# AMI Frontend Web
 
 Aplicacion frontend desarrollada con Angular para gestionar autenticacion, landing page y funcionalidades relacionadas con workshops.
 

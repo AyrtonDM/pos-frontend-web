@@ -118,7 +118,8 @@
 }
 
 .status-field,
-.form-actions {
+.form-actions,
+.form-feedback {
   grid-column: 1 / -1;
 }
 

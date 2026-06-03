@@ -54,6 +54,10 @@
         </div>
 
         <div class="tab-content">
+          @if (mensajeEdicion) {
+            <p class="feedback feedback-success">{{ mensajeEdicion }}</p>
+          }
+
           @if (activeTab === 'invite') {
             @if (errorInvitacion) {
               <p class="feedback feedback-error">{{ errorInvitacion }}</p>
@@ -147,13 +151,15 @@
               </section>
             } @else {
               <section class="staff-list" aria-label="Personal registrado">
-                @for (member of staffMembers; track member.id_usuario_rol) {
+                @for (member of staffMembers; track member.id_usuario) {
                   <article class="card staff-row">
                     <div>
                       <h2 class="title-md">
                         {{ member.usuario.persona?.nombre_completo || member.usuario.email }}
                       </h2>
                       <p class="text-muted app-text-sm">{{ member.usuario.email }}</p>
+                      <p class="text-muted app-text-sm">Rol: {{ obtenerRolPersonal(member) }}</p>
+                      <p class="text-muted app-text-sm">Sucursales: {{ obtenerSucursalesPersonal(member) }}</p>
                       @if (member.usuario.persona?.telefono) {
                         <p class="text-muted app-text-sm">
                           {{ member.usuario.persona?.telefono }}
@@ -162,7 +168,7 @@
                     </div>
 
                     <div class="staff-actions">
-                      @if (member.activo && member.usuario.activo) {
+                      @if (estaPersonalActivo(member)) {
                         <span class="badge badge-success">Activo</span>
                       } @else {
                         <span class="badge badge-danger">Inactivo</span>
@@ -177,6 +183,10 @@
             }
           } @else {
             <form class="edit-staff-form" aria-label="Formulario para editar personal" (submit)="guardarEdicion($event)">
+              @if (errorEdicion) {
+                <p class="feedback feedback-error form-feedback">{{ errorEdicion }}</p>
+              }
+
               <div class="form-group">
                 <label class="label" for="editEmail">Gmail</label>
                 <input
@@ -230,8 +240,8 @@
                 <button class="btn btn-secondary" type="button" (click)="cancelarEdicion()">
                   Cancelar
                 </button>
-                <button class="btn btn-primary" type="submit" [disabled]="editBranchIds.length === 0">
-                  Guardar
+                <button class="btn btn-primary" type="submit" [disabled]="cargandoEdicion || editBranchIds.length === 0">
+                  {{ cargandoEdicion ? 'Guardando...' : 'Guardar' }}
                 </button>
               </div>
             </form>

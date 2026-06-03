@@ -73,6 +73,13 @@ export interface InviteEmployeeResponse {
   [key: string]: unknown;
 }
 
+export interface UpdateEmployeeRequest {
+  email: string;
+  id_sucursales: number[];
+  id_rol: number;
+  activo: boolean;
+}
+
 export interface InviteClientRequest {
   email: string;
 }
@@ -197,6 +204,20 @@ export interface EmployeeRole {
       documento: string;
     };
   };
+}
+
+export interface EmployeeRelation {
+  id_usuario_rol: number;
+  id_rol: number;
+  id_empresa: number;
+  id_sucursal: number;
+  activo: boolean;
+}
+
+export interface CompanyStaffMember {
+  id_usuario: number;
+  usuario: EmployeeRole['usuario'];
+  relaciones: EmployeeRelation[];
 }
 
 export interface CashRegisterMovementType {
@@ -391,8 +412,18 @@ export class CompanyService {
     );
   }
 
-  getPersonalEmpresa(idEmpresa: string): Observable<EmployeeRole[]> {
-    return this.apiService.get<EmployeeRole[]>(`/api/empresas/${idEmpresa}/personal`);
+  getPersonalEmpresa(idEmpresa: string): Observable<CompanyStaffMember[]> {
+    return this.apiService.get<CompanyStaffMember[]>(`/api/empresas/${idEmpresa}/personal`);
+  }
+
+  editarPersonalEmpresa(
+    idEmpresa: string,
+    payload: UpdateEmployeeRequest,
+  ): Observable<EmployeeRole[]> {
+    return this.apiService.put<EmployeeRole[], UpdateEmployeeRequest>(
+      `/api/empresas/${idEmpresa}/editarpersonal`,
+      payload,
+    );
   }
 
   getTiposMovimientoCaja(): Observable<CashRegisterMovementType[]> {

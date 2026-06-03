@@ -3,8 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import {
   Branch,
+  CompanyStaffMember,
   CompanyService,
-  EmployeeRole,
   RoleListItem,
 } from '../../../../../core/services/company.service';
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
@@ -37,13 +37,16 @@ export class Staff implements OnInit {
   protected cargandoSucursales = false;
   protected cargandoInvitacion = false;
   protected cargandoPersonal = false;
+  protected cargandoEdicion = false;
   protected errorSucursales = '';
   protected errorInvitacion = '';
   protected errorPersonal = '';
+  protected errorEdicion = '';
   protected errorRoles = '';
   protected mensajeInvitacion = '';
+  protected mensajeEdicion = '';
   protected branches: Branch[] = [];
-  protected staffMembers: EmployeeRole[] = [];
+  protected staffMembers: CompanyStaffMember[] = [];
   protected roles: Array<{ value: string; label: string }> = [];
 
   protected readonly sidebarItems: SidebarItem[] = [
@@ -166,12 +169,18 @@ export class Staff implements OnInit {
     this.selectedInvitationBranchIds = this.selectedInvitationBranchIds.filter((id) => id !== branchId);
   }
 
-  protected editarPersonal(member: EmployeeRole): void {
-    this.editingStaffId = member.id_usuario_rol;
+  protected editarPersonal(member: CompanyStaffMember): void {
+    const firstRelation = member.relaciones[0];
+
+    this.errorEdicion = '';
+    this.mensajeEdicion = '';
+    this.editingStaffId = member.id_usuario;
     this.editEmail = member.usuario.email;
-    this.editRole = this.roles.find((role) => role.value === String(member.id_rol))?.value ?? this.selectedRole;
-    this.editBranchIds = [String(member.id_sucursal)];
-    this.editStaffActive = Boolean(member.activo && member.usuario.activo);
+    this.editRole = this.roles.find((role) => role.value === String(firstRelation?.id_rol))?.value ?? this.selectedRole;
+    this.editBranchIds = member.relaciones
+      .filter((relation) => relation.activo)
+      .map((relation) => String(relation.id_sucursal));
+    this.editStaffActive = Boolean(member.usuario.activo && member.relaciones.some((relation) => relation.activo));
     this.activeTab = 'edit';
   }
 
@@ -181,34 +190,71 @@ export class Staff implements OnInit {
     this.editRole = '1';
     this.editBranchIds = [];
     this.editStaffActive = true;
+    this.cargandoEdicion = false;
+    this.errorEdicion = '';
+    this.mensajeEdicion = '';
     this.activeTab = 'list';
   }
 
   protected guardarEdicion(event: SubmitEvent): void {
     event.preventDefault();
+    this.errorEdicion = '';
+    this.mensajeEdicion = '';
 
-    if (this.editingStaffId === null || this.editBranchIds.length === 0) {
+    const email = this.editEmail.trim();
+    const idSucursales = this.editBranchIds
+      .map((branchId) => Number(branchId))
+      .filter((branchId) => Number.isFinite(branchId));
+    const idRol = Number(this.editRole);
+
+    if (this.editingStaffId === null) {
+      this.errorEdicion = 'Selecciona el personal que deseas editar.';
       return;
     }
 
-    this.staffMembers = this.staffMembers.map((member) => {
-      if (member.id_usuario_rol !== this.editingStaffId) {
-        return member;
-      }
+    if (!email) {
+      this.errorEdicion = 'No se encontro el correo del personal seleccionado.';
+      return;
+    }
 
-      return {
-        ...member,
-        id_rol: Number(this.editRole),
-        id_sucursal: Number(this.editBranchIds[0]),
+    if (!Number.isFinite(idRol)) {
+      this.errorEdicion = 'Selecciona un rol para editar el personal.';
+      return;
+    }
+
+    if (!this.companyId || idSucursales.length === 0) {
+      this.errorEdicion = 'Selecciona al menos una sucursal para editar el personal.';
+      return;
+    }
+
+    this.cargandoEdicion = true;
+
+    this.companyService
+      .editarPersonalEmpresa(this.companyId, {
+        email,
+        id_sucursales: idSucursales,
+        id_rol: idRol,
         activo: this.editStaffActive,
-        usuario: {
-          ...member.usuario,
-          activo: this.editStaffActive,
+      })
+      .subscribe({
+        next: () => {
+          this.cargandoEdicion = false;
+          this.mensajeEdicion = 'Personal actualizado correctamente.';
+          this.editingStaffId = null;
+          this.editEmail = '';
+          this.editRole = '1';
+          this.editBranchIds = [];
+          this.editStaffActive = true;
+          this.activeTab = 'list';
+          this.cargarPersonal();
+          this.cdr.detectChanges();
         },
-      };
-    });
-
-    this.cancelarEdicion();
+        error: (error: { error?: { detail?: string } }) => {
+          this.cargandoEdicion = false;
+          this.errorEdicion = error?.error?.detail ?? 'No se pudo editar el personal. Intenta nuevamente.';
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   protected isEditBranchSelected(branchId: string): boolean {
@@ -230,6 +276,26 @@ export class Staff implements OnInit {
 
   protected obtenerNombreSucursal(idSucursal: string): string {
     return this.branches.find((branch) => this.obtenerIdSucursal(branch) === idSucursal)?.nombre ?? idSucursal;
+  }
+
+  protected obtenerSucursalesPersonal(member: CompanyStaffMember): string {
+    if (member.relaciones.length === 0) {
+      return 'Sin sucursales asignadas';
+    }
+
+    return member.relaciones
+      .map((relation) => this.obtenerNombreSucursal(String(relation.id_sucursal)))
+      .join(', ');
+  }
+
+  protected obtenerRolPersonal(member: CompanyStaffMember): string {
+    const idRol = member.relaciones[0]?.id_rol;
+
+    return this.roles.find((role) => role.value === String(idRol))?.label ?? String(idRol ?? 'Sin rol');
+  }
+
+  protected estaPersonalActivo(member: CompanyStaffMember): boolean {
+    return member.usuario.activo && member.relaciones.some((relation) => relation.activo);
   }
 
   private cargarSucursales(): void {
@@ -298,7 +364,9 @@ export class Staff implements OnInit {
   }
 
   private shouldShowRole(role: RoleListItem): boolean {
-    return role.nombre.trim().toUpperCase() !== 'CLIENTE';
+    const roleName = role.nombre.trim().toUpperCase();
+
+    return roleName !== 'CLIENTE' && roleName !== 'ADMINISTRADOR';
   }
 
   private cargarPersonal(): void {
