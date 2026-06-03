@@ -97,6 +97,7 @@
                   </select>
                 </div>
 
+
                 <div class="form-group">
                   <label class="label" for="reportStaff">Personal</label>
                   <select class="select" id="reportStaff" name="staff" [(ngModel)]="saleFilters.staff">
@@ -109,7 +110,9 @@
 
               <div class="sale-filters-actions">
                 <button class="btn btn-secondary" type="button" (click)="clearSaleFilters()">Limpiar filtros</button>
-                <button class="btn btn-primary" type="button" (click)="generateSalesReport()">Generar reporte</button>
+                <button class="btn btn-primary" type="button" [disabled]="loadingSalesReport" (click)="generateSalesReport()">
+                  {{ loadingSalesReport ? 'Generando...' : 'Generar reporte' }}
+                </button>
               </div>
             </form>
 
@@ -277,7 +280,9 @@
 
               <div class="sale-filters-actions">
                 <button class="btn btn-secondary" type="button" (click)="clearInventoryFilters()">Limpiar filtros</button>
-                <button class="btn btn-primary" type="button" (click)="generateInventoryReport()">Generar reporte</button>
+                <button class="btn btn-primary" type="button" [disabled]="loadingInventoryReport" (click)="generateInventoryReport()">
+                  {{ loadingInventoryReport ? 'Generando...' : 'Generar reporte' }}
+                </button>
               </div>
             </form>
 
@@ -443,7 +448,9 @@
 
               <div class="sale-filters-actions">
                 <button class="btn btn-secondary" type="button" (click)="clearCashFilters()">Limpiar filtros</button>
-                <button class="btn btn-primary" type="button" (click)="generateCashReport()">Generar reporte</button>
+                <button class="btn btn-primary" type="button" [disabled]="loadingCashReport" (click)="generateCashReport()">
+                  {{ loadingCashReport ? 'Generando...' : 'Generar reporte' }}
+                </button>
               </div>
             </form>
 
