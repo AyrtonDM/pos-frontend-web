@@ -64,6 +64,11 @@ export class Staff implements OnInit {
       return;
     }
 
+    if (tab === 'invite' && this.limiteUsuariosAlcanzado()) {
+      this.errorInvitacion = this.mensajeLimiteUsuarios();
+      return;
+    }
+
     if (tab === 'edit' && (this.editingStaffId === null || !this.hasPermission('USUARIO_EDITAR'))) {
       return;
     }
@@ -82,6 +87,11 @@ export class Staff implements OnInit {
 
     if (!this.hasPermission('USUARIO_CREAR')) {
       this.errorInvitacion = 'No tienes permiso para invitar personal.';
+      return;
+    }
+
+    if (this.limiteUsuariosAlcanzado()) {
+      this.errorInvitacion = this.mensajeLimiteUsuarios();
       return;
     }
 
@@ -290,6 +300,26 @@ export class Staff implements OnInit {
     return member.usuario.activo && member.relaciones.some((relation) => relation.activo);
   }
 
+  protected maxUsuariosPlan(): number | null {
+    const maxUsuarios = Number(this.companyPermissionsService.planConfiguration().max_usuarios);
+
+    return Number.isFinite(maxUsuarios) && maxUsuarios > 0 ? maxUsuarios : null;
+  }
+
+  protected limiteUsuariosAlcanzado(): boolean {
+    const maxUsuarios = this.maxUsuariosPlan();
+
+    return maxUsuarios !== null && this.staffMembers.length >= maxUsuarios;
+  }
+
+  protected mensajeLimiteUsuarios(): string {
+    const maxUsuarios = this.maxUsuariosPlan();
+
+    return maxUsuarios === null
+      ? ''
+      : `El plan permite hasta ${maxUsuarios} usuario(s). Actualmente hay ${this.staffMembers.length} usuario(s) listado(s).`;
+  }
+
   protected hasPermission(permission: CompanyPermissionCode): boolean {
     return this.companyPermissionsService.permissions()[permission] === true;
   }
@@ -379,6 +409,9 @@ export class Staff implements OnInit {
     this.companyService.getPersonalEmpresa(this.companyId).subscribe({
       next: (staffMembers) => {
         this.staffMembers = staffMembers;
+        if (this.activeTab === 'invite' && this.limiteUsuariosAlcanzado()) {
+          this.activeTab = 'list';
+        }
         this.cargandoPersonal = false;
         this.cdr.detectChanges();
       },

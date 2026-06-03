@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import {
+  CashRegisterListResponse,
   CashRegisterResponse,
   CashRegisterService,
 } from '../../../../../../core/services/cash-register.service';
@@ -119,19 +120,26 @@ export class CashRegister implements OnInit {
 
     this.cargandoCajas = true;
 
-    this.cashRegisterService.getCajasSucursal(this.companyId, this.branchId).subscribe({
-      next: (cashRegisters) => {
+    this.cashRegisterService.getCajasSucursal(this.companyId, this.branchId)
+      .pipe(
+        finalize(() => {
+          this.cargandoCajas = false;
+          this.cdr.detectChanges();
+        }),
+      )
+      .subscribe({
+      next: (response) => {
+        const cashRegisters = this.normalizeCashRegisterListResponse(response);
+
         this.cashRegisters = cashRegisters.map((cashRegister) =>
           this.mapCashRegisterResponse(cashRegister),
         ).map((cashRegister) => ({
           ...cashRegister,
           ...this.getCashRegisterActionState(cashRegister),
         }));
-        this.cargandoCajas = false;
       },
       error: () => {
         this.cashRegisters = [];
-        this.cargandoCajas = false;
         this.error = 'No se pudieron cargar las cajas registradoras.';
       },
     });
@@ -329,6 +337,34 @@ export class CashRegister implements OnInit {
       actionLabel: 'Abrir Caja',
       sessionId: null,
     };
+  }
+
+  private normalizeCashRegisterListResponse(response: CashRegisterListResponse): CashRegisterResponse[] {
+    if (Array.isArray(response)) {
+      return response;
+    }
+
+    if (Array.isArray(response.cajas)) {
+      return response.cajas;
+    }
+
+    if (Array.isArray(response.items)) {
+      return response.items;
+    }
+
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+
+    if (response.data && Array.isArray(response.data.cajas)) {
+      return response.data.cajas;
+    }
+
+    if (response.data && Array.isArray(response.data.items)) {
+      return response.data.items;
+    }
+
+    return [];
   }
 
   private getCashRegisterActionState(cashRegister: CashRegisterItem): Pick<CashRegisterItem, 'canOpen' | 'actionLabel' | 'sessionId'> {

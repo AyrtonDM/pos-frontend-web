@@ -59,8 +59,9 @@ export class MyCompanies implements OnInit {
     this.errorEmpresas = '';
 
     this.companyService.getMisPermisos(idEmpresa).subscribe({
-      next: (permissions) => {
-        this.companyPermissionsService.savePermissions(permissions);
+      next: (response) => {
+        this.companyPermissionsService.savePermissions(response.permisos);
+        this.companyPermissionsService.saveActiveSubscription(response.suscripcion_activa);
         this.empresaEntrandoId = null;
         this.cdr.detectChanges();
         void this.router.navigate(['/company', idEmpresa, 'branches']);

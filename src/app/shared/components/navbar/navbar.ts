@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { CompanyPermissionsService } from '../../../core/services/company-permissions.service';
 import { FcmService } from '../../../core/notifications/fcm.service';
 import { NotificationDetailModalComponent } from '../notification-center/notification-detail-modal/notification-detail-modal.component';
 import { NotificationCenterComponent } from '../notification-center/notification-center.component';
@@ -25,6 +26,10 @@ export class Navbar implements OnInit, OnDestroy {
   @ViewChild(NotificationToastComponent) private notificationToast?: NotificationToastComponent;
 
   private readonly stockNotificationListener = (event: Event) => {
+    if (!this.canViewAlerts()) {
+      return;
+    }
+
     const customEvent = event as CustomEvent<any>;
     const item = this.notificationCenter?.handleIncoming(customEvent.detail);
     if (item) {
@@ -36,17 +41,23 @@ export class Navbar implements OnInit, OnDestroy {
     protected readonly authService: AuthService,
     private readonly router: Router,
     private readonly fcmService: FcmService,
+    private readonly companyPermissionsService: CompanyPermissionsService,
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.notificationsEnabled = this.authService.isAuthenticated() && this.authService.isAdmin();
+    const companyId = this.getCompanyIdFromUrl();
+
+    this.notificationsEnabled = this.authService.isAuthenticated() && companyId !== null;
     if (!this.notificationsEnabled) {
       return;
     }
 
-    await this.loadUnreadNotifications();
-    await this.fcmService.registerToken();
+    await this.fcmService.registerToken(undefined, companyId);
     window.addEventListener('stock-notification', this.stockNotificationListener);
+
+    if (this.canViewAlerts()) {
+      await this.loadUnreadNotifications();
+    }
   }
 
   ngOnDestroy(): void {
@@ -61,6 +72,11 @@ export class Navbar implements OnInit, OnDestroy {
   }
 
   protected toggleNotifs(): void {
+    if (!this.canViewAlerts()) {
+      this.notifsOpen.set(false);
+      return;
+    }
+
     this.notifsOpen.update(v => !v);
   }
 
@@ -69,15 +85,24 @@ export class Navbar implements OnInit, OnDestroy {
   }
 
   protected updateUnreadNotifications(count: number): void {
+    if (!this.canViewAlerts()) {
+      this.unreadNotifications.set(0);
+      return;
+    }
+
     this.unreadNotifications.set(count);
   }
 
   protected actualizarAlertaEmergente(item: any): void {
+    if (!this.canViewAlerts()) {
+      return;
+    }
+
     this.notificationToast?.show(item);
   }
 
   protected abrirDetalleAlerta(item: any): void {
-    if (!item) {
+    if (!item || !this.canViewAlerts()) {
       return;
     }
     // If we received a canonical detail model (has fields), show it directly.
@@ -101,11 +126,23 @@ export class Navbar implements OnInit, OnDestroy {
     this.activeDetail = null;
   }
 
+  protected canViewAlerts(): boolean {
+    return this.getCompanyIdFromUrl() !== null && this.companyPermissionsService.permissions().ALERTA_VER === true;
+  }
+
   private async loadUnreadNotifications(): Promise<void> {
+    const companyId = this.getCompanyIdFromUrl();
+
+    if (!this.canViewAlerts() || companyId === null) {
+      this.unreadNotifications.set(0);
+      return;
+    }
+
     try {
-      const idsEmpresa = await this.fcmService.obtenerEmpresasContexto();
       const base = this.fcmService.getApiBase();
-      const responses = await Promise.all(idsEmpresa.map((idEmpresa) => fetch(`${base}/notifications/history/empresas/${idEmpresa}`)),);
+      const responses = await Promise.all([
+        fetch(`${base}/notifications/history/empresas/${companyId}`),
+      ]);
 
       const payloads = await Promise.all(
         responses
@@ -120,5 +157,12 @@ export class Navbar implements OnInit, OnDestroy {
     } catch {
       this.unreadNotifications.set(0);
     }
+  }
+
+  private getCompanyIdFromUrl(): number | null {
+    const match = this.router.url.match(/\/company\/([^/?#]+)/);
+    const companyId = Number(match?.[1]);
+
+    return Number.isFinite(companyId) ? companyId : null;
   }
 }
