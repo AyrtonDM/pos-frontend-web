@@ -54,6 +54,7 @@ export class PlanSelectorModalComponent implements OnInit {
       id_plan: plan.id_plan,
     }).subscribe({
       next: (response: CheckoutResponse) => {
+        this.pagoService.guardarSesionStripe(response.session_id);
         window.location.href = response.checkout_url;
       },
       error: (err: any) => {

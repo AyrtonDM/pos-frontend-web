@@ -38,6 +38,8 @@ export interface ConfirmarResponse {
   providedIn: 'root'
 })
 export class PagoService {
+  private readonly stripeSessionStorageKey = 'stripe_checkout_session_id';
+
   constructor(private apiService: ApiService) {}
 
   getPlanes(): Observable<Plan[]> {
@@ -50,5 +52,29 @@ export class PagoService {
 
   confirmarPago(req: ConfirmarRequest): Observable<ConfirmarResponse> {
     return this.apiService.post<ConfirmarResponse, ConfirmarRequest>('/api/pagos/confirmar', req);
+  }
+
+  guardarSesionStripe(sessionId: string): void {
+    if (typeof sessionStorage === 'undefined') {
+      return;
+    }
+
+    sessionStorage.setItem(this.stripeSessionStorageKey, sessionId);
+  }
+
+  obtenerSesionStripe(): string | null {
+    if (typeof sessionStorage === 'undefined') {
+      return null;
+    }
+
+    return sessionStorage.getItem(this.stripeSessionStorageKey);
+  }
+
+  limpiarSesionStripe(): void {
+    if (typeof sessionStorage === 'undefined') {
+      return;
+    }
+
+    sessionStorage.removeItem(this.stripeSessionStorageKey);
   }
 }
