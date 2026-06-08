@@ -56,9 +56,9 @@ export class RegisterCompany {
 
         void this.router.navigate(['/my-companies']);
       },
-      error: () => {
+      error: (error: { error?: { detail?: string } }) => {
         this.cargandoRegistro = false;
-        this.errorRegistro = 'No se pudo registrar la empresa. Intenta nuevamente.';
+        this.errorRegistro = error?.error?.detail ?? 'No se pudo registrar la empresa. Intenta nuevamente.';
         this.cdr.detectChanges();
       },
     });

@@ -1,7 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 import { Navbar } from '../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../shared/components/sidebar/sidebar';
@@ -28,6 +29,8 @@ export class ParameterizedReports implements OnInit {
   private readonly productService = inject(ProductService);
   private readonly cashRegisterService = inject(CashRegisterService);
   private readonly apiService = inject(ApiService);
+  private readonly hostElement = inject(ElementRef<HTMLElement>);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
   protected readonly branchId = this.route.snapshot.paramMap.get('branchId') ?? '';
@@ -204,9 +207,16 @@ export class ParameterizedReports implements OnInit {
       }
     };
 
-    this.apiService.post<any, any>(`/api/reportes/${this.companyId}/ventasparametrizado`, payload).subscribe({
+    this.apiService
+      .post<any, any>(`/api/reportes/${this.companyId}/ventasparametrizado`, payload)
+      .pipe(
+        finalize(() => {
+          this.loadingSalesReport = false;
+          this.refreshCurrentReportResult();
+        }),
+      )
+      .subscribe({
       next: (response) => {
-        this.loadingSalesReport = false;
         const totalSalesObj = response.resumen_gerencial?.find(
           (r: any) =>
             r.indicador?.toLowerCase().includes('total de ventas') ||
@@ -248,7 +258,6 @@ export class ParameterizedReports implements OnInit {
         };
       },
       error: (err) => {
-        this.loadingSalesReport = false;
         console.error('Error generating sales report:', err);
       },
     });
@@ -306,10 +315,16 @@ export class ParameterizedReports implements OnInit {
       id_categoria_producto: categoryId ? Number(categoryId) : null,
     };
 
-    this.apiService.post<any, any>(`/api/reportes/${this.companyId}/inventarioparametrizado`, payload).subscribe({
+    this.apiService
+      .post<any, any>(`/api/reportes/${this.companyId}/inventarioparametrizado`, payload)
+      .pipe(
+        finalize(() => {
+          this.loadingInventoryReport = false;
+          this.refreshCurrentReportResult();
+        }),
+      )
+      .subscribe({
       next: (response) => {
-        this.loadingInventoryReport = false;
-        
         const totalMovementsObj = response.resumen_gerencial?.find(
           (r: any) => r.indicador?.toLowerCase().includes('movimientos')
         );
@@ -351,7 +366,6 @@ export class ParameterizedReports implements OnInit {
         };
       },
       error: (err) => {
-        this.loadingInventoryReport = false;
         console.error('Error generating inventory report:', err);
       },
     });
@@ -419,10 +433,16 @@ export class ParameterizedReports implements OnInit {
       }
     };
 
-    this.apiService.post<any, any>(`/api/reportes/${this.companyId}/cajasparametrizado`, payload).subscribe({
+    this.apiService
+      .post<any, any>(`/api/reportes/${this.companyId}/cajasparametrizado`, payload)
+      .pipe(
+        finalize(() => {
+          this.loadingCashReport = false;
+          this.refreshCurrentReportResult();
+        }),
+      )
+      .subscribe({
       next: (response) => {
-        this.loadingCashReport = false;
-
         const totalSessionsObj = response.resumen_gerencial?.find(
           (r: any) => r.indicador?.toLowerCase().includes('sesiones de caja')
         );
@@ -482,9 +502,18 @@ export class ParameterizedReports implements OnInit {
         };
       },
       error: (err) => {
-        this.loadingCashReport = false;
         console.error('Error generating cash report:', err);
       },
+    });
+  }
+
+  private refreshCurrentReportResult(): void {
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.hostElement.nativeElement
+        .querySelector('.report-section')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
 

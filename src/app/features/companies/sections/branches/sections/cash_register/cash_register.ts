@@ -203,9 +203,9 @@ export class CashRegister implements OnInit {
         this.activeTab = 'list';
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (error: { error?: { detail?: string } }) => {
         this.cargandoRegistro = false;
-        this.error = 'No se pudo registrar la caja. Intenta nuevamente.';
+        this.error = error?.error?.detail ?? 'No se pudo registrar la caja. Intenta nuevamente.';
         this.cdr.detectChanges();
       },
     });

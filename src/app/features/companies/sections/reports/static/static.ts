@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 
 import {
   CompanyPermissionCode,
@@ -347,8 +348,11 @@ export class StaticReports {
   private readonly route = inject(ActivatedRoute);
   private readonly companyPermissionsService = inject(CompanyPermissionsService);
   private readonly apiService = inject(ApiService);
+  private readonly hostElement = inject(ElementRef<HTMLElement>);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
+  // TODO: Verificar si los reportes estaticos deben filtrarse por sucursal en el backend.
   protected readonly branchId = this.route.snapshot.paramMap.get('branchId') ?? '';
   protected activeTab: StaticReportTab = 'sales';
   protected salesReportType: 'none' | 'summary' | 'details' = 'none';
@@ -714,16 +718,33 @@ export class StaticReports {
     this.salesSummaryReport = this.createEmptySalesSummaryReport();
 
     this.apiService
-      .get<SalesSummaryReportResponse>(`/api/reportes/${this.companyId}/resumenventas`)
+      .get<unknown>(`/api/reportes/${this.companyId}/resumenventas`)
+      .pipe(
+        finalize(() => {
+          this.loadingSalesSummary = false;
+          this.refreshCurrentReportResult();
+        }),
+      )
       .subscribe({
         next: (report) => {
-          this.salesSummaryReport = this.mapSalesSummaryReport(report);
-          this.loadingSalesSummary = false;
+          console.log('[Reportes] Respuesta original resumen de ventas:', report);
+
+          try {
+            const unwrapped = this.unwrapStaticReportResponse<SalesSummaryReportResponse>(report);
+
+            console.log('[Reportes] Respuesta procesada resumen de ventas:', unwrapped);
+
+            this.salesSummaryReport = this.mapSalesSummaryReport(unwrapped);
+          } catch (error) {
+            console.error('[Reportes] Error al procesar el resumen de ventas:', error);
+            this.salesSummaryReport = this.createEmptySalesSummaryReport();
+            this.salesSummaryError = 'El servidor respondio, pero los datos del resumen de ventas no tienen el formato esperado.';
+          }
         },
-        error: () => {
+        error: (error) => {
+          console.error('[Reportes] Error HTTP resumen de ventas:', error);
           this.salesSummaryReport = this.createEmptySalesSummaryReport();
           this.salesSummaryError = 'No se pudo generar el resumen de ventas. Intenta nuevamente.';
-          this.loadingSalesSummary = false;
         },
       });
   }
@@ -738,16 +759,33 @@ export class StaticReports {
     this.salesDetailsReport = this.createEmptySalesDetailsReport();
 
     this.apiService
-      .get<SalesDetailsReportResponse>(`/api/reportes/${this.companyId}/detallesventas`)
+      .get<unknown>(`/api/reportes/${this.companyId}/detallesventas`)
+      .pipe(
+        finalize(() => {
+          this.loadingSalesDetails = false;
+          this.refreshCurrentReportResult();
+        }),
+      )
       .subscribe({
         next: (report) => {
-          this.salesDetailsReport = this.mapSalesDetailsReport(report);
-          this.loadingSalesDetails = false;
+          console.log('[Reportes] Respuesta original detalle de ventas:', report);
+
+          try {
+            const unwrapped = this.unwrapStaticReportResponse<SalesDetailsReportResponse>(report);
+
+            console.log('[Reportes] Respuesta procesada detalle de ventas:', unwrapped);
+
+            this.salesDetailsReport = this.mapSalesDetailsReport(unwrapped);
+          } catch (error) {
+            console.error('[Reportes] Error al procesar el detalle de ventas:', error);
+            this.salesDetailsReport = this.createEmptySalesDetailsReport();
+            this.salesDetailsError = 'El servidor respondio, pero los datos del detalle de ventas no tienen el formato esperado.';
+          }
         },
-        error: () => {
+        error: (error) => {
+          console.error('[Reportes] Error HTTP detalle de ventas:', error);
           this.salesDetailsReport = this.createEmptySalesDetailsReport();
           this.salesDetailsError = 'No se pudo generar el detalle de ventas. Intenta nuevamente.';
-          this.loadingSalesDetails = false;
         },
       });
   }
@@ -762,16 +800,33 @@ export class StaticReports {
     this.inventoryStatusReport = this.createEmptyInventoryStatusReport();
 
     this.apiService
-      .get<InventoryStatusReportResponse>(`/api/reportes/${this.companyId}/estadoinventario`)
+      .get<unknown>(`/api/reportes/${this.companyId}/estadoinventario`)
+      .pipe(
+        finalize(() => {
+          this.loadingInventoryStatus = false;
+          this.refreshCurrentReportResult();
+        }),
+      )
       .subscribe({
         next: (report) => {
-          this.inventoryStatusReport = this.mapInventoryStatusReport(report);
-          this.loadingInventoryStatus = false;
+          console.log('[Reportes] Respuesta original estado de inventario:', report);
+
+          try {
+            const unwrapped = this.unwrapStaticReportResponse<InventoryStatusReportResponse>(report);
+
+            console.log('[Reportes] Respuesta procesada estado de inventario:', unwrapped);
+
+            this.inventoryStatusReport = this.mapInventoryStatusReport(unwrapped);
+          } catch (error) {
+            console.error('[Reportes] Error al procesar el estado de inventario:', error);
+            this.inventoryStatusReport = this.createEmptyInventoryStatusReport();
+            this.inventoryStatusError = 'El servidor respondio, pero los datos del estado de inventario no tienen el formato esperado.';
+          }
         },
-        error: () => {
+        error: (error) => {
+          console.error('[Reportes] Error HTTP estado de inventario:', error);
           this.inventoryStatusReport = this.createEmptyInventoryStatusReport();
           this.inventoryStatusError = 'No se pudo generar el estado de inventario. Intenta nuevamente.';
-          this.loadingInventoryStatus = false;
         },
       });
   }
@@ -786,16 +841,33 @@ export class StaticReports {
     this.inventoryMovementsReport = this.createEmptyInventoryMovementsReport();
 
     this.apiService
-      .get<InventoryMovementsReportResponse>(`/api/reportes/${this.companyId}/movimientosinventario`)
+      .get<unknown>(`/api/reportes/${this.companyId}/movimientosinventario`)
+      .pipe(
+        finalize(() => {
+          this.loadingInventoryMovements = false;
+          this.refreshCurrentReportResult();
+        }),
+      )
       .subscribe({
         next: (report) => {
-          this.inventoryMovementsReport = this.mapInventoryMovementsReport(report);
-          this.loadingInventoryMovements = false;
+          console.log('[Reportes] Respuesta original movimientos de inventario:', report);
+
+          try {
+            const unwrapped = this.unwrapStaticReportResponse<InventoryMovementsReportResponse>(report);
+
+            console.log('[Reportes] Respuesta procesada movimientos de inventario:', unwrapped);
+
+            this.inventoryMovementsReport = this.mapInventoryMovementsReport(unwrapped);
+          } catch (error) {
+            console.error('[Reportes] Error al procesar los movimientos de inventario:', error);
+            this.inventoryMovementsReport = this.createEmptyInventoryMovementsReport();
+            this.inventoryMovementsError = 'El servidor respondio, pero los datos de movimientos de inventario no tienen el formato esperado.';
+          }
         },
-        error: () => {
+        error: (error) => {
+          console.error('[Reportes] Error HTTP movimientos de inventario:', error);
           this.inventoryMovementsReport = this.createEmptyInventoryMovementsReport();
           this.inventoryMovementsError = 'No se pudieron generar los movimientos de inventario. Intenta nuevamente.';
-          this.loadingInventoryMovements = false;
         },
       });
   }
@@ -810,16 +882,33 @@ export class StaticReports {
     this.cashSummaryReport = this.createEmptyCashSummaryReport();
 
     this.apiService
-      .get<CashSummaryReportResponse>(`/api/reportes/${this.companyId}/resumencajas`)
+      .get<unknown>(`/api/reportes/${this.companyId}/resumencajas`)
+      .pipe(
+        finalize(() => {
+          this.loadingCashSummary = false;
+          this.refreshCurrentReportResult();
+        }),
+      )
       .subscribe({
         next: (report) => {
-          this.cashSummaryReport = this.mapCashSummaryReport(report);
-          this.loadingCashSummary = false;
+          console.log('[Reportes] Respuesta original resumen de cajas:', report);
+
+          try {
+            const unwrapped = this.unwrapStaticReportResponse<CashSummaryReportResponse>(report);
+
+            console.log('[Reportes] Respuesta procesada resumen de cajas:', unwrapped);
+
+            this.cashSummaryReport = this.mapCashSummaryReport(unwrapped);
+          } catch (error) {
+            console.error('[Reportes] Error al procesar el resumen de cajas:', error);
+            this.cashSummaryReport = this.createEmptyCashSummaryReport();
+            this.cashSummaryError = 'El servidor respondio, pero los datos del resumen de cajas no tienen el formato esperado.';
+          }
         },
-        error: () => {
+        error: (error) => {
+          console.error('[Reportes] Error HTTP resumen de cajas:', error);
           this.cashSummaryReport = this.createEmptyCashSummaryReport();
           this.cashSummaryError = 'No se pudo generar el resumen de cajas. Intenta nuevamente.';
-          this.loadingCashSummary = false;
         },
       });
   }
@@ -834,18 +923,75 @@ export class StaticReports {
     this.cashMovementsReport = this.createEmptyCashMovementsReport();
 
     this.apiService
-      .get<CashMovementsReportResponse>(`/api/reportes/${this.companyId}/movimientoscaja`)
+      .get<unknown>(`/api/reportes/${this.companyId}/movimientoscaja`)
+      .pipe(
+        finalize(() => {
+          this.loadingCashMovements = false;
+          this.refreshCurrentReportResult();
+        }),
+      )
       .subscribe({
         next: (report) => {
-          this.cashMovementsReport = this.mapCashMovementsReport(report);
-          this.loadingCashMovements = false;
+          console.log('[Reportes] Respuesta original movimientos de caja:', report);
+
+          try {
+            const unwrapped = this.unwrapStaticReportResponse<CashMovementsReportResponse>(report);
+
+            console.log('[Reportes] Respuesta procesada movimientos de caja:', unwrapped);
+
+            this.cashMovementsReport = this.mapCashMovementsReport(unwrapped);
+          } catch (error) {
+            console.error('[Reportes] Error al procesar los movimientos de caja:', error);
+            this.cashMovementsReport = this.createEmptyCashMovementsReport();
+            this.cashMovementsError = 'El servidor respondio, pero los datos de movimientos de caja no tienen el formato esperado.';
+          }
         },
-        error: () => {
+        error: (error) => {
+          console.error('[Reportes] Error HTTP movimientos de caja:', error);
           this.cashMovementsReport = this.createEmptyCashMovementsReport();
           this.cashMovementsError = 'No se pudieron generar los movimientos de caja. Intenta nuevamente.';
-          this.loadingCashMovements = false;
         },
       });
+  }
+
+  private refreshCurrentReportResult(): void {
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.hostElement.nativeElement
+        .querySelector('.report-result')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  private unwrapStaticReportResponse<TReport>(response: unknown): TReport {
+    let current = response;
+
+    for (let level = 0; level < 3; level++) {
+      if (!current || typeof current !== 'object') {
+        return {} as TReport;
+      }
+
+      const record = current as Record<string, unknown>;
+      let nestedValue: unknown;
+
+      for (const key of ['data', 'datos', 'reporte', 'report', 'resultado', 'result']) {
+        const value = record[key];
+
+        if (value && typeof value === 'object') {
+          nestedValue = value;
+          break;
+        }
+      }
+
+      if (!nestedValue) {
+        return current as TReport;
+      }
+
+      current = nestedValue;
+    }
+
+    return current as TReport;
   }
 
   private mapSalesSummaryReport(report: SalesSummaryReportResponse): SalesSummaryReportView {

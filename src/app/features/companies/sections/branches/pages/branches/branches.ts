@@ -102,9 +102,9 @@ export class Branches implements OnInit {
         this.cargarSucursales();
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (error: { error?: { detail?: string } }) => {
         this.cargandoRegistro = false;
-        this.errorRegistro = 'No se pudo registrar la sucursal. Intenta nuevamente.';
+        this.errorRegistro = error?.error?.detail ?? 'No se pudo registrar la sucursal. Intenta nuevamente.';
         this.cdr.detectChanges();
       },
     });

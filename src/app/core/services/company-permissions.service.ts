@@ -85,8 +85,6 @@ export interface CompanyActiveSubscription {
 }
 
 export interface CompanyPlanConfiguration {
-  max_usuarios: string;
-  max_sucursales: string;
   reportes: string;
 }
 
@@ -95,8 +93,6 @@ const SUBSCRIPTION_STORAGE_KEY = 'company_active_subscription';
 const PLAN_CONFIGURATION_STORAGE_KEY = 'company_plan_configuration';
 
 const EMPTY_PLAN_CONFIGURATION: CompanyPlanConfiguration = {
-  max_usuarios: '',
-  max_sucursales: '',
   reportes: '',
 };
 
@@ -296,7 +292,7 @@ export class CompanyPermissionsService {
   }
 
   private isPlanConfigurationKey(key: string): key is keyof CompanyPlanConfiguration {
-    return key === 'max_usuarios' || key === 'max_sucursales' || key === 'reportes';
+    return key === 'reportes';
   }
 
   private readStoredSubscription(): CompanyActiveSubscription | null {
@@ -324,8 +320,6 @@ export class CompanyPermissionsService {
       const parsedConfiguration = JSON.parse(storedPlanConfiguration) as Partial<CompanyPlanConfiguration>;
 
       return {
-        max_usuarios: String(parsedConfiguration.max_usuarios ?? ''),
-        max_sucursales: String(parsedConfiguration.max_sucursales ?? ''),
         reportes: String(parsedConfiguration.reportes ?? ''),
       };
     } catch {

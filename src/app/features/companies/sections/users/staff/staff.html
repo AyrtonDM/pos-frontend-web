@@ -19,7 +19,7 @@
 
       <section class="tabs-panel panel">
         <div class="tabs" role="tablist" aria-label="Secciones de personal">
-          @if (hasPermission('USUARIO_CREAR') && !limiteUsuariosAlcanzado()) {
+          @if (hasPermission('USUARIO_CREAR')) {
             <button
               class="tab-button"
               [class.active]="activeTab === 'invite'"
@@ -58,10 +58,6 @@
         <div class="tab-content">
           @if (mensajeEdicion) {
             <p class="feedback feedback-success">{{ mensajeEdicion }}</p>
-          }
-
-          @if (limiteUsuariosAlcanzado()) {
-            <p class="feedback feedback-error">{{ mensajeLimiteUsuarios() }}</p>
           }
 
           @if (activeTab === 'invite') {
@@ -137,7 +133,7 @@
               <button
                 class="btn btn-primary submit-button"
                 type="submit"
-                [disabled]="cargandoInvitacion || selectedInvitationBranchIds.length === 0 || limiteUsuariosAlcanzado()"
+                [disabled]="cargandoInvitacion || selectedInvitationBranchIds.length === 0"
               >
                 {{ cargandoInvitacion ? 'Enviando...' : 'Enviar' }}
               </button>
