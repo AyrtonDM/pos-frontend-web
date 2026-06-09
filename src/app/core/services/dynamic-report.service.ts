@@ -1,5 +1,5 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { ApiService } from './api.service';
 
 export type ReportExportFormat = 'excel' | 'pdf';
 
@@ -40,15 +40,14 @@ export interface DynamicReportResponse {
 })
 export class DynamicReportService {
   constructor(
-    private readonly http: HttpClient,
+    private readonly apiService: ApiService,
   ) {}
 
   run(companyId: string, prompt: string) {
     const endpoint = `/api/reportes/${companyId}/run`;
 
-    return this.http.post<DynamicReportResponse>(endpoint, {
+    return this.apiService.post<DynamicReportResponse, { prompt: string }>(endpoint, {
       prompt,
     });
-    
   }
 }
