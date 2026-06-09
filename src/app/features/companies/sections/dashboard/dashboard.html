@@ -11,19 +11,6 @@
           <p class="text-muted">Resumen ejecutivo de rendimiento comercial por sucursal.</p>
         </div>
 
-        <div class="dashboard-filter-group">
-          <label class="label" for="branch-filter">Sucursal</label>
-          <select
-            id="branch-filter"
-            class="input dashboard-filter"
-            [value]="selectedBranchFilter"
-            (change)="onBranchFilterChange($any($event.target).value)"
-          >
-            @for (branch of branchOptions; track branch.id) {
-              <option [value]="branch.id">{{ branch.name }}</option>
-            }
-          </select>
-        </div>
       </header>
 
       @if (shouldShowLoadingState) {

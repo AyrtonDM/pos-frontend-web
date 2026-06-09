@@ -46,6 +46,13 @@ const PERMISSION_DEPENDENCY_RULES: PermissionDependencyRule[] = [
   },
 ];
 
+const HIDDEN_ROLE_PERMISSION_CODES = new Set([
+  'VENTA_ANULAR',
+  'VENTA_DESCUENTO',
+  'FACTURA_EMITIR',
+  'FACTURA_REIMPRIMIR',
+]);
+
 interface PermissionAction {
   id: number;
   key: string;
@@ -333,7 +340,7 @@ export class Rols implements OnInit {
     const selected = new Set(selectedPermissions);
 
     return this.availablePermissionModules.map((module) => {
-      const actions = module.permisos.map((permission) => {
+      const actions = module.permisos.filter((permission) => !this.isHiddenRolePermission(permission.codigo)).map((permission) => {
         const permissionLabel = this.formatPermissionLabel(module.nombre, permission.nombre);
 
         return {
@@ -351,7 +358,7 @@ export class Rols implements OnInit {
         enabled: actions.some((action) => action.enabled),
         actions,
       };
-    });
+    }).filter((module) => module.actions.length > 0);
   }
 
   private createPermissionModulesForRole(rolPermisos: RoleDetailResponse['rol_permisos'] = []): PermissionModule[] {
@@ -360,7 +367,7 @@ export class Rols implements OnInit {
     );
 
     return this.availablePermissionModules.map((module) => {
-      const actions = module.permisos.map((permission) => ({
+      const actions = module.permisos.filter((permission) => !this.isHiddenRolePermission(permission.codigo)).map((permission) => ({
         id: permission.id_permiso,
         key: permission.codigo,
         code: permission.codigo,
@@ -374,7 +381,7 @@ export class Rols implements OnInit {
         enabled: actions.some((action) => action.enabled),
         actions,
       };
-    });
+    }).filter((module) => module.actions.length > 0);
   }
 
   private syncPermissionDependencies(modules: PermissionModule[]): void {
@@ -456,6 +463,10 @@ export class Rols implements OnInit {
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase();
+  }
+
+  private isHiddenRolePermission(code: string): boolean {
+    return HIDDEN_ROLE_PERMISSION_CODES.has(code.trim().toUpperCase());
   }
 
   private cargarPermisosPorModulo(): void {

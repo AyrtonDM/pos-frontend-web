@@ -6,7 +6,7 @@
 
 .companies-shell {
   display: flex;
-  width: min(1120px, 100%);
+  width: min(var(--content-max-width), 100%);
   flex-direction: column;
   gap: var(--space-lg);
   margin: 0 auto;

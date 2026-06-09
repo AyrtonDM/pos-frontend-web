@@ -125,9 +125,9 @@ export class Staff implements OnInit {
           this.cargarPersonal();
           this.cdr.detectChanges();
         },
-        error: () => {
+        error: (error: { error?: { detail?: string } }) => {
           this.cargandoInvitacion = false;
-          this.errorInvitacion = 'No se pudo enviar la invitacion. Intenta nuevamente.';
+          this.errorInvitacion = error?.error?.detail ?? 'No se pudo enviar la invitacion. Intenta nuevamente.';
           this.cdr.detectChanges();
         },
       });
