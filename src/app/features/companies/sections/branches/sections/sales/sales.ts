@@ -142,6 +142,7 @@ export class Sales implements OnInit {
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
   protected readonly branchId = this.route.snapshot.paramMap.get('branchId') ?? '';
   protected readonly cashRegisterId = this.route.snapshot.paramMap.get('cashRegisterId') ?? '';
+  protected readonly maxPaymentRows = 3;
   protected cashRegisterSessionId = this.route.snapshot.queryParamMap.get('sessionId') ?? '';
 
   protected viewMode: SessionViewMode = this.resolveViewMode(this.route.snapshot.queryParamMap.get('section'));
@@ -264,6 +265,19 @@ export class Sales implements OnInit {
 
   protected get visibleRecommendedProducts(): ProductSearchItem[] {
     return this.saleDetails.length === 0 ? this.products : this.recommendedProducts;
+  }
+
+  protected isCreditSaleType(saleType: SaleTypeOption): boolean {
+    return this.normalizeSearchTerm(saleType.nombre) === 'credito';
+  }
+
+  protected isSaleTypeDisabled(saleType: SaleTypeOption): boolean {
+    return this.isCreditSaleType(saleType) && !this.selectedClientId;
+  }
+
+  protected get selectedSaleTypeIsCredit(): boolean {
+    const saleType = this.saleTypes.find((type) => type.id === this.selectedSaleTypeId);
+    return Boolean(saleType && this.isCreditSaleType(saleType));
   }
 
   protected get subtotal(): number {
@@ -396,13 +410,23 @@ export class Sales implements OnInit {
       return;
     }
 
+    if (this.isSelectedSaleTypeCreditWithoutClient()) {
+      this.registerError = 'Para una venta a credito debes seleccionar un cliente diferente de Consumidor final.';
+      this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
+      return;
+    }
+
     this.openPaymentTab();
   }
 
   protected addPaymentRow(): void {
+    if (!this.canAddPaymentRow) {
+      return;
+    }
+
     this.salePaymentRows = [
       ...this.salePaymentRows,
-      this.createPaymentRow(),
+      this.createPaymentRow(undefined, this.getRemainingPaymentAmount()),
     ];
   }
 
@@ -417,6 +441,18 @@ export class Sales implements OnInit {
 
   protected trackPaymentRow(_: number, row: SalePaymentRow): number {
     return row.id;
+  }
+
+  protected get canAddPaymentRow(): boolean {
+    return this.salePaymentRows.length < this.maxPaymentRows && this.salePaymentRows.length < this.paymentMethods.length;
+  }
+
+  protected isPaymentMethodDisabled(paymentRow: SalePaymentRow, method: PaymentMethodOption): boolean {
+    return this.salePaymentRows.some((row) => row.id !== paymentRow.id && row.metodoPagoId === method.id);
+  }
+
+  protected updatePaymentAmount(row: SalePaymentRow, value: number | string | null): void {
+    row.monto = this.normalizeMoney(value);
   }
 
   protected registrarPago(): void {
@@ -442,11 +478,49 @@ export class Sales implements OnInit {
       return;
     }
 
-    const paymentRow = this.salePaymentRows[0];
-    const idMetodoPago = paymentRow?.metodoPagoId ?? null;
+    if (this.isSelectedSaleTypeCreditWithoutClient()) {
+      this.registerError = 'Para una venta a credito debes seleccionar un cliente diferente de Consumidor final.';
+      this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
+      return;
+    }
+
+    const paymentRows = this.salePaymentRows
+      .map((row) => ({
+        id_metodo_pago: row.metodoPagoId ?? null,
+        monto: this.normalizeMoney(row.monto),
+      }))
+      .filter((row) => row.id_metodo_pago !== null || row.monto > 0);
+
+    const paymentRow = paymentRows[0];
+    const idMetodoPago = paymentRow?.id_metodo_pago ?? null;
 
     if (!idMetodoPago) {
       this.registerError = 'Selecciona un metodo de pago.';
+      return;
+    }
+
+    if (paymentRows.some((row) => !row.id_metodo_pago)) {
+      this.registerError = 'Selecciona un metodo de pago en cada registro de pago.';
+      return;
+    }
+
+    if (paymentRows.some((row) => row.monto <= 0)) {
+      this.registerError = 'Ingresa un monto mayor a 0 en cada registro de pago.';
+      return;
+    }
+
+    const paymentMethodIds = paymentRows.map((row) => row.id_metodo_pago);
+    const uniquePaymentMethodIds = new Set(paymentMethodIds);
+
+    if (uniquePaymentMethodIds.size !== paymentMethodIds.length) {
+      this.registerError = 'No puedes repetir el mismo metodo de pago.';
+      return;
+    }
+
+    const paymentTotal = this.roundCurrency(paymentRows.reduce((sum, row) => sum + row.monto, 0));
+
+    if (paymentTotal !== this.total) {
+      this.registerError = `La suma de los pagos debe ser igual al total: Bs ${this.formatCurrency(this.total)}.`;
       return;
     }
 
@@ -458,6 +532,10 @@ export class Sales implements OnInit {
       descuento_total: this.discountTotal,
       total: this.total,
       estado: 'Pendiente',
+      pagos: paymentRows.map((row) => ({
+        id_metodo_pago: Number(row.id_metodo_pago),
+        monto: row.monto,
+      })),
       detalles: this.saleDetails.map((item) => ({
         id_producto: item.idProducto,
         cantidad: item.cantidad,
@@ -511,16 +589,32 @@ export class Sales implements OnInit {
     this.loadingRecommendedProducts = false;
     this.searchTerm = '';
     this.selectedClientId = null;
-    this.selectedSaleTypeId = this.saleTypes[0]?.id ?? null;
+    this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
     this.saleDiscount = 0;
   }
 
   private createPaymentRow(id = this.nextPaymentRowId++, monto: number | null = null): SalePaymentRow {
     return {
       id,
-      metodoPagoId: this.paymentMethods[0]?.id ?? null,
+      metodoPagoId: this.getFirstAvailablePaymentMethodId(id),
       monto,
     };
+  }
+
+  private getFirstAvailablePaymentMethodId(rowId?: number): number | null {
+    const usedMethodIds = new Set(
+      this.salePaymentRows
+        .filter((row) => row.id !== rowId)
+        .map((row) => row.metodoPagoId)
+        .filter((id): id is number => id !== null),
+    );
+
+    return this.paymentMethods.find((method) => !usedMethodIds.has(method.id))?.id ?? null;
+  }
+
+  private getRemainingPaymentAmount(): number {
+    const paid = this.salePaymentRows.reduce((sum, row) => sum + this.normalizeMoney(row.monto), 0);
+    return this.roundCurrency(Math.max(this.total - paid, 0));
   }
 
   protected formatCurrency(value: number): string {
@@ -544,6 +638,8 @@ export class Sales implements OnInit {
     }
 
     this.loadingRecommendedProducts = true;
+    this.recommendedProducts = [];
+    this.cdr.detectChanges();
 
     this.apiService
       .post<RecommendedProductsResponse, { id_productos: number[] }>('/api/reportes/recomendar-productos', {
@@ -697,7 +793,7 @@ export class Sales implements OnInit {
     this.productService.getTiposVenta().subscribe({
       next: (saleTypes) => {
         this.saleTypes = saleTypes.map((saleType) => this.mapSaleType(saleType));
-        this.selectedSaleTypeId = this.saleTypes[0]?.id ?? null;
+        this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
         this.loadingSaleTypes = false;
         this.cdr.detectChanges();
       },
@@ -767,7 +863,7 @@ export class Sales implements OnInit {
         if (this.salePaymentRows.length > 0) {
           this.salePaymentRows = this.salePaymentRows.map((row) => ({
             ...row,
-            metodoPagoId: row.metodoPagoId ?? this.paymentMethods[0]?.id ?? null,
+            metodoPagoId: row.metodoPagoId ?? this.getFirstAvailablePaymentMethodId(row.id),
           }));
         }
         this.loadingPaymentMethods = false;
@@ -835,7 +931,7 @@ export class Sales implements OnInit {
 
   private mapClient(client: ClientRole): ClientOption {
     return {
-      id: client.id_usuario,
+      id: client.cliente.id_cliente,
       nombre: client.usuario.persona?.nombre_completo ?? 'Sin nombre',
       correo: client.usuario.email,
       categoriaId: client.cliente?.id_categoria_cliente ?? null,
@@ -845,6 +941,8 @@ export class Sales implements OnInit {
   protected selectedClientCategory: ClientCategoryResponse | null = null;
 
   protected onClientSelected(clientId: number | null): void {
+    this.ensureSelectedSaleTypeIsAllowed();
+
     if (!clientId) {
       this.selectedClientCategory = null;
       this.cdr.detectChanges();
@@ -885,6 +983,22 @@ export class Sales implements OnInit {
     const raw = this.selectedClientCategory?.descuento_base ?? null;
     const value = Number(raw ?? 0);
     return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+  }
+
+  private ensureSelectedSaleTypeIsAllowed(): void {
+    if (this.isSelectedSaleTypeCreditWithoutClient()) {
+      this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
+    }
+  }
+
+  private isSelectedSaleTypeCreditWithoutClient(): boolean {
+    const saleType = this.saleTypes.find((type) => type.id === this.selectedSaleTypeId);
+    return Boolean(saleType && this.isSaleTypeDisabled(saleType));
+  }
+
+  private getDefaultAllowedSaleTypeId(): number | null {
+    const firstAllowed = this.saleTypes.find((saleType) => !this.isSaleTypeDisabled(saleType));
+    return firstAllowed?.id ?? null;
   }
 
   private applyClientDiscountToSaleDetails(percentage: number): void {
@@ -1042,7 +1156,7 @@ export class Sales implements OnInit {
     return value.replace(/\D+/g, '');
   }
 
-  private normalizeMoney(value: number | string): number {
+  private normalizeMoney(value: number | string | null): number {
     return Math.max(0, this.roundCurrency(Number(value) || 0));
   }
 

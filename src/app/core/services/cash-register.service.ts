@@ -134,6 +134,11 @@ export interface SaleDetailRequest {
   descripcion: string;
 }
 
+export interface SalePaymentRequest {
+  id_metodo_pago: number;
+  monto: number;
+}
+
 export interface CreateSaleRequest {
   id_tipo_venta: number;
   id_cliente: number | null;
@@ -142,6 +147,7 @@ export interface CreateSaleRequest {
   descuento_total: number;
   total: number;
   estado: 'Pendiente' | string;
+  pagos?: SalePaymentRequest[];
   detalles: SaleDetailRequest[];
 }
 

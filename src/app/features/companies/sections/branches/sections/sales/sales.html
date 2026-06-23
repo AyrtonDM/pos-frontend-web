@@ -134,19 +134,19 @@
                       <section class="recommended-products-panel" aria-label="Productos recomendados">
                         <h2 class="title-md">Productos Recomendados</h2>
 
-                        @if (visibleRecommendedProducts.length === 0) {
-                          <section class="sales-state compact" aria-live="polite">
-                            <p class="text-muted">
-                              {{ saleDetails.length === 0 ? 'No hay productos con stock en esta sucursal.' : 'No hay productos recomendados para este detalle.' }}
-                            </p>
-                          </section>
-                        } @else if (loadingRecommendedProducts) {
+                        @if (loadingRecommendedProducts) {
                           <section class="sales-state compact" aria-live="polite">
                             <p class="text-muted">Cargando recomendaciones...</p>
                           </section>
                         } @else if (recommendedProductsError) {
                           <section class="sales-state compact" aria-live="polite">
                             <p class="text-muted">{{ recommendedProductsError }}</p>
+                          </section>
+                        } @else if (visibleRecommendedProducts.length === 0) {
+                          <section class="sales-state compact" aria-live="polite">
+                            <p class="text-muted">
+                              {{ saleDetails.length === 0 ? 'No hay productos con stock en esta sucursal.' : 'No hay productos recomendados para este detalle.' }}
+                            </p>
                           </section>
                         } @else {
                           <div class="product-results" aria-label="Productos recomendados">
@@ -184,7 +184,7 @@
                           [disabled]="loadingSaleTypes || saleTypes.length === 0"
                         >
                           @for (saleType of saleTypes; track saleType.id) {
-                            <option [ngValue]="saleType.id">{{ saleType.nombre }}</option>
+                            <option [ngValue]="saleType.id" [disabled]="isSaleTypeDisabled(saleType)">{{ saleType.nombre }}</option>
                           }
                         </select>
                       </div>
@@ -236,7 +236,7 @@
                         [disabled]="saleDetails.length === 0 || chargingSale"
                         (click)="cobrar()"
                       >
-                        {{ chargingSale ? 'Cobrando...' : 'Cobrar' }}
+                        {{ chargingSale ? 'Registrando...' : (selectedSaleTypeIsCredit ? 'Registrar Venta al Credito' : 'Cobrar') }}
                       </button>
                       </section>
                     </aside>
@@ -357,6 +357,7 @@
                     type="button"
                     aria-label="Agregar forma de pago"
                     title="Agregar forma de pago"
+                    [disabled]="!canAddPaymentRow"
                     (click)="addPaymentRow()"
                   >
                     +
@@ -376,7 +377,9 @@
                           [disabled]="loadingPaymentMethods || paymentMethods.length === 0"
                         >
                           @for (paymentMethod of paymentMethods; track paymentMethod.id) {
-                            <option [ngValue]="paymentMethod.id">{{ paymentMethod.nombre }}</option>
+                            <option [ngValue]="paymentMethod.id" [disabled]="isPaymentMethodDisabled(paymentRow, paymentMethod)">
+                              {{ paymentMethod.nombre }}
+                            </option>
                           }
                         </select>
                       </div>
@@ -391,10 +394,8 @@
                           min="0"
                           step="0.01"
                           placeholder="0.00"
-                          [(ngModel)]="paymentRow.monto"
-                          readonly
-                          aria-readonly="true"
-                          title="Monto (no editable)"
+                          [ngModel]="paymentRow.monto"
+                          (ngModelChange)="updatePaymentAmount(paymentRow, $event)"
                         />
                       </div>
 
