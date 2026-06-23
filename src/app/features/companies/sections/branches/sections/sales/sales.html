@@ -84,53 +84,96 @@
               } @else {
                 <section class="register-sale" aria-label="Registrar venta">
                   <div class="sale-workspace">
-                    <section class="product-search-panel" aria-label="Buscar productos">
-                      <div class="form-group">
-                        <label class="label" for="productSearch">Buscar producto</label>
-                        <input
-                          class="input"
-                          id="productSearch"
-                          name="productSearch"
-                          type="search"
-                          placeholder="Nombre o Codigo de Barra"
-                          autocomplete="off"
-                          [(ngModel)]="searchTerm"
-                          (keydown.enter)="onSearchEnter($event)"
-                        />
-                      </div>
-
-                      @if (products.length === 0) {
-                        <section class="sales-state compact" aria-live="polite">
-                          <p class="text-muted">No hay productos con stock en esta sucursal.</p>
-                        </section>
-                      } @else if (filteredProducts.length === 0) {
-                        <section class="sales-state compact" aria-live="polite">
-                          <p class="text-muted">No se encontraron productos.</p>
-                        </section>
-                      } @else {
-                        <div class="product-results" aria-label="Resultados de productos">
-                          @for (product of filteredProducts; track trackProduct($index, product)) {
-                            <button class="product-result" type="button" [disabled]="!hasPermission('VENTA_CREAR')" (click)="addProduct(product)">
-                              <span>
-                                <strong>{{ product.nombre }}</strong>
-                                <small>
-                                  Codigo {{ product.codigo || product.idProducto }}
-                                  @if (product.codigoBarras) {
-                                    - Barras {{ product.codigoBarras }}
-                                  }
-                                </small>
-                              </span>
-                              <span class="product-meta">
-                                <strong>Bs {{ formatCurrency(product.precio) }}</strong>
-                                <small>Stock {{ product.stock }} {{ product.unidadMedida }}</small>
-                              </span>
-                            </button>
-                          }
+                    <div class="product-column">
+                      <section class="product-search-panel" aria-label="Buscar productos">
+                        <div class="form-group">
+                          <label class="label" for="productSearch">Buscar producto</label>
+                          <input
+                            class="input"
+                            id="productSearch"
+                            name="productSearch"
+                            type="search"
+                            placeholder="Nombre o Codigo de Barra"
+                            autocomplete="off"
+                            [(ngModel)]="searchTerm"
+                            (keydown.enter)="onSearchEnter($event)"
+                          />
                         </div>
-                      }
-                    </section>
 
-                    <aside class="sale-summary-panel" aria-label="Resumen de venta">
+                        @if (products.length === 0) {
+                          <section class="sales-state compact" aria-live="polite">
+                            <p class="text-muted">No hay productos con stock en esta sucursal.</p>
+                          </section>
+                        } @else if (filteredProducts.length === 0) {
+                          <section class="sales-state compact" aria-live="polite">
+                            <p class="text-muted">No se encontraron productos.</p>
+                          </section>
+                        } @else {
+                          <div class="product-results" aria-label="Resultados de productos">
+                            @for (product of filteredProducts; track trackProduct($index, product)) {
+                              <button class="product-result" type="button" [disabled]="!hasPermission('VENTA_CREAR')" (click)="addProduct(product)">
+                                <span>
+                                  <strong>{{ product.nombre }}</strong>
+                                  <small>
+                                    Codigo {{ product.codigo || product.idProducto }}
+                                    @if (product.codigoBarras) {
+                                      - Barras {{ product.codigoBarras }}
+                                    }
+                                  </small>
+                                </span>
+                                <span class="product-meta">
+                                  <strong>Bs {{ formatCurrency(product.precio) }}</strong>
+                                  <small>Stock {{ product.stock }} {{ product.unidadMedida }}</small>
+                                </span>
+                              </button>
+                            }
+                          </div>
+                        }
+                      </section>
+
+                      <section class="recommended-products-panel" aria-label="Productos recomendados">
+                        <h2 class="title-md">Productos Recomendados</h2>
+
+                        @if (visibleRecommendedProducts.length === 0) {
+                          <section class="sales-state compact" aria-live="polite">
+                            <p class="text-muted">
+                              {{ saleDetails.length === 0 ? 'No hay productos con stock en esta sucursal.' : 'No hay productos recomendados para este detalle.' }}
+                            </p>
+                          </section>
+                        } @else if (loadingRecommendedProducts) {
+                          <section class="sales-state compact" aria-live="polite">
+                            <p class="text-muted">Cargando recomendaciones...</p>
+                          </section>
+                        } @else if (recommendedProductsError) {
+                          <section class="sales-state compact" aria-live="polite">
+                            <p class="text-muted">{{ recommendedProductsError }}</p>
+                          </section>
+                        } @else {
+                          <div class="product-results" aria-label="Productos recomendados">
+                            @for (product of visibleRecommendedProducts; track trackProduct($index, product)) {
+                              <button class="product-result" type="button" [disabled]="!hasPermission('VENTA_CREAR')" (click)="addProduct(product)">
+                                <span>
+                                  <strong>{{ product.nombre }}</strong>
+                                  <small>
+                                    Codigo {{ product.codigo || product.idProducto }}
+                                    @if (product.codigoBarras) {
+                                      - Barras {{ product.codigoBarras }}
+                                    }
+                                  </small>
+                                </span>
+                                <span class="product-meta">
+                                  <strong>Bs {{ formatCurrency(product.precio) }}</strong>
+                                  <small>Stock {{ product.stock }} {{ product.unidadMedida }}</small>
+                                </span>
+                              </button>
+                            }
+                          </div>
+                        }
+                      </section>
+                    </div>
+
+                    <aside class="sale-summary-column" aria-label="Resumen de venta">
+                      <section class="sale-summary-panel" aria-label="Datos de venta">
                       <div class="form-group">
                         <label class="label" for="saleType">Tipo de venta</label>
                         <select
@@ -167,6 +210,11 @@
 
                       <!-- El campo global de descuento de venta fue eliminado seg�n solicitud del UX -->
 
+                      </section>
+
+                      <section class="sale-summary-panel" aria-label="Detalle de cobro">
+                      <h2 class="title-md">Detalle de cobro</h2>
+
                       <dl class="totals-list">
                         <div>
                           <dt>Subtotal</dt>
@@ -190,6 +238,7 @@
                       >
                         {{ chargingSale ? 'Cobrando...' : 'Cobrar' }}
                       </button>
+                      </section>
                     </aside>
                   </div>
 

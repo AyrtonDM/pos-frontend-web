@@ -218,9 +218,17 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
         link: ['/company', context.companyId, 'reports', 'dynamic'],
         permission: 'REPORTE_GENERAR',
       },
+      {
+        key: 'prediction',
+        label: 'Predicción',
+        link: ['/company', context.companyId, 'reports', 'prediction'],
+        permission: 'REPORTE_GENERAR',
+      },
     ];
 
-    return reportDefinitions.filter((report) => enabledReports.has(report.key));
+    return reportDefinitions.filter(
+      (report) => report.key === 'prediction' || enabledReports.has(report.key),
+    );
   }
 
   private getEnabledReportTypes(): Set<string> {
@@ -228,7 +236,7 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
     const normalizedConfiguration = reportConfiguration.trim().toLowerCase();
 
     if (!normalizedConfiguration) {
-      return new Set(['static', 'parameterized', 'dynamic']);
+      return new Set(['static', 'parameterized', 'dynamic', 'prediction']);
     }
 
     const tokens = normalizedConfiguration

@@ -26,6 +26,7 @@ import {
   StockSucursalProducto,
   TipoVenta,
 } from '../../../../../../core/services/product.service';
+import { ApiService } from '../../../../../../core/services/api.service';
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
@@ -42,6 +43,11 @@ interface ProductSearchItem {
   stock: number;
   codigo: string;
   codigoBarras: string;
+}
+
+interface RecommendedProductsResponse {
+  productos_analizados: number[];
+  recomendaciones: ProductSearchItem[];
 }
 
 interface SaleDetailItem extends ProductSearchItem {
@@ -126,6 +132,7 @@ type ProductStockRecord = StockSucursalProducto & {
 export class Sales implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
+  private readonly apiService = inject(ApiService);
   private readonly companyService = inject(CompanyService);
   private readonly cashRegisterService = inject(CashRegisterService);
   private readonly companyPermissionsService = inject(CompanyPermissionsService);
@@ -159,15 +166,18 @@ export class Sales implements OnInit {
   protected loadingPaymentMethods = false;
   protected loadingMovementItems = false;
   protected loadingSalesHistory = false;
+  protected loadingRecommendedProducts = false;
   protected chargingSale = false;
   protected savingMovement = false;
   protected registerError = '';
   protected registerMessage = '';
+  protected recommendedProductsError = '';
   protected movementError = '';
   protected movementMessage = '';
   protected salesHistoryError = '';
 
   protected products: ProductSearchItem[] = [];
+  protected recommendedProducts: ProductSearchItem[] = [];
   protected clients: ClientOption[] = [];
   protected saleTypes: SaleTypeOption[] = [];
   protected saleDetails: SaleDetailItem[] = [];
@@ -252,6 +262,10 @@ export class Sales implements OnInit {
       .slice(0, 8);
   }
 
+  protected get visibleRecommendedProducts(): ProductSearchItem[] {
+    return this.saleDetails.length === 0 ? this.products : this.recommendedProducts;
+  }
+
   protected get subtotal(): number {
     return this.roundCurrency(
       this.saleDetails.reduce((total, item) => total + item.precio * item.cantidad, 0),
@@ -285,6 +299,7 @@ export class Sales implements OnInit {
 
     if (existingItem) {
       this.updateQuantity(existingItem, existingItem.cantidad + 1);
+      this.loadRecommendedProducts();
       return;
     }
 
@@ -299,6 +314,7 @@ export class Sales implements OnInit {
         descuentoTipo: clientDiscount > 0 ? 'percentage' : 'fixed',
       },
     ];
+    this.loadRecommendedProducts();
   }
 
   protected onSearchEnter(event: Event): void {
@@ -363,6 +379,7 @@ export class Sales implements OnInit {
 
   protected removeProduct(item: SaleDetailItem): void {
     this.saleDetails = this.saleDetails.filter((detail) => detail.idProducto !== item.idProducto);
+    this.loadRecommendedProducts();
   }
 
   protected cobrar(): void {
@@ -489,6 +506,9 @@ export class Sales implements OnInit {
 
   private resetSaleForm(): void {
     this.saleDetails = [];
+    this.recommendedProducts = [];
+    this.recommendedProductsError = '';
+    this.loadingRecommendedProducts = false;
     this.searchTerm = '';
     this.selectedClientId = null;
     this.selectedSaleTypeId = this.saleTypes[0]?.id ?? null;
@@ -509,6 +529,40 @@ export class Sales implements OnInit {
 
   protected trackProduct(_: number, product: ProductSearchItem): number {
     return product.idProducto;
+  }
+
+  private loadRecommendedProducts(): void {
+    const productIds = this.saleDetails.map((item) => item.idProducto);
+
+    this.recommendedProductsError = '';
+
+    if (productIds.length === 0) {
+      this.recommendedProducts = [];
+      this.loadingRecommendedProducts = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.loadingRecommendedProducts = true;
+
+    this.apiService
+      .post<RecommendedProductsResponse, { id_productos: number[] }>('/api/reportes/recomendar-productos', {
+        id_productos: productIds,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.recommendedProducts = (response.recomendaciones || []).map((product) => this.mapRecommendedProduct(product));
+          this.loadingRecommendedProducts = false;
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          this.recommendedProducts = [];
+          this.loadingRecommendedProducts = false;
+          this.recommendedProductsError = error?.error?.detail ?? 'No se pudieron cargar los productos recomendados.';
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   protected trackDetail(_: number, item: SaleDetailItem): number {
@@ -764,6 +818,18 @@ export class Sales implements OnInit {
       stock: Number(item.cantidad ?? 0),
       codigo: this.stringifyOptional(item.codigo ?? item.codigo_producto ?? item.id_producto),
       codigoBarras: this.stringifyOptional(item.codigo_barra),
+    };
+  }
+
+  private mapRecommendedProduct(product: ProductSearchItem): ProductSearchItem {
+    return {
+      idProducto: Number(product.idProducto),
+      nombre: product.nombre ?? 'Producto sin nombre',
+      unidadMedida: product.unidadMedida ?? 'unidad',
+      precio: Number(product.precio ?? 0),
+      stock: Number(product.stock ?? 0),
+      codigo: this.stringifyOptional(product.codigo ?? product.idProducto),
+      codigoBarras: this.stringifyOptional(product.codigoBarras),
     };
   }
 
