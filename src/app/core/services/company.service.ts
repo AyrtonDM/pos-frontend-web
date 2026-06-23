@@ -96,7 +96,7 @@ export interface InviteClientResponse {
 export interface CreateClientCategoryRequest {
   nombre: string;
   descripcion: string;
-  permite_credito: boolean;
+  plazo_credito: number;
   descuento_base: number;
   limite_credito: number;
 }
@@ -104,7 +104,7 @@ export interface CreateClientCategoryRequest {
 export interface UpdateClientCategoryRequest {
   nombre: string;
   descripcion: string;
-  permite_credito: boolean;
+  plazo_credito: number;
   descuento_base: number;
   limite_credito: number;
   activo: boolean;
@@ -115,9 +115,10 @@ export interface CreateClientCategoryResponse {
   id_empresa: number;
   nombre: string;
   descripcion: string;
-  permite_credito: boolean;
-  descuento_base: string;
-  limite_credito: string;
+  plazo_credito: number;
+  permite_credito?: boolean;
+  descuento_base: string | number;
+  limite_credito: string | number;
   activo: boolean;
 }
 
@@ -126,9 +127,10 @@ export interface ClientCategoryResponse {
   id_empresa: number;
   nombre: string;
   descripcion: string;
-  permite_credito: boolean;
-  descuento_base: string;
-  limite_credito: string;
+  plazo_credito: number;
+  permite_credito?: boolean;
+  descuento_base: string | number;
+  limite_credito: string | number;
   activo: boolean;
 }
 
@@ -386,7 +388,7 @@ export class CompanyService {
   }
 
   getCategoriasCliente(idEmpresa: string): Observable<ClientCategoryResponse[]> {
-    return this.apiService.get<ClientCategoryResponse[]>(`/api/empresas/${idEmpresa}/categorias-cliente`);
+    return this.apiService.get<ClientCategoryResponse[]>(`/api/categorias-cliente/${idEmpresa}`);
   }
 
   crearCategoriaCliente(

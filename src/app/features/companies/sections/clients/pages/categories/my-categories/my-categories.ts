@@ -21,7 +21,7 @@ type ClientCategoryTab = 'register' | 'list';
 interface ClientCategoryForm {
   nombre: string;
   descripcion: string;
-  permitCredito: boolean;
+  plazoCredito: number;
   descuentoBase: number;
   limiteCredito: number;
 }
@@ -30,7 +30,7 @@ interface ClientCategory {
   id: number;
   nombre: string;
   descripcion: string;
-  permitCredito: boolean;
+  plazoCredito: number;
   descuentoBase: number;
   limiteCredito: number;
   activo: boolean;
@@ -61,7 +61,7 @@ export class CategoriasClientes {
   protected readonly categoryForm: ClientCategoryForm = {
     nombre: '',
     descripcion: '',
-    permitCredito: false,
+    plazoCredito: 0,
     descuentoBase: 0,
     limiteCredito: 0,
   };
@@ -114,9 +114,9 @@ export class CategoriasClientes {
       .crearCategoriaCliente(this.companyId, {
         nombre,
         descripcion: this.categoryForm.descripcion.trim(),
-        permite_credito: this.categoryForm.permitCredito,
-        descuento_base: this.categoryForm.descuentoBase,
-        limite_credito: this.categoryForm.limiteCredito,
+        plazo_credito: Number(this.categoryForm.plazoCredito),
+        descuento_base: Number(this.categoryForm.descuentoBase),
+        limite_credito: Number(this.categoryForm.limiteCredito),
       })
       .pipe(
         finalize(() => {
@@ -130,7 +130,7 @@ export class CategoriasClientes {
           this.errorCategorias = '';
           this.categoryForm.nombre = '';
           this.categoryForm.descripcion = '';
-          this.categoryForm.permitCredito = false;
+          this.categoryForm.plazoCredito = 0;
           this.categoryForm.descuentoBase = 0;
           this.categoryForm.limiteCredito = 0;
           this.mensajeRegistro = 'Categoria creada correctamente.';
@@ -179,7 +179,7 @@ export class CategoriasClientes {
       id: category.id_categoria_cliente,
       nombre: category.nombre,
       descripcion: category.descripcion,
-      permitCredito: category.permite_credito,
+      plazoCredito: Number(category.plazo_credito ?? 0),
       descuentoBase: Number(category.descuento_base),
       limiteCredito: Number(category.limite_credito),
       activo: category.activo,
@@ -191,7 +191,7 @@ export class CategoriasClientes {
       id: category.id_categoria_cliente,
       nombre: category.nombre,
       descripcion: category.descripcion,
-      permitCredito: category.permite_credito,
+      plazoCredito: Number(category.plazo_credito ?? 0),
       descuentoBase: Number(category.descuento_base),
       limiteCredito: Number(category.limite_credito),
       activo: category.activo,

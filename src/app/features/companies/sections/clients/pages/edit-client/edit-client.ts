@@ -192,7 +192,7 @@ export class EditClient implements OnInit {
       id_categoria_cliente: category.id_categoria_cliente,
       nombre: category.nombre,
       descripcion: category.descripcion ?? '',
-      permite_credito: category.permite_credito,
+      permite_credito: Number(category.plazo_credito ?? 0) > 0,
       activo: category.activo,
     };
   }
