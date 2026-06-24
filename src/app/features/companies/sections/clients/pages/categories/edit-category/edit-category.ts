@@ -33,7 +33,7 @@ export class EditClientCategory implements OnInit {
   protected readonly form: UpdateClientCategoryRequest = {
     nombre: '',
     descripcion: '',
-    permite_credito: false,
+    plazo_credito: 0,
     descuento_base: 0,
     limite_credito: 0,
     activo: true,
@@ -67,7 +67,7 @@ export class EditClientCategory implements OnInit {
     const payload: UpdateClientCategoryRequest = {
       nombre,
       descripcion: this.form.descripcion.trim(),
-      permite_credito: this.form.permite_credito,
+      plazo_credito: Number(this.form.plazo_credito),
       descuento_base: Number(this.form.descuento_base),
       limite_credito: Number(this.form.limite_credito),
       activo: this.form.activo,
@@ -128,7 +128,7 @@ export class EditClientCategory implements OnInit {
 
         this.form.nombre = categoria.nombre;
         this.form.descripcion = categoria.descripcion ?? '';
-        this.form.permite_credito = categoria.permite_credito;
+        this.form.plazo_credito = Number(categoria.plazo_credito ?? 0);
         this.form.descuento_base = Number(categoria.descuento_base);
         this.form.limite_credito = Number(categoria.limite_credito);
         this.form.activo = categoria.activo;

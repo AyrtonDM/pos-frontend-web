@@ -14,9 +14,11 @@ import { Rols } from './features/companies/sections/users/rols/rols';
 import { Inventario } from './features/companies/sections/branches/sections/inventario/inventario';
 import { OpenCashRegister } from './features/companies/sections/branches/sections/open_cash_register/open_cash_register';
 import { Sales } from './features/companies/sections/branches/sections/sales/sales';
+import { CreditCollections } from './features/companies/sections/branches/sections/credit_collections/credit_collections';
 import { DynamicReports } from './features/companies/sections/reports/dynamic/dynamic';
 import { ParameterizedReports } from './features/companies/sections/reports/parameterized/parameterized';
 import { StaticReports } from './features/companies/sections/reports/static/static';
+import { SalesPrediction } from './features/companies/sections/reports/prediction/prediction';
 import { Dashboard } from './features/companies/sections/dashboard/dashboard';
 import { CategoriasPanel } from './features/companies/sections/products/pages/categories/my-categories/my-categories';
 import { EditCategory } from './features/companies/sections/products/pages/categories/edit-category/edit-category';
@@ -117,6 +119,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'company/:id/branch/:branchId/cash-register/:cashRegisterId/credit-collections',
+    component: CreditCollections,
+    canActivate: [authGuard],
+  },
+  {
     path: 'company/:id/branch/:branchId/inventario',
     component: Inventario,
     canActivate: [authGuard],
@@ -139,6 +146,11 @@ export const routes: Routes = [
   {
     path: 'company/:id/reports/dynamic',
     component: DynamicReports,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'company/:id/reports/prediction',
+    component: SalesPrediction,
     canActivate: [authGuard],
   },
   {

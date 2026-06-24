@@ -84,53 +84,96 @@
               } @else {
                 <section class="register-sale" aria-label="Registrar venta">
                   <div class="sale-workspace">
-                    <section class="product-search-panel" aria-label="Buscar productos">
-                      <div class="form-group">
-                        <label class="label" for="productSearch">Buscar producto</label>
-                        <input
-                          class="input"
-                          id="productSearch"
-                          name="productSearch"
-                          type="search"
-                          placeholder="Nombre o Codigo de Barra"
-                          autocomplete="off"
-                          [(ngModel)]="searchTerm"
-                          (keydown.enter)="onSearchEnter($event)"
-                        />
-                      </div>
-
-                      @if (products.length === 0) {
-                        <section class="sales-state compact" aria-live="polite">
-                          <p class="text-muted">No hay productos con stock en esta sucursal.</p>
-                        </section>
-                      } @else if (filteredProducts.length === 0) {
-                        <section class="sales-state compact" aria-live="polite">
-                          <p class="text-muted">No se encontraron productos.</p>
-                        </section>
-                      } @else {
-                        <div class="product-results" aria-label="Resultados de productos">
-                          @for (product of filteredProducts; track trackProduct($index, product)) {
-                            <button class="product-result" type="button" [disabled]="!hasPermission('VENTA_CREAR')" (click)="addProduct(product)">
-                              <span>
-                                <strong>{{ product.nombre }}</strong>
-                                <small>
-                                  Codigo {{ product.codigo || product.idProducto }}
-                                  @if (product.codigoBarras) {
-                                    - Barras {{ product.codigoBarras }}
-                                  }
-                                </small>
-                              </span>
-                              <span class="product-meta">
-                                <strong>Bs {{ formatCurrency(product.precio) }}</strong>
-                                <small>Stock {{ product.stock }} {{ product.unidadMedida }}</small>
-                              </span>
-                            </button>
-                          }
+                    <div class="product-column">
+                      <section class="product-search-panel" aria-label="Buscar productos">
+                        <div class="form-group">
+                          <label class="label" for="productSearch">Buscar producto</label>
+                          <input
+                            class="input"
+                            id="productSearch"
+                            name="productSearch"
+                            type="search"
+                            placeholder="Nombre o Codigo de Barra"
+                            autocomplete="off"
+                            [(ngModel)]="searchTerm"
+                            (keydown.enter)="onSearchEnter($event)"
+                          />
                         </div>
-                      }
-                    </section>
 
-                    <aside class="sale-summary-panel" aria-label="Resumen de venta">
+                        @if (products.length === 0) {
+                          <section class="sales-state compact" aria-live="polite">
+                            <p class="text-muted">No hay productos con stock en esta sucursal.</p>
+                          </section>
+                        } @else if (filteredProducts.length === 0) {
+                          <section class="sales-state compact" aria-live="polite">
+                            <p class="text-muted">No se encontraron productos.</p>
+                          </section>
+                        } @else {
+                          <div class="product-results" aria-label="Resultados de productos">
+                            @for (product of filteredProducts; track trackProduct($index, product)) {
+                              <button class="product-result" type="button" [disabled]="!hasPermission('VENTA_CREAR')" (click)="addProduct(product)">
+                                <span>
+                                  <strong>{{ product.nombre }}</strong>
+                                  <small>
+                                    Codigo {{ product.codigo || product.idProducto }}
+                                    @if (product.codigoBarras) {
+                                      - Barras {{ product.codigoBarras }}
+                                    }
+                                  </small>
+                                </span>
+                                <span class="product-meta">
+                                  <strong>Bs {{ formatCurrency(product.precio) }}</strong>
+                                  <small>Stock {{ product.stock }} {{ product.unidadMedida }}</small>
+                                </span>
+                              </button>
+                            }
+                          </div>
+                        }
+                      </section>
+
+                      <section class="recommended-products-panel" aria-label="Productos recomendados">
+                        <h2 class="title-md">Productos Recomendados</h2>
+
+                        @if (loadingRecommendedProducts) {
+                          <section class="sales-state compact" aria-live="polite">
+                            <p class="text-muted">Cargando recomendaciones...</p>
+                          </section>
+                        } @else if (recommendedProductsError) {
+                          <section class="sales-state compact" aria-live="polite">
+                            <p class="text-muted">{{ recommendedProductsError }}</p>
+                          </section>
+                        } @else if (visibleRecommendedProducts.length === 0) {
+                          <section class="sales-state compact" aria-live="polite">
+                            <p class="text-muted">
+                              {{ saleDetails.length === 0 ? 'No hay productos con stock en esta sucursal.' : 'No hay productos recomendados para este detalle.' }}
+                            </p>
+                          </section>
+                        } @else {
+                          <div class="product-results" aria-label="Productos recomendados">
+                            @for (product of visibleRecommendedProducts; track trackProduct($index, product)) {
+                              <button class="product-result" type="button" [disabled]="!hasPermission('VENTA_CREAR')" (click)="addProduct(product)">
+                                <span>
+                                  <strong>{{ product.nombre }}</strong>
+                                  <small>
+                                    Codigo {{ product.codigo || product.idProducto }}
+                                    @if (product.codigoBarras) {
+                                      - Barras {{ product.codigoBarras }}
+                                    }
+                                  </small>
+                                </span>
+                                <span class="product-meta">
+                                  <strong>Bs {{ formatCurrency(product.precio) }}</strong>
+                                  <small>Stock {{ product.stock }} {{ product.unidadMedida }}</small>
+                                </span>
+                              </button>
+                            }
+                          </div>
+                        }
+                      </section>
+                    </div>
+
+                    <aside class="sale-summary-column" aria-label="Resumen de venta">
+                      <section class="sale-summary-panel" aria-label="Datos de venta">
                       <div class="form-group">
                         <label class="label" for="saleType">Tipo de venta</label>
                         <select
@@ -141,7 +184,7 @@
                           [disabled]="loadingSaleTypes || saleTypes.length === 0"
                         >
                           @for (saleType of saleTypes; track saleType.id) {
-                            <option [ngValue]="saleType.id">{{ saleType.nombre }}</option>
+                            <option [ngValue]="saleType.id" [disabled]="isSaleTypeDisabled(saleType)">{{ saleType.nombre }}</option>
                           }
                         </select>
                       </div>
@@ -167,6 +210,11 @@
 
                       <!-- El campo global de descuento de venta fue eliminado seg�n solicitud del UX -->
 
+                      </section>
+
+                      <section class="sale-summary-panel" aria-label="Detalle de cobro">
+                      <h2 class="title-md">Detalle de cobro</h2>
+
                       <dl class="totals-list">
                         <div>
                           <dt>Subtotal</dt>
@@ -188,8 +236,9 @@
                         [disabled]="saleDetails.length === 0 || chargingSale"
                         (click)="cobrar()"
                       >
-                        {{ chargingSale ? 'Cobrando...' : 'Cobrar' }}
+                        {{ chargingSale ? 'Registrando...' : (selectedSaleTypeIsCredit ? 'Registrar Venta al Credito' : 'Cobrar') }}
                       </button>
+                      </section>
                     </aside>
                   </div>
 
@@ -308,6 +357,7 @@
                     type="button"
                     aria-label="Agregar forma de pago"
                     title="Agregar forma de pago"
+                    [disabled]="!canAddPaymentRow"
                     (click)="addPaymentRow()"
                   >
                     +
@@ -327,7 +377,9 @@
                           [disabled]="loadingPaymentMethods || paymentMethods.length === 0"
                         >
                           @for (paymentMethod of paymentMethods; track paymentMethod.id) {
-                            <option [ngValue]="paymentMethod.id">{{ paymentMethod.nombre }}</option>
+                            <option [ngValue]="paymentMethod.id" [disabled]="isPaymentMethodDisabled(paymentRow, paymentMethod)">
+                              {{ paymentMethod.nombre }}
+                            </option>
                           }
                         </select>
                       </div>
@@ -342,10 +394,8 @@
                           min="0"
                           step="0.01"
                           placeholder="0.00"
-                          [(ngModel)]="paymentRow.monto"
-                          readonly
-                          aria-readonly="true"
-                          title="Monto (no editable)"
+                          [ngModel]="paymentRow.monto"
+                          (ngModelChange)="updatePaymentAmount(paymentRow, $event)"
                         />
                       </div>
 
@@ -391,8 +441,7 @@
                       <thead>
                         <tr>
                           <th>Fecha</th>
-                          <th>Venta</th>
-                          <th>Cliente</th>
+                          <th>Tipo</th>
                           <th>Total</th>
                           <th>Subtotal</th>
                           <th>Descuento</th>
@@ -405,10 +454,8 @@
                               <strong>{{ sale.fecha }}</strong>
                             </td>
                             <td>
-                              <strong>{{ sale.id }}</strong>
+                              <strong>{{ sale.tipoVenta }}</strong>
                             </td>
-                            <td>{{ sale.clienteId ?? sale.cliente }}</td>
-                          
                             <td><strong>Bs {{ formatCurrency(sale.total) }}</strong></td>
                             <td>Bs {{ formatCurrency(sale.subtotal) }}</td>
                             <td>Bs {{ formatCurrency(sale.descuentoTotal) }}</td>

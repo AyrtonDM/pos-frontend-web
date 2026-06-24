@@ -26,6 +26,7 @@ import {
   StockSucursalProducto,
   TipoVenta,
 } from '../../../../../../core/services/product.service';
+import { ApiService } from '../../../../../../core/services/api.service';
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
@@ -42,6 +43,11 @@ interface ProductSearchItem {
   stock: number;
   codigo: string;
   codigoBarras: string;
+}
+
+interface RecommendedProductsResponse {
+  productos_analizados: number[];
+  recomendaciones: ProductSearchItem[];
 }
 
 interface SaleDetailItem extends ProductSearchItem {
@@ -126,6 +132,7 @@ type ProductStockRecord = StockSucursalProducto & {
 export class Sales implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
+  private readonly apiService = inject(ApiService);
   private readonly companyService = inject(CompanyService);
   private readonly cashRegisterService = inject(CashRegisterService);
   private readonly companyPermissionsService = inject(CompanyPermissionsService);
@@ -135,6 +142,7 @@ export class Sales implements OnInit {
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
   protected readonly branchId = this.route.snapshot.paramMap.get('branchId') ?? '';
   protected readonly cashRegisterId = this.route.snapshot.paramMap.get('cashRegisterId') ?? '';
+  protected readonly maxPaymentRows = 3;
   protected cashRegisterSessionId = this.route.snapshot.queryParamMap.get('sessionId') ?? '';
 
   protected viewMode: SessionViewMode = this.resolveViewMode(this.route.snapshot.queryParamMap.get('section'));
@@ -159,15 +167,18 @@ export class Sales implements OnInit {
   protected loadingPaymentMethods = false;
   protected loadingMovementItems = false;
   protected loadingSalesHistory = false;
+  protected loadingRecommendedProducts = false;
   protected chargingSale = false;
   protected savingMovement = false;
   protected registerError = '';
   protected registerMessage = '';
+  protected recommendedProductsError = '';
   protected movementError = '';
   protected movementMessage = '';
   protected salesHistoryError = '';
 
   protected products: ProductSearchItem[] = [];
+  protected recommendedProducts: ProductSearchItem[] = [];
   protected clients: ClientOption[] = [];
   protected saleTypes: SaleTypeOption[] = [];
   protected saleDetails: SaleDetailItem[] = [];
@@ -252,6 +263,23 @@ export class Sales implements OnInit {
       .slice(0, 8);
   }
 
+  protected get visibleRecommendedProducts(): ProductSearchItem[] {
+    return this.saleDetails.length === 0 ? this.products : this.recommendedProducts;
+  }
+
+  protected isCreditSaleType(saleType: SaleTypeOption): boolean {
+    return this.normalizeSearchTerm(saleType.nombre) === 'credito';
+  }
+
+  protected isSaleTypeDisabled(saleType: SaleTypeOption): boolean {
+    return this.isCreditSaleType(saleType) && !this.selectedClientId;
+  }
+
+  protected get selectedSaleTypeIsCredit(): boolean {
+    const saleType = this.saleTypes.find((type) => type.id === this.selectedSaleTypeId);
+    return Boolean(saleType && this.isCreditSaleType(saleType));
+  }
+
   protected get subtotal(): number {
     return this.roundCurrency(
       this.saleDetails.reduce((total, item) => total + item.precio * item.cantidad, 0),
@@ -285,6 +313,7 @@ export class Sales implements OnInit {
 
     if (existingItem) {
       this.updateQuantity(existingItem, existingItem.cantidad + 1);
+      this.loadRecommendedProducts();
       return;
     }
 
@@ -299,6 +328,7 @@ export class Sales implements OnInit {
         descuentoTipo: clientDiscount > 0 ? 'percentage' : 'fixed',
       },
     ];
+    this.loadRecommendedProducts();
   }
 
   protected onSearchEnter(event: Event): void {
@@ -363,6 +393,7 @@ export class Sales implements OnInit {
 
   protected removeProduct(item: SaleDetailItem): void {
     this.saleDetails = this.saleDetails.filter((detail) => detail.idProducto !== item.idProducto);
+    this.loadRecommendedProducts();
   }
 
   protected cobrar(): void {
@@ -379,13 +410,33 @@ export class Sales implements OnInit {
       return;
     }
 
+    if (this.isSelectedSaleTypeCreditWithoutClient()) {
+      this.registerError = 'Para una venta a credito debes seleccionar un cliente diferente de Consumidor final.';
+      this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
+      return;
+    }
+
+    if (this.selectedSaleTypeIsCredit && this.exceedsSelectedClientCreditLimit()) {
+      this.registerError = `El total de la venta no puede superar el limite de credito de la categoria: Bs ${this.formatCurrency(this.getSelectedClientCreditLimit())}.`;
+      return;
+    }
+
+    if (this.selectedSaleTypeIsCredit) {
+      this.registrarVentaCredito();
+      return;
+    }
+
     this.openPaymentTab();
   }
 
   protected addPaymentRow(): void {
+    if (!this.canAddPaymentRow) {
+      return;
+    }
+
     this.salePaymentRows = [
       ...this.salePaymentRows,
-      this.createPaymentRow(),
+      this.createPaymentRow(undefined, this.getRemainingPaymentAmount()),
     ];
   }
 
@@ -400,6 +451,59 @@ export class Sales implements OnInit {
 
   protected trackPaymentRow(_: number, row: SalePaymentRow): number {
     return row.id;
+  }
+
+  protected get canAddPaymentRow(): boolean {
+    return this.salePaymentRows.length < this.maxPaymentRows && this.salePaymentRows.length < this.paymentMethods.length;
+  }
+
+  protected isPaymentMethodDisabled(paymentRow: SalePaymentRow, method: PaymentMethodOption): boolean {
+    return this.salePaymentRows.some((row) => row.id !== paymentRow.id && row.metodoPagoId === method.id);
+  }
+
+  protected updatePaymentAmount(row: SalePaymentRow, value: number | string | null): void {
+    row.monto = this.normalizeMoney(value);
+  }
+
+  private registrarVentaCredito(): void {
+    if (!this.cashRegisterSessionId) {
+      this.registerError = 'No se encontro la sesion de caja para registrar la venta.';
+      return;
+    }
+
+    if (!this.selectedSaleTypeId) {
+      this.registerError = 'Selecciona un tipo de venta.';
+      return;
+    }
+
+    const payload: CreateSaleRequest = {
+      id_tipo_venta: this.selectedSaleTypeId,
+      id_cliente: this.selectedClientId,
+      id_metodo_pago: null,
+      subtotal: this.subtotal,
+      descuento_total: this.discountTotal,
+      total: this.total,
+      estado: 'Pendiente',
+      detalles: this.buildSaleDetailPayload(),
+    };
+
+    this.chargingSale = true;
+
+    this.cashRegisterService.registrarVentaSesionCaja(this.cashRegisterSessionId, payload).subscribe({
+      next: (response) => {
+        this.registerMessage = `Venta a credito registrada correctamente con el ID ${response.id_venta}.`;
+        this.resetSaleForm();
+        this.closePaymentTab();
+        this.activeTab = 'register';
+        this.chargingSale = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.chargingSale = false;
+        this.registerError = error?.error?.detail ?? 'No se pudo registrar la venta a credito.';
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   protected registrarPago(): void {
@@ -425,11 +529,54 @@ export class Sales implements OnInit {
       return;
     }
 
-    const paymentRow = this.salePaymentRows[0];
-    const idMetodoPago = paymentRow?.metodoPagoId ?? null;
+    if (this.isSelectedSaleTypeCreditWithoutClient()) {
+      this.registerError = 'Para una venta a credito debes seleccionar un cliente diferente de Consumidor final.';
+      this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
+      return;
+    }
+
+    if (this.selectedSaleTypeIsCredit && this.exceedsSelectedClientCreditLimit()) {
+      this.registerError = `El total de la venta no puede superar el limite de credito de la categoria: Bs ${this.formatCurrency(this.getSelectedClientCreditLimit())}.`;
+      return;
+    }
+
+    const paymentRows = this.salePaymentRows
+      .map((row) => ({
+        id_metodo_pago: row.metodoPagoId ?? null,
+        monto: this.normalizeMoney(row.monto),
+      }))
+      .filter((row) => row.id_metodo_pago !== null || row.monto > 0);
+
+    const paymentRow = paymentRows[0];
+    const idMetodoPago = paymentRow?.id_metodo_pago ?? null;
 
     if (!idMetodoPago) {
       this.registerError = 'Selecciona un metodo de pago.';
+      return;
+    }
+
+    if (paymentRows.some((row) => !row.id_metodo_pago)) {
+      this.registerError = 'Selecciona un metodo de pago en cada registro de pago.';
+      return;
+    }
+
+    if (paymentRows.some((row) => row.monto <= 0)) {
+      this.registerError = 'Ingresa un monto mayor a 0 en cada registro de pago.';
+      return;
+    }
+
+    const paymentMethodIds = paymentRows.map((row) => row.id_metodo_pago);
+    const uniquePaymentMethodIds = new Set(paymentMethodIds);
+
+    if (uniquePaymentMethodIds.size !== paymentMethodIds.length) {
+      this.registerError = 'No puedes repetir el mismo metodo de pago.';
+      return;
+    }
+
+    const paymentTotal = this.roundCurrency(paymentRows.reduce((sum, row) => sum + row.monto, 0));
+
+    if (paymentTotal !== this.total) {
+      this.registerError = `La suma de los pagos debe ser igual al total: Bs ${this.formatCurrency(this.total)}.`;
       return;
     }
 
@@ -441,14 +588,11 @@ export class Sales implements OnInit {
       descuento_total: this.discountTotal,
       total: this.total,
       estado: 'Pendiente',
-      detalles: this.saleDetails.map((item) => ({
-        id_producto: item.idProducto,
-        cantidad: item.cantidad,
-        precio_unitario: item.precio,
-        descuento: this.getItemDiscountAmount(item),
-        subtotal: this.getItemLineTotal(item),
-        descripcion: 'Venta de mostrador',
+      pagos: paymentRows.map((row) => ({
+        id_metodo_pago: Number(row.id_metodo_pago),
+        monto: row.monto,
       })),
+      detalles: this.buildSaleDetailPayload(),
     };
 
     this.chargingSale = true;
@@ -489,18 +633,48 @@ export class Sales implements OnInit {
 
   private resetSaleForm(): void {
     this.saleDetails = [];
+    this.recommendedProducts = [];
+    this.recommendedProductsError = '';
+    this.loadingRecommendedProducts = false;
     this.searchTerm = '';
     this.selectedClientId = null;
-    this.selectedSaleTypeId = this.saleTypes[0]?.id ?? null;
+    this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
     this.saleDiscount = 0;
   }
 
   private createPaymentRow(id = this.nextPaymentRowId++, monto: number | null = null): SalePaymentRow {
     return {
       id,
-      metodoPagoId: this.paymentMethods[0]?.id ?? null,
+      metodoPagoId: this.getFirstAvailablePaymentMethodId(id),
       monto,
     };
+  }
+
+  private buildSaleDetailPayload(): CreateSaleRequest['detalles'] {
+    return this.saleDetails.map((item) => ({
+      id_producto: item.idProducto,
+      cantidad: item.cantidad,
+      precio_unitario: item.precio,
+      descuento: this.getItemDiscountAmount(item),
+      subtotal: this.getItemLineTotal(item),
+      descripcion: 'Venta de mostrador',
+    }));
+  }
+
+  private getFirstAvailablePaymentMethodId(rowId?: number): number | null {
+    const usedMethodIds = new Set(
+      this.salePaymentRows
+        .filter((row) => row.id !== rowId)
+        .map((row) => row.metodoPagoId)
+        .filter((id): id is number => id !== null),
+    );
+
+    return this.paymentMethods.find((method) => !usedMethodIds.has(method.id))?.id ?? null;
+  }
+
+  private getRemainingPaymentAmount(): number {
+    const paid = this.salePaymentRows.reduce((sum, row) => sum + this.normalizeMoney(row.monto), 0);
+    return this.roundCurrency(Math.max(this.total - paid, 0));
   }
 
   protected formatCurrency(value: number): string {
@@ -509,6 +683,42 @@ export class Sales implements OnInit {
 
   protected trackProduct(_: number, product: ProductSearchItem): number {
     return product.idProducto;
+  }
+
+  private loadRecommendedProducts(): void {
+    const productIds = this.saleDetails.map((item) => item.idProducto);
+
+    this.recommendedProductsError = '';
+
+    if (productIds.length === 0) {
+      this.recommendedProducts = [];
+      this.loadingRecommendedProducts = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.loadingRecommendedProducts = true;
+    this.recommendedProducts = [];
+    this.cdr.detectChanges();
+
+    this.apiService
+      .post<RecommendedProductsResponse, { id_productos: number[] }>('/api/reportes/recomendar-productos', {
+        id_productos: productIds,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.recommendedProducts = (response.recomendaciones || []).map((product) => this.mapRecommendedProduct(product));
+          this.loadingRecommendedProducts = false;
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          this.recommendedProducts = [];
+          this.loadingRecommendedProducts = false;
+          this.recommendedProductsError = error?.error?.detail ?? 'No se pudieron cargar los productos recomendados.';
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   protected trackDetail(_: number, item: SaleDetailItem): number {
@@ -643,7 +853,7 @@ export class Sales implements OnInit {
     this.productService.getTiposVenta().subscribe({
       next: (saleTypes) => {
         this.saleTypes = saleTypes.map((saleType) => this.mapSaleType(saleType));
-        this.selectedSaleTypeId = this.saleTypes[0]?.id ?? null;
+        this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
         this.loadingSaleTypes = false;
         this.cdr.detectChanges();
       },
@@ -713,7 +923,7 @@ export class Sales implements OnInit {
         if (this.salePaymentRows.length > 0) {
           this.salePaymentRows = this.salePaymentRows.map((row) => ({
             ...row,
-            metodoPagoId: row.metodoPagoId ?? this.paymentMethods[0]?.id ?? null,
+            metodoPagoId: row.metodoPagoId ?? this.getFirstAvailablePaymentMethodId(row.id),
           }));
         }
         this.loadingPaymentMethods = false;
@@ -767,9 +977,21 @@ export class Sales implements OnInit {
     };
   }
 
+  private mapRecommendedProduct(product: ProductSearchItem): ProductSearchItem {
+    return {
+      idProducto: Number(product.idProducto),
+      nombre: product.nombre ?? 'Producto sin nombre',
+      unidadMedida: product.unidadMedida ?? 'unidad',
+      precio: Number(product.precio ?? 0),
+      stock: Number(product.stock ?? 0),
+      codigo: this.stringifyOptional(product.codigo ?? product.idProducto),
+      codigoBarras: this.stringifyOptional(product.codigoBarras),
+    };
+  }
+
   private mapClient(client: ClientRole): ClientOption {
     return {
-      id: client.id_usuario,
+      id: client.cliente.id_cliente,
       nombre: client.usuario.persona?.nombre_completo ?? 'Sin nombre',
       correo: client.usuario.email,
       categoriaId: client.cliente?.id_categoria_cliente ?? null,
@@ -779,8 +1001,10 @@ export class Sales implements OnInit {
   protected selectedClientCategory: ClientCategoryResponse | null = null;
 
   protected onClientSelected(clientId: number | null): void {
+    this.selectedClientCategory = null;
+    this.ensureSelectedSaleTypeIsAllowed();
+
     if (!clientId) {
-      this.selectedClientCategory = null;
       this.cdr.detectChanges();
       return;
     }
@@ -789,7 +1013,6 @@ export class Sales implements OnInit {
     const categoriaId = client?.categoriaId ?? null;
 
     if (!categoriaId) {
-      this.selectedClientCategory = null;
       this.cdr.detectChanges();
       return;
     }
@@ -797,6 +1020,10 @@ export class Sales implements OnInit {
     // Fetch categories and find the matching one
     this.companyService.getCategoriasCliente(this.companyId).subscribe({
       next: (categories) => {
+        if (this.selectedClientId !== clientId) {
+          return;
+        }
+
         const found = categories.find((cat) => cat.id_categoria_cliente === categoriaId) ?? null;
         this.selectedClientCategory = found;
 
@@ -819,6 +1046,32 @@ export class Sales implements OnInit {
     const raw = this.selectedClientCategory?.descuento_base ?? null;
     const value = Number(raw ?? 0);
     return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+  }
+
+  private getSelectedClientCreditLimit(): number {
+    const value = Number(this.selectedClientCategory?.limite_credito ?? 0);
+    return Number.isFinite(value) ? Math.max(0, value) : 0;
+  }
+
+  private exceedsSelectedClientCreditLimit(): boolean {
+    const creditLimit = this.getSelectedClientCreditLimit();
+    return creditLimit > 0 && this.total > creditLimit;
+  }
+
+  private ensureSelectedSaleTypeIsAllowed(): void {
+    if (this.isSelectedSaleTypeCreditWithoutClient()) {
+      this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
+    }
+  }
+
+  private isSelectedSaleTypeCreditWithoutClient(): boolean {
+    const saleType = this.saleTypes.find((type) => type.id === this.selectedSaleTypeId);
+    return Boolean(saleType && this.isSaleTypeDisabled(saleType));
+  }
+
+  private getDefaultAllowedSaleTypeId(): number | null {
+    const firstAllowed = this.saleTypes.find((saleType) => !this.isSaleTypeDisabled(saleType));
+    return firstAllowed?.id ?? null;
   }
 
   private applyClientDiscountToSaleDetails(percentage: number): void {
@@ -899,7 +1152,9 @@ export class Sales implements OnInit {
     const paymentLabels = salePayments.length > 0
       ? salePayments
           .map((payment) => {
-            const methodName = this.paymentMethods.find((method) => method.id === payment.id_metodo_pago)?.nombre;
+            const methodName =
+              payment.metodo_pago?.nombre ??
+              this.paymentMethods.find((method) => method.id === payment.id_metodo_pago)?.nombre;
             const amount = this.formatCurrency(Number(payment.monto ?? 0));
             return `${methodName ?? `Metodo ${payment.id_metodo_pago}`}: Bs ${amount}`;
           })
@@ -913,6 +1168,7 @@ export class Sales implements OnInit {
       'Sin tipo';
 
     const saleTypeLabel =
+      sale.tipo_venta_nombre ??
       rawSale.tipo_venta?.nombre ??
       rawSale.tipoVenta?.nombre ??
       this.saleTypes.find((type) => type.id === Number(tipoVentaId))?.nombre ??
@@ -923,7 +1179,7 @@ export class Sales implements OnInit {
       : 'Consumidor';
 
     const paymentMethodIds = salePayments.length > 0
-      ? salePayments.map((payment) => String(payment.id_venta_pago)).join(' | ')
+      ? salePayments.map((payment) => String(payment.id_metodo_pago)).join(' | ')
       : 'Sin metodo';
 
     return {
@@ -932,7 +1188,7 @@ export class Sales implements OnInit {
       fecha: this.formatDateOnly(sale.fecha),
       tipoVenta: saleTypeLabel,
       cliente: client,
-      clienteId: sale.id_cliente,
+      clienteId: sale.id_cliente ?? null,
       usuarioId: sale.id_usuario,
       cajaSesionId: sale.id_caja_sesion,
       total: Number(sale.total ?? 0),
@@ -976,7 +1232,7 @@ export class Sales implements OnInit {
     return value.replace(/\D+/g, '');
   }
 
-  private normalizeMoney(value: number | string): number {
+  private normalizeMoney(value: number | string | null): number {
     return Math.max(0, this.roundCurrency(Number(value) || 0));
   }
 

@@ -64,9 +64,10 @@
                       <span class="badge" [class.badge-info]="category.activo" [class.badge-disabled]="!category.activo">
                         {{ category.activo ? 'Activo' : 'Inactivo' }}
                       </span>
-                      @if (category.permitCredito) {
+                      @if (false) {
                         <span class="badge badge-success">Crédito permitido</span>
                       }
+                      <span class="detail-item">Plazo credito: {{ category.plazoCredito }} dias</span>
                       <span class="detail-item">Descuento: {{ category.descuentoBase }}%</span>
                       <span class="detail-item">Limite credito: Bs {{ category.limiteCredito | number:'1.2-2' }}</span>
                     </div>
@@ -123,6 +124,20 @@
 
                 <div class="form-grid">
                   <div class="form-group">
+                    <label class="label" for="plazo_credito">Plazo de Credito (dias)</label>
+                    <input
+                      class="input"
+                      id="plazo_credito"
+                      name="plazo_credito"
+                      type="number"
+                      min="0"
+                      step="1"
+                      [(ngModel)]="categoryForm.plazoCredito"
+                      placeholder="30"
+                    />
+                  </div>
+
+                  <div class="form-group">
                     <label class="label" for="descuento_base">Descuento Base (%)</label>
                     <input
                       class="input"
@@ -150,22 +165,6 @@
                       placeholder="0"
                     />
                   </div>
-                </div>
-
-                <div class="form-group status-field">
-                  <span class="label">Permitir Credito</span>
-                  <label class="toggle-switch" for="permit_credito">
-                    <input
-                      id="permit_credito"
-                      name="permit_credito"
-                      type="checkbox"
-                      [(ngModel)]="categoryForm.permitCredito"
-                    />
-                    <span class="toggle-track" aria-hidden="true"></span>
-                    <span class="toggle-text">
-                      {{ categoryForm.permitCredito ? 'Credito permitido' : 'Credito deshabilitado' }}
-                    </span>
-                  </label>
                 </div>
 
                 <div class="form-actions">

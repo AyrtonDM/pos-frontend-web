@@ -50,6 +50,19 @@
 
           <div class="form-grid-2">
             <div class="form-group">
+              <label class="label" for="plazo_credito">Plazo de credito</label>
+              <input
+                class="input"
+                id="plazo_credito"
+                name="plazo_credito"
+                type="number"
+                min="0"
+                step="1"
+                [(ngModel)]="form.plazo_credito"
+              />
+            </div>
+
+            <div class="form-group">
               <label class="label" for="descuento_base">Descuento base</label>
               <input
                 class="input"
@@ -74,22 +87,6 @@
                 [(ngModel)]="form.limite_credito"
               />
             </div>
-          </div>
-
-          <div class="form-group status-field">
-            <span class="label">Permitir Credito</span>
-            <label class="toggle-switch" for="categoria_permiso_credito">
-              <input
-                id="categoria_permiso_credito"
-                name="categoria_permiso_credito"
-                type="checkbox"
-                [(ngModel)]="form.permite_credito"
-              />
-              <span class="toggle-track" aria-hidden="true"></span>
-              <span class="toggle-text">
-                {{ form.permite_credito ? 'Credito permitido' : 'Credito deshabilitado' }}
-              </span>
-            </label>
           </div>
 
           <div class="form-group status-field">
