@@ -16,6 +16,10 @@
           <p class="feedback feedback-error">{{ error }}</p>
         }
 
+        @if (successMessage) {
+          <p class="feedback feedback-success">{{ successMessage }}</p>
+        }
+
         @if (loading) {
           <div class="invoices-state">
             <p class="text-muted">Cargando facturas...</p>
@@ -67,6 +71,14 @@
                         >
                           PDF
                         </a>
+                        <button
+                          class="btn btn-primary resend-button"
+                          type="button"
+                          [disabled]="resendingInvoiceId !== null"
+                          (click)="resendInvoice(invoice)"
+                        >
+                          {{ resendingInvoiceId === invoice.id_factura ? 'Reenviando...' : 'Reenviar' }}
+                        </button>
                       </div>
                     </td>
                   </tr>

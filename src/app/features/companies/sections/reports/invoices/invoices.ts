@@ -16,6 +16,13 @@ interface CompanyInvoice {
   pdf_generado: string;
 }
 
+interface ResendInvoiceResponse {
+  mensaje: string;
+  id_factura: number;
+  correo_cliente: string;
+  enviado: boolean;
+}
+
 @Component({
   selector: 'app-invoices-report',
   imports: [Navbar, Sidebar],
@@ -32,6 +39,8 @@ export class InvoicesReport implements OnInit {
   protected invoices: CompanyInvoice[] = [];
   protected loading = false;
   protected error = '';
+  protected successMessage = '';
+  protected resendingInvoiceId: number | null = null;
 
   ngOnInit(): void {
     this.loadInvoices();
@@ -69,6 +78,38 @@ export class InvoicesReport implements OnInit {
 
   protected trackInvoice(_index: number, invoice: CompanyInvoice): number {
     return invoice.id_factura;
+  }
+
+  protected resendInvoice(invoice: CompanyInvoice): void {
+    if (this.resendingInvoiceId !== null) {
+      return;
+    }
+
+    this.error = '';
+    this.successMessage = '';
+    this.resendingInvoiceId = invoice.id_factura;
+
+    this.apiService
+      .post<ResendInvoiceResponse, { id_factura: number }>(
+        `/api/empresas/${this.companyId}/facturas/reenviar`,
+        { id_factura: invoice.id_factura },
+      )
+      .pipe(
+        finalize(() => {
+          this.resendingInvoiceId = null;
+          this.cdr.detectChanges();
+        }),
+      )
+      .subscribe({
+        next: (response) => {
+          this.successMessage = response.correo_cliente
+            ? `${response.mensaje} Correo: ${response.correo_cliente}`
+            : response.mensaje;
+        },
+        error: (error) => {
+          this.error = error?.error?.detail ?? 'No se pudo reenviar la factura.';
+        },
+      });
   }
 
   private loadInvoices(): void {
