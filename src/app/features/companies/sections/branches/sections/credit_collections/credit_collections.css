@@ -230,14 +230,6 @@
   gap: var(--space-xs);
 }
 
-.add-payment-button {
-  width: 42px;
-  min-width: 42px;
-  height: 42px;
-  padding: 0;
-  font-size: 1.35rem;
-}
-
 .payment-rows {
   display: grid;
   gap: var(--space-md);

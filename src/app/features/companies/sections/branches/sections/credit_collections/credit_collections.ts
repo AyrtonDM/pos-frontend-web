@@ -130,17 +130,6 @@ export class CreditCollections implements OnInit {
     this.paymentError = '';
   }
 
-  protected addPaymentRow(): void {
-    if (!this.canAddPaymentRow) {
-      return;
-    }
-
-    this.paymentRows = [
-      ...this.paymentRows,
-      this.createPaymentRow(undefined, this.remainingPaymentAmount),
-    ];
-  }
-
   protected removePaymentRow(row: CreditPaymentRow): void {
     if (this.paymentRows.length === 1) {
       this.paymentRows = [
@@ -159,10 +148,6 @@ export class CreditCollections implements OnInit {
 
   protected updatePaymentAmount(row: CreditPaymentRow, value: number | string | null): void {
     row.amount = this.normalizeMoney(value);
-  }
-
-  protected get canAddPaymentRow(): boolean {
-    return this.paymentRows.length < this.paymentMethods.length;
   }
 
   protected get remainingPaymentAmount(): number {
