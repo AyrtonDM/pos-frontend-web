@@ -143,6 +143,7 @@ export interface CreateSaleRequest {
   id_tipo_venta: number;
   id_cliente: number | null;
   id_metodo_pago: number | null;
+  factura_linea: boolean;
   subtotal: number;
   descuento_total: number;
   total: number;

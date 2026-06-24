@@ -153,6 +153,7 @@ export class Sales implements OnInit {
   protected searchTerm = '';
   protected selectedClientId: number | null = null;
   protected selectedSaleTypeId: number | null = null;
+  protected onlineInvoice = false;
   protected saleDiscount = 0;
   protected movementConcept = '';
   protected movementAmount: number | null = null;
@@ -410,6 +411,12 @@ export class Sales implements OnInit {
       return;
     }
 
+    if (this.onlineInvoice && !this.selectedClientId) {
+      this.onlineInvoice = false;
+      this.registerError = 'Selecciona un cliente para emitir una factura en linea.';
+      return;
+    }
+
     if (this.isSelectedSaleTypeCreditWithoutClient()) {
       this.registerError = 'Para una venta a credito debes seleccionar un cliente diferente de Consumidor final.';
       this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
@@ -480,6 +487,7 @@ export class Sales implements OnInit {
       id_tipo_venta: this.selectedSaleTypeId,
       id_cliente: this.selectedClientId,
       id_metodo_pago: null,
+      factura_linea: this.onlineInvoice,
       subtotal: this.subtotal,
       descuento_total: this.discountTotal,
       total: this.total,
@@ -584,6 +592,7 @@ export class Sales implements OnInit {
       id_tipo_venta: this.selectedSaleTypeId,
       id_cliente: this.selectedClientId,
       id_metodo_pago: idMetodoPago,
+      factura_linea: this.onlineInvoice,
       subtotal: this.subtotal,
       descuento_total: this.discountTotal,
       total: this.total,
@@ -639,6 +648,7 @@ export class Sales implements OnInit {
     this.searchTerm = '';
     this.selectedClientId = null;
     this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
+    this.onlineInvoice = false;
     this.saleDiscount = 0;
   }
 
@@ -1002,6 +1012,11 @@ export class Sales implements OnInit {
 
   protected onClientSelected(clientId: number | null): void {
     this.selectedClientCategory = null;
+
+    if (!clientId) {
+      this.onlineInvoice = false;
+    }
+
     this.ensureSelectedSaleTypeIsAllowed();
 
     if (!clientId) {

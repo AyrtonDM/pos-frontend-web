@@ -208,6 +208,24 @@
                         }
                       </div>
 
+                      <div class="form-group status-field">
+                        <span class="label">Factura en Linea</span>
+                        <label class="switch">
+                          <input
+                            type="checkbox"
+                            name="onlineInvoice"
+                            [(ngModel)]="onlineInvoice"
+                            [disabled]="!selectedClientId"
+                          />
+                          <span class="switch-track" aria-hidden="true">
+                            <span class="switch-thumb"></span>
+                          </span>
+                          <span class="text-muted">
+                            {{ selectedClientId ? 'Factura en Linea' : 'Selecciona un cliente para facturar en linea' }}
+                          </span>
+                        </label>
+                      </div>
+
                       <!-- El campo global de descuento de venta fue eliminado seg�n solicitud del UX -->
 
                       </section>
