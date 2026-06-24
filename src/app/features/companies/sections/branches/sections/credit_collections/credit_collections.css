@@ -246,10 +246,6 @@
   padding: var(--space-md);
 }
 
-.remove-payment-button {
-  min-width: 92px;
-}
-
 .payment-balance {
   justify-self: end;
   color: var(--color-text-soft);

@@ -222,7 +222,6 @@
                         @for (paymentMethod of paymentMethods; track paymentMethod.id) {
                           <option
                             [ngValue]="paymentMethod.id"
-                            [disabled]="isPaymentMethodDisabled(paymentRow, paymentMethod)"
                           >
                             {{ paymentMethod.name }}
                           </option>
@@ -247,15 +246,6 @@
                       />
                     </div>
 
-                    @if (paymentRows.length > 1) {
-                      <button
-                        class="btn btn-danger btn-sm remove-payment-button"
-                        type="button"
-                        (click)="removePaymentRow(paymentRow)"
-                      >
-                        Eliminar
-                      </button>
-                    }
                   </div>
                 }
               </div>
