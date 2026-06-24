@@ -441,8 +441,7 @@
                       <thead>
                         <tr>
                           <th>Fecha</th>
-                          <th>Venta</th>
-                          <th>Cliente</th>
+                          <th>Tipo</th>
                           <th>Total</th>
                           <th>Subtotal</th>
                           <th>Descuento</th>
@@ -455,10 +454,8 @@
                               <strong>{{ sale.fecha }}</strong>
                             </td>
                             <td>
-                              <strong>{{ sale.id }}</strong>
+                              <strong>{{ sale.tipoVenta }}</strong>
                             </td>
-                            <td>{{ sale.clienteId ?? sale.cliente }}</td>
-                          
                             <td><strong>Bs {{ formatCurrency(sale.total) }}</strong></td>
                             <td>Bs {{ formatCurrency(sale.subtotal) }}</td>
                             <td>Bs {{ formatCurrency(sale.descuentoTotal) }}</td>

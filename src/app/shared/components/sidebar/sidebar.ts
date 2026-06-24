@@ -298,6 +298,14 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
         },
       },
       {
+        label: 'Cobro de Creditos',
+        link: [...cashRegisterPath, 'credit-collections'],
+        permission: 'VENTA_VER',
+        queryParams: {
+          sessionId: context.cashRegisterSessionId,
+        },
+      },
+      {
         label: 'Movimientos',
         link: [...cashRegisterPath, 'sales'],
         permission: 'MOVIMIENTO_VER',

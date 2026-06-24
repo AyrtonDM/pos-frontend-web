@@ -416,6 +416,16 @@ export class Sales implements OnInit {
       return;
     }
 
+    if (this.selectedSaleTypeIsCredit && this.exceedsSelectedClientCreditLimit()) {
+      this.registerError = `El total de la venta no puede superar el limite de credito de la categoria: Bs ${this.formatCurrency(this.getSelectedClientCreditLimit())}.`;
+      return;
+    }
+
+    if (this.selectedSaleTypeIsCredit) {
+      this.registrarVentaCredito();
+      return;
+    }
+
     this.openPaymentTab();
   }
 
@@ -455,6 +465,47 @@ export class Sales implements OnInit {
     row.monto = this.normalizeMoney(value);
   }
 
+  private registrarVentaCredito(): void {
+    if (!this.cashRegisterSessionId) {
+      this.registerError = 'No se encontro la sesion de caja para registrar la venta.';
+      return;
+    }
+
+    if (!this.selectedSaleTypeId) {
+      this.registerError = 'Selecciona un tipo de venta.';
+      return;
+    }
+
+    const payload: CreateSaleRequest = {
+      id_tipo_venta: this.selectedSaleTypeId,
+      id_cliente: this.selectedClientId,
+      id_metodo_pago: null,
+      subtotal: this.subtotal,
+      descuento_total: this.discountTotal,
+      total: this.total,
+      estado: 'Pendiente',
+      detalles: this.buildSaleDetailPayload(),
+    };
+
+    this.chargingSale = true;
+
+    this.cashRegisterService.registrarVentaSesionCaja(this.cashRegisterSessionId, payload).subscribe({
+      next: (response) => {
+        this.registerMessage = `Venta a credito registrada correctamente con el ID ${response.id_venta}.`;
+        this.resetSaleForm();
+        this.closePaymentTab();
+        this.activeTab = 'register';
+        this.chargingSale = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.chargingSale = false;
+        this.registerError = error?.error?.detail ?? 'No se pudo registrar la venta a credito.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
   protected registrarPago(): void {
     this.registerError = '';
 
@@ -481,6 +532,11 @@ export class Sales implements OnInit {
     if (this.isSelectedSaleTypeCreditWithoutClient()) {
       this.registerError = 'Para una venta a credito debes seleccionar un cliente diferente de Consumidor final.';
       this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
+      return;
+    }
+
+    if (this.selectedSaleTypeIsCredit && this.exceedsSelectedClientCreditLimit()) {
+      this.registerError = `El total de la venta no puede superar el limite de credito de la categoria: Bs ${this.formatCurrency(this.getSelectedClientCreditLimit())}.`;
       return;
     }
 
@@ -536,14 +592,7 @@ export class Sales implements OnInit {
         id_metodo_pago: Number(row.id_metodo_pago),
         monto: row.monto,
       })),
-      detalles: this.saleDetails.map((item) => ({
-        id_producto: item.idProducto,
-        cantidad: item.cantidad,
-        precio_unitario: item.precio,
-        descuento: this.getItemDiscountAmount(item),
-        subtotal: this.getItemLineTotal(item),
-        descripcion: 'Venta de mostrador',
-      })),
+      detalles: this.buildSaleDetailPayload(),
     };
 
     this.chargingSale = true;
@@ -599,6 +648,17 @@ export class Sales implements OnInit {
       metodoPagoId: this.getFirstAvailablePaymentMethodId(id),
       monto,
     };
+  }
+
+  private buildSaleDetailPayload(): CreateSaleRequest['detalles'] {
+    return this.saleDetails.map((item) => ({
+      id_producto: item.idProducto,
+      cantidad: item.cantidad,
+      precio_unitario: item.precio,
+      descuento: this.getItemDiscountAmount(item),
+      subtotal: this.getItemLineTotal(item),
+      descripcion: 'Venta de mostrador',
+    }));
   }
 
   private getFirstAvailablePaymentMethodId(rowId?: number): number | null {
@@ -941,10 +1001,10 @@ export class Sales implements OnInit {
   protected selectedClientCategory: ClientCategoryResponse | null = null;
 
   protected onClientSelected(clientId: number | null): void {
+    this.selectedClientCategory = null;
     this.ensureSelectedSaleTypeIsAllowed();
 
     if (!clientId) {
-      this.selectedClientCategory = null;
       this.cdr.detectChanges();
       return;
     }
@@ -953,7 +1013,6 @@ export class Sales implements OnInit {
     const categoriaId = client?.categoriaId ?? null;
 
     if (!categoriaId) {
-      this.selectedClientCategory = null;
       this.cdr.detectChanges();
       return;
     }
@@ -961,6 +1020,10 @@ export class Sales implements OnInit {
     // Fetch categories and find the matching one
     this.companyService.getCategoriasCliente(this.companyId).subscribe({
       next: (categories) => {
+        if (this.selectedClientId !== clientId) {
+          return;
+        }
+
         const found = categories.find((cat) => cat.id_categoria_cliente === categoriaId) ?? null;
         this.selectedClientCategory = found;
 
@@ -983,6 +1046,16 @@ export class Sales implements OnInit {
     const raw = this.selectedClientCategory?.descuento_base ?? null;
     const value = Number(raw ?? 0);
     return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+  }
+
+  private getSelectedClientCreditLimit(): number {
+    const value = Number(this.selectedClientCategory?.limite_credito ?? 0);
+    return Number.isFinite(value) ? Math.max(0, value) : 0;
+  }
+
+  private exceedsSelectedClientCreditLimit(): boolean {
+    const creditLimit = this.getSelectedClientCreditLimit();
+    return creditLimit > 0 && this.total > creditLimit;
   }
 
   private ensureSelectedSaleTypeIsAllowed(): void {
@@ -1079,7 +1152,9 @@ export class Sales implements OnInit {
     const paymentLabels = salePayments.length > 0
       ? salePayments
           .map((payment) => {
-            const methodName = this.paymentMethods.find((method) => method.id === payment.id_metodo_pago)?.nombre;
+            const methodName =
+              payment.metodo_pago?.nombre ??
+              this.paymentMethods.find((method) => method.id === payment.id_metodo_pago)?.nombre;
             const amount = this.formatCurrency(Number(payment.monto ?? 0));
             return `${methodName ?? `Metodo ${payment.id_metodo_pago}`}: Bs ${amount}`;
           })
@@ -1093,6 +1168,7 @@ export class Sales implements OnInit {
       'Sin tipo';
 
     const saleTypeLabel =
+      sale.tipo_venta_nombre ??
       rawSale.tipo_venta?.nombre ??
       rawSale.tipoVenta?.nombre ??
       this.saleTypes.find((type) => type.id === Number(tipoVentaId))?.nombre ??
@@ -1103,7 +1179,7 @@ export class Sales implements OnInit {
       : 'Consumidor';
 
     const paymentMethodIds = salePayments.length > 0
-      ? salePayments.map((payment) => String(payment.id_venta_pago)).join(' | ')
+      ? salePayments.map((payment) => String(payment.id_metodo_pago)).join(' | ')
       : 'Sin metodo';
 
     return {
@@ -1112,7 +1188,7 @@ export class Sales implements OnInit {
       fecha: this.formatDateOnly(sale.fecha),
       tipoVenta: saleTypeLabel,
       cliente: client,
-      clienteId: sale.id_cliente,
+      clienteId: sale.id_cliente ?? null,
       usuarioId: sale.id_usuario,
       cajaSesionId: sale.id_caja_sesion,
       total: Number(sale.total ?? 0),

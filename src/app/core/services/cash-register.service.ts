@@ -142,7 +142,7 @@ export interface SalePaymentRequest {
 export interface CreateSaleRequest {
   id_tipo_venta: number;
   id_cliente: number | null;
-  id_metodo_pago: number;
+  id_metodo_pago: number | null;
   subtotal: number;
   descuento_total: number;
   total: number;
@@ -172,28 +172,34 @@ export interface CreateSaleResponse {
 
 export interface SaleHistoryDetailItem {
   id_detalle_venta: number;
-  id_venta: number;
+  id_venta?: number;
   id_producto: number;
   cantidad: number;
   precio_unitario: number;
   descuento: number;
   subtotal: number;
-  total: number;
-  descripcion: string;
+  total?: number;
+  descripcion: string | null;
 }
 
 export interface SaleHistoryPaymentItem {
-  id_venta_pago: number;
-  id_venta: number;
+  id_venta_pago?: number;
+  id_venta?: number;
   id_metodo_pago: number;
   monto: number;
   fecha: string;
+  metodo_pago?: {
+    id_metodo_pago: number;
+    nombre: string;
+    descripcion: string | null;
+  } | null;
 }
 
 export interface SaleHistoryResponse {
   id_venta: number;
-  id_tipo_venta: number;
-  id_cliente: number | null;
+  id_tipo_venta?: number;
+  tipo_venta_nombre?: string;
+  id_cliente?: number | null;
   id_caja_sesion: number;
   id_usuario: number;
   subtotal: number;
@@ -201,8 +207,59 @@ export interface SaleHistoryResponse {
   total: number;
   fecha: string;
   estado: string;
+  id_metodo_pago?: number | null;
+  metodo_pago?: {
+    id_metodo_pago: number;
+    nombre: string;
+    descripcion: string | null;
+  } | null;
   detalles: SaleHistoryDetailItem[];
   pagos: SaleHistoryPaymentItem[];
+}
+
+export interface CreditPaymentRequestItem {
+  id_metodo_pago: number;
+  monto_pagado: string;
+}
+
+export interface RegisterCreditPaymentRequest {
+  id_cxc: number;
+  pagos_credito: CreditPaymentRequestItem[];
+}
+
+export interface RegisteredCreditPaymentItem {
+  id_pago_credito: number;
+  id_metodo_pago: number;
+  monto_pagado: string | number;
+  fecha_pago: string;
+  metodo_pago: {
+    id_metodo_pago: number;
+    nombre: string;
+    descripcion: string | null;
+  };
+}
+
+export interface CreditPaymentMovement {
+  id_movimiento_caja: number;
+  id_metodo_pago: number;
+  id_tipo_movimiento_caja: number;
+  id_caja_sesion: number;
+  id_usuario: number;
+  fecha: string;
+  monto: string | number;
+  concepto: string;
+}
+
+export interface RegisterCreditPaymentResponse {
+  id_cxc: number;
+  id_caja_sesion: number;
+  monto_credito: string | number;
+  saldo_anterior: string | number;
+  total_pagado: string | number;
+  saldo_pendiente: string | number;
+  estado: string;
+  pagos_credito: RegisteredCreditPaymentItem[];
+  movimientos_caja: CreditPaymentMovement[];
 }
 
 export interface CashRegisterResponse {
@@ -278,6 +335,16 @@ export class CashRegisterService {
 
   getVentasSesionCaja(idCajaSesion: string | number): Observable<SaleHistoryResponse[]> {
     return this.apiService.get<SaleHistoryResponse[]>(`/api/ventas/sesiones/${idCajaSesion}/ventas`);
+  }
+
+  registrarPagoCreditoSesionCaja(
+    idCajaSesion: string | number,
+    payload: RegisterCreditPaymentRequest,
+  ): Observable<RegisterCreditPaymentResponse> {
+    return this.apiService.post<RegisterCreditPaymentResponse, RegisterCreditPaymentRequest>(
+      `/api/ventas/sesiones/${idCajaSesion}/pagos-credito`,
+      payload,
+    );
   }
 
   getMovimientosCajaSesion(idCajaSesion: string | number): Observable<CashRegisterMovementListItem[]> {
