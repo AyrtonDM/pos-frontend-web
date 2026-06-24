@@ -154,6 +154,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'company/:id/reports/invoices',
+    loadComponent: () =>
+      import('./features/companies/sections/reports/invoices/invoices').then(
+        (component) => component.InvoicesReport,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'company/:id/products/categories',
     component: CategoriasPanel,
     canActivate: [authGuard],

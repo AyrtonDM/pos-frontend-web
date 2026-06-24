@@ -230,14 +230,6 @@
   gap: var(--space-xs);
 }
 
-.add-payment-button {
-  width: 42px;
-  min-width: 42px;
-  height: 42px;
-  padding: 0;
-  font-size: 1.35rem;
-}
-
 .payment-rows {
   display: grid;
   gap: var(--space-md);
@@ -252,10 +244,6 @@
   border-radius: var(--radius-sm);
   background: var(--color-surface-2);
   padding: var(--space-md);
-}
-
-.remove-payment-button {
-  min-width: 92px;
 }
 
 .payment-balance {

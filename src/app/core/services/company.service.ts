@@ -234,8 +234,6 @@ export interface ClientReceivable {
 export interface UpdateClientRequest {
   id_categoria_cliente: number;
   codigo_cliente: string;
-  saldo_credito: number;
-  limite_credito: number;
   activo: boolean;
 }
 

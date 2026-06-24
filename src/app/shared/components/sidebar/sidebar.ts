@@ -224,10 +224,16 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
         link: ['/company', context.companyId, 'reports', 'prediction'],
         permission: 'REPORTE_GENERAR',
       },
+      {
+        key: 'invoices',
+        label: 'Facturas',
+        link: ['/company', context.companyId, 'reports', 'invoices'],
+        permission: 'REPORTE_GENERAR',
+      },
     ];
 
     return reportDefinitions.filter(
-      (report) => report.key === 'prediction' || enabledReports.has(report.key),
+      (report) => ['prediction', 'invoices'].includes(report.key) || enabledReports.has(report.key),
     );
   }
 

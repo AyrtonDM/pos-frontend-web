@@ -24,11 +24,9 @@ type CreditTab = 'receivables' | 'payment';
 interface CreditClient {
   id: number;
   name: string;
-  email: string;
   document: string;
   code: string;
   balance: number;
-  creditLimit: number;
   active: boolean;
 }
 
@@ -94,17 +92,9 @@ export class CreditCollections implements OnInit {
     }
 
     return this.clients.filter((client) =>
-      [client.name, client.email, client.document, client.code]
+      [client.name, client.document, client.code]
         .some((value) => this.normalize(value).includes(term)),
     );
-  }
-
-  protected get creditAvailable(): number {
-    if (!this.selectedClient) {
-      return 0;
-    }
-
-    return Math.max(0, this.selectedClient.creditLimit - this.selectedClient.balance);
   }
 
   protected selectClient(client: CreditClient): void {
@@ -130,39 +120,8 @@ export class CreditCollections implements OnInit {
     this.paymentError = '';
   }
 
-  protected addPaymentRow(): void {
-    if (!this.canAddPaymentRow) {
-      return;
-    }
-
-    this.paymentRows = [
-      ...this.paymentRows,
-      this.createPaymentRow(undefined, this.remainingPaymentAmount),
-    ];
-  }
-
-  protected removePaymentRow(row: CreditPaymentRow): void {
-    if (this.paymentRows.length === 1) {
-      this.paymentRows = [
-        this.createPaymentRow(
-          this.paymentRows[0]?.id,
-          this.selectedReceivable
-            ? this.normalizeMoney(this.selectedReceivable.saldo_pendiente)
-            : null,
-        ),
-      ];
-      return;
-    }
-
-    this.paymentRows = this.paymentRows.filter((paymentRow) => paymentRow.id !== row.id);
-  }
-
   protected updatePaymentAmount(row: CreditPaymentRow, value: number | string | null): void {
     row.amount = this.normalizeMoney(value);
-  }
-
-  protected get canAddPaymentRow(): boolean {
-    return this.paymentRows.length < this.paymentMethods.length;
   }
 
   protected get remainingPaymentAmount(): number {
@@ -172,15 +131,6 @@ export class CreditCollections implements OnInit {
       0,
     );
     return this.roundCurrency(Math.max(balance - assigned, 0));
-  }
-
-  protected isPaymentMethodDisabled(
-    paymentRow: CreditPaymentRow,
-    paymentMethod: PaymentMethodOption,
-  ): boolean {
-    return this.paymentRows.some(
-      (row) => row.id !== paymentRow.id && row.paymentMethodId === paymentMethod.id,
-    );
   }
 
   protected trackPaymentRow(_index: number, row: CreditPaymentRow): number {
@@ -218,12 +168,6 @@ export class CreditCollections implements OnInit {
 
     if (payments.some((payment) => payment.monto_pagado <= 0)) {
       this.paymentError = 'Ingresa un monto mayor a 0 en cada fila.';
-      return;
-    }
-
-    const methodIds = payments.map((payment) => payment.id_metodo_pago);
-    if (new Set(methodIds).size !== methodIds.length) {
-      this.paymentError = 'No puedes repetir el mismo metodo de pago.';
       return;
     }
 
@@ -444,11 +388,9 @@ export class CreditCollections implements OnInit {
     return {
       id: client.cliente.id_cliente,
       name: client.usuario.persona?.nombre_completo ?? 'Sin nombre',
-      email: client.usuario.email,
       document: client.usuario.persona?.documento ?? '',
       code: client.cliente.codigo_cliente ?? '',
       balance: Math.max(0, Number(client.cliente.saldo_credito ?? 0)),
-      creditLimit: Math.max(0, Number(client.cliente.limite_credito ?? 0)),
       active: client.cliente.activo,
     };
   }

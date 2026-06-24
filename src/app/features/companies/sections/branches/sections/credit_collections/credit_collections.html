@@ -203,16 +203,6 @@
                   </p>
                 </div>
 
-                <button
-                  class="btn btn-secondary add-payment-button"
-                  type="button"
-                  aria-label="Agregar forma de pago"
-                  title="Agregar forma de pago"
-                  [disabled]="!canAddPaymentRow"
-                  (click)="addPaymentRow()"
-                >
-                  +
-                </button>
               </div>
 
               <div class="payment-rows" aria-label="Formas de pago">
@@ -232,7 +222,6 @@
                         @for (paymentMethod of paymentMethods; track paymentMethod.id) {
                           <option
                             [ngValue]="paymentMethod.id"
-                            [disabled]="isPaymentMethodDisabled(paymentRow, paymentMethod)"
                           >
                             {{ paymentMethod.name }}
                           </option>
@@ -257,15 +246,6 @@
                       />
                     </div>
 
-                    @if (paymentRows.length > 1) {
-                      <button
-                        class="btn btn-danger btn-sm remove-payment-button"
-                        type="button"
-                        (click)="removePaymentRow(paymentRow)"
-                      >
-                        Eliminar
-                      </button>
-                    }
                   </div>
                 }
               </div>
