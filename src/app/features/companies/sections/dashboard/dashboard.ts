@@ -29,13 +29,6 @@ interface KpiCard {
   icon: string;
 }
 
-interface BranchSalesBar {
-  name: string;
-  value: number;
-  percent: number;
-  formattedValue: string;
-}
-
 @Component({
   selector: 'app-dashboard',
   imports: [Navbar, Sidebar],
@@ -52,9 +45,7 @@ export class Dashboard implements OnInit, OnDestroy {
   protected companyName = 'Comercial Nova';
 
   protected uiState: DashboardState = 'loading';
-  protected selectedBranchFilter = 'all';
 
-  private readonly dayLabels = this.buildDayLabels();
   private branchData: BranchDashboardMock[] = [];
   private realBranches: Branch[] = [];
   private wsSubscription: Subscription | null = null;
@@ -111,17 +102,6 @@ export class Dashboard implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     }
-  }
-
-  protected onBranchFilterChange(value: string): void {
-    this.selectedBranchFilter = value;
-  }
-
-  protected get branchOptions(): Array<{ id: string; name: string }> {
-    return [
-      { id: 'all', name: 'Todas las sucursales' },
-      ...this.branchData.map((branch) => ({ id: String(branch.id), name: branch.name })),
-    ];
   }
 
   protected get shouldShowEmptyState(): boolean {
@@ -192,118 +172,8 @@ export class Dashboard implements OnInit, OnDestroy {
     ];
   }
 
-  protected get salesLinePath(): string {
-    const values = this.salesSeriesLast30Days;
-
-    if (values.length <= 1) {
-      return '0,90 100,90';
-    }
-
-    const max = Math.max(...values, 1);
-    const min = Math.min(...values, 0);
-    const range = Math.max(max - min, 1);
-
-    return values
-      .map((value, index) => {
-        const x = (index / (values.length - 1)) * 100;
-        const normalized = (value - min) / range;
-        const y = 90 - normalized * 70;
-        return `${x.toFixed(2)},${y.toFixed(2)}`;
-      })
-      .join(' ');
-  }
-
-  protected get salesSeriesTotalLabel(): string {
-    if (this.receivedDashboardData) {
-      return this.formatCurrency(this.receivedDashboardData.evolucion_ventas_30_dias?.total_periodo ?? 0);
-    }
-    return this.formatCurrency(this.sum(this.salesSeriesLast30Days));
-  }
-
-  protected get salesSeriesPeakLabel(): string {
-    if (this.receivedDashboardData) {
-      return this.formatCurrency(this.receivedDashboardData.evolucion_ventas_30_dias?.pico_diario ?? 0);
-    }
-    const values = this.salesSeriesLast30Days;
-    return this.formatCurrency(values.length ? Math.max(...values) : 0);
-  }
-
-  protected get firstDayLabel(): string {
-    return this.dayLabels[0] ?? '-';
-  }
-
-  protected get lastDayLabel(): string {
-    return this.dayLabels[this.dayLabels.length - 1] ?? '-';
-  }
-
-  protected get branchSalesBars(): BranchSalesBar[] {
-    if (this.receivedDashboardData) {
-      const rawBars = this.receivedDashboardData.ventas_por_sucursal || [];
-      let values = rawBars.map((item: any) => ({
-        name: item.nombre || item.name || 'Sucursal',
-        value: Number(item.ventas ?? item.sales ?? item.value ?? 0),
-        id: item.id_sucursal ?? item.id ?? null,
-      }));
-
-      if (!this.isAllBranchesSelected) {
-        values = values.filter((item: any) =>
-          String(item.id) === this.selectedBranchFilter ||
-          item.name === this.obtenerNombreSucursal(this.selectedBranchFilter)
-        );
-      }
-
-      values.sort((a: any, b: any) => b.value - a.value);
-      const max = Math.max(...values.map((item: any) => item.value), 1);
-
-      return values.map((item: any) => ({
-        name: item.name,
-        value: item.value,
-        percent: (item.value / max) * 100,
-        formattedValue: this.formatCurrency(item.value),
-      }));
-    }
-
-    const branches = this.isAllBranchesSelected
-      ? this.branchData
-      : this.branchData.filter((branch) => String(branch.id) === this.selectedBranchFilter);
-
-    const values = branches
-      .map((branch) => ({
-        name: branch.name,
-        value: this.sum(branch.salesLast30Days),
-      }))
-      .sort((a, b) => b.value - a.value);
-
-    const max = Math.max(...values.map((item) => item.value), 1);
-
-    return values.map((item) => ({
-      name: item.name,
-      value: item.value,
-      percent: (item.value / max) * 100,
-      formattedValue: this.formatCurrency(item.value),
-    }));
-  }
-
-  protected get shouldShowBranchChart(): boolean {
-    return this.branchSalesBars.length > 0;
-  }
-
-  protected get branchChartSubtitle(): string {
-    return this.isAllBranchesSelected
-      ? 'Ordenado de mayor a menor facturacion acumulada.'
-      : 'Visualizando la sucursal seleccionada.';
-  }
-
   private get selectedData(): BranchDashboardMock[] {
-    if (this.isAllBranchesSelected) {
-      return this.branchData;
-    }
-
-    return this.branchData.filter((branch) => String(branch.id) === this.selectedBranchFilter);
-  }
-
-  private get isAllBranchesSelected(): boolean {
-    return this.selectedBranchFilter === 'all';
+    return this.branchData;
   }
 
   private get topProductName(): string {
@@ -315,27 +185,6 @@ export class Dashboard implements OnInit, OnDestroy {
 
     const winner = [...selected].sort((a, b) => b.topProductUnits - a.topProductUnits)[0];
     return winner?.topProductName ?? '-';
-  }
-
-  private get salesSeriesLast30Days(): number[] {
-    if (this.receivedDashboardData) {
-      const puntos = this.receivedDashboardData.evolucion_ventas_30_dias?.puntos || [];
-      return puntos.map((p: any) => typeof p === 'number' ? p : Number(p.monto ?? p.valor ?? p.value ?? p.sales ?? 0));
-    }
-
-    const selected = this.selectedData;
-
-    if (selected.length === 0) {
-      return [];
-    }
-
-    return this.dayLabels.map((_, index) => this.sum(selected.map((branch) => branch.salesLast30Days[index] ?? 0)));
-  }
-
-  private obtenerNombreSucursal(idSucursal: string): string {
-    return this.realBranches.find(
-      (branch) => String(branch.id ?? branch.idSucursal ?? branch.id_sucursal) === idSucursal
-    )?.nombre ?? idSucursal;
   }
 
   private getSalesToday(branch: BranchDashboardMock): number {
@@ -378,25 +227,6 @@ export class Dashboard implements OnInit, OnDestroy {
       this.branchData = this.buildMockData();
       this.uiState = this.branchData.length ? 'ready' : 'empty';
     }, 700);
-  }
-
-  private buildDayLabels(): string[] {
-    const labels: string[] = [];
-    const now = new Date();
-
-    for (let index = 29; index >= 0; index -= 1) {
-      const date = new Date(now);
-      date.setDate(now.getDate() - index);
-
-      labels.push(
-        new Intl.DateTimeFormat('es-BO', {
-          day: '2-digit',
-          month: '2-digit',
-        }).format(date),
-      );
-    }
-
-    return labels;
   }
 
   private buildMockData(): BranchDashboardMock[] {
