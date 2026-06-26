@@ -31,7 +31,15 @@ export class FcmService {
     const { initializeApp } = await import('firebase/app');
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const { getMessaging, getToken, onMessage } = await import('firebase/messaging');
+    const { getMessaging, getToken, onMessage, isSupported } = await import('firebase/messaging');
+
+    // Salir silenciosamente en browsers que no soportan FCM (Safari antiguo, Firefox sin Push API, etc.)
+    const supported = await isSupported().catch(() => false);
+    if (!supported) {
+      console.warn('[FCM] Firebase Messaging no soportado en este navegador.');
+      return null;
+    }
+
     const app = initializeApp(this.firebaseConfig);
     const messaging = getMessaging(app);
     const serviceWorkerRegistration = 'serviceWorker' in navigator
