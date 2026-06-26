@@ -10,7 +10,7 @@
               [routerLink]="item.link"
               [queryParams]="item.queryParams"
               [attr.aria-expanded]="isGroupOpen(item)"
-              (click)="openGroup(item.label)"
+              (click)="toggleGroup(item.label)"
             >
               <span>{{ item.label }}</span>
               <span class="sidebar-caret" [class.open]="isGroupOpen(item)">&#9662;</span>

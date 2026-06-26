@@ -127,6 +127,6 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
       this.ngZone.run(() => {
         void this.load(false);
       });
-    }, 5000);
+    }, 15000);
   }
 }

@@ -1,0 +1,78 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5
+
+jobs:
+  test-node:
+    executor: node/default
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Run tests
+          command: npm test --passWithNoTests
+
+  build-node:
+    executor: node/default
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Build Angular App
+          command: npx ng build --configuration production
+      # Es VITAL guardar la carpeta compilada para pasarla al trabajo de despliegue
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist/ 
+
+  deploy-to-ec2:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      # 1. Recuperar los archivos que compilamos en el paso anterior
+      - attach_workspace:
+          at: .
+          
+      # 2. Inyectar tu clave SSH de AWS
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:uCVfqBjyVKiA0cwiL8ppWVv5CM9/WB7ru1sl6w3VfVQ" # Reemplaza con tu fingerprint de CircleCI
+
+      # 3. Evitar el prompt de confirmación de SSH
+      - run:
+          name: Add EC2 to known_hosts
+          command: ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
+
+      # 4. Copiar los archivos al servidor EC2
+      - run:
+          name: Deploy static files to EC2
+          command: |
+            # Utilizamos SCP (Secure Copy) para enviar la carpeta al servidor.
+            # NOTA: Cambia "nombre-de-tu-proyecto" por el nombre real de tu carpeta dentro de dist/
+            scp -r dist/pos-frontend-web/* $EC2_USERNAME@$EC2_HOST:/var/www/html/pos-frontend/
+
+workflows:
+  build-and-test:
+    jobs:
+      - test-node:
+          filters:
+            branches:
+              only: main
+              
+      - build-node:
+          requires:
+            - test-node
+          filters:
+            branches:
+              only: main
+              
+      - deploy-to-ec2:
+          requires:
+            - build-node
+          filters:
+            branches:
+              only: main

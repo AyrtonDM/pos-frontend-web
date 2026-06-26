@@ -18,7 +18,7 @@
 
   <div class="nav-actions">
     @if (authService.isAuthenticated()) {
-      @if (authService.isAdmin()) {
+      @if (canViewAlerts()) {
         <div class="notifications-wrapper">
           <button class="btn btn-icon notifications-button" aria-label="Notificaciones" type="button" (click)="toggleNotifs()">
             <span class="notifications-icon" aria-hidden="true">🔔</span>
@@ -39,46 +39,17 @@
       <button class="btn btn-danger" type="button" (click)="cerrarSesion()">Cerrar sesion</button>
     } @else {
       <a class="btn btn-secondary" routerLink="/register"> Registrar </a>
-      <div class="login-menu">
-        <button
-          class="btn btn-primary login-trigger"
-          type="button"
-          aria-haspopup="menu"
-          [attr.aria-expanded]="menuLoginAbierto()"
-          (click)="alternarMenuLogin()"
-        >
-          Iniciar sesion
-          <span aria-hidden="true">▾</span>
-        </button>
-
-        @if (menuLoginAbierto()) {
-          <div class="login-dropdown panel" role="menu">
-            <a
-              routerLink="/login"
-              [queryParams]="{ rol: 'administrador' }"
-              role="menuitem"
-              (click)="cerrarMenuLogin()"
-            >
-              Administrador
-            </a>
-            <a
-              routerLink="/login"
-              [queryParams]="{ rol: 'empleado' }"
-              role="menuitem"
-              (click)="cerrarMenuLogin()"
-            >
-              Empleado
-            </a>
-          </div>
-        }
-      </div>
+      <a class="btn btn-primary login-trigger" routerLink="/login">Iniciar sesion</a>
     }
   </div>
 </nav>
 
-<app-notification-toast (detailRequested)="abrirDetalleAlerta($event)"></app-notification-toast>
-<app-notification-detail-modal
-  [detail]="activeDetail"
-  (closeRequested)="cerrarDetalleAlerta()"
-></app-notification-detail-modal>
+@if (canViewAlerts()) {
+  <app-notification-toast (detailRequested)="abrirDetalleAlerta($event)"></app-notification-toast>
+  <app-notification-detail-modal
+    [detail]="activeDetail"
+    (closeRequested)="cerrarDetalleAlerta()"
+  ></app-notification-detail-modal>
+}
+
 

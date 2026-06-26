@@ -1,0 +1,266 @@
+<div class="page-container cash-register-page">
+  <app-navbar />
+
+  <main class="cash-register-layout">
+    <app-sidebar context="branch" [companyId]="companyId" [branchId]="branchId" />
+
+    <section class="cash-register-content">
+      <header class="cash-register-header panel">
+        <div>
+          <p class="badge badge-success">Sucursal {{ branchId }}</p>
+          <h1 class="title-xl">Cajas</h1>
+          <p class="text-muted">Administra las cajas registradoras asignadas a esta sucursal.</p>
+        </div>
+      </header>
+
+      <section class="tabs-panel panel">
+        <div class="tabs" role="tablist" aria-label="Secciones de cajas">
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'list'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'list'"
+            (click)="setActiveTab('list')"
+          >
+            Cajas Registradoras
+          </button>
+          @if (hasPermission('CAJA_EDITAR')) {
+            <button
+              class="tab-button"
+              [class.active]="activeTab === 'register'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'register'"
+              (click)="setActiveTab('register')"
+            >
+              Registrar nueva caja
+            </button>
+          }
+
+          @if (editingCashRegisterId !== null && hasPermission('CAJA_EDITAR')) {
+            <button
+              class="tab-button"
+              [class.active]="activeTab === 'edit'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'edit'"
+              (click)="setActiveTab('edit')"
+            >
+              Editar caja
+            </button>
+          }
+        </div>
+
+        <div class="tab-content">
+          @if (error) {
+            <p class="feedback feedback-error">{{ error }}</p>
+          }
+
+          @if (mensaje) {
+            <p class="feedback feedback-success">{{ mensaje }}</p>
+          }
+
+          @if (activeTab === 'list') {
+            @if (cargandoCajas) {
+              <section class="cash-register-state" aria-live="polite">
+                <p class="text-muted">Cargando cajas registradoras...</p>
+              </section>
+            } @else if (cashRegisters.length === 0) {
+              <section class="cash-register-state" aria-live="polite">
+                <p class="text-muted">Aun no hay cajas registradoras registradas en esta sucursal.</p>
+              </section>
+            } @else {
+              <section class="table-panel" aria-label="Listado de cajas registradoras">
+                <div class="table-shell">
+                  <table class="table cash-register-table">
+                    <thead>
+                      <tr>
+                        <th>Fecha creacion</th>
+                        <th>Codigo</th>
+                        <th>Nombre</th>
+                        <th>Estado</th>
+                        <th class="cash-register-actions-header">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (cashRegister of cashRegisters; track cashRegister.id) {
+                        <tr>
+                          <td>{{ cashRegister.fechaCreacion }}</td>
+                          <td>{{ cashRegister.codigo }}</td>
+                          <td>{{ cashRegister.nombre }}</td>
+                          <td>
+                            @if (cashRegister.activo) {
+                              <span class="badge badge-success">Activo</span>
+                            } @else {
+                              <span class="badge badge-danger">Inactivo</span>
+                            }
+                          </td>
+                          <td class="cash-register-actions-cell">
+                            <div class="cash-register-actions">
+                              @if (hasPermission('CAJA_ABRIR')) {
+                                <a
+                                  class="btn btn-primary btn-sm"
+                                  [class.disabled]="!cashRegister.canOpen"
+                                  [class.conflict-disabled]="cashRegister.activo && !cashRegister.canOpen"
+                                  [attr.aria-disabled]="!cashRegister.canOpen"
+                                  [routerLink]="
+                                    cashRegister.canOpen && cashRegister.actionLabel === 'Abrir Caja'
+                                      ? [
+                                          '/company',
+                                          companyId,
+                                          'branch',
+                                          branchId,
+                                          'cash-register',
+                                          cashRegister.id,
+                                          'open-cash-register',
+                                        ]
+                                      : cashRegister.canOpen && cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId
+                                        ? [
+                                            '/company',
+                                            companyId,
+                                            'branch',
+                                            branchId,
+                                            'cash-register',
+                                            cashRegister.id,
+                                            'sales',
+                                          ]
+                                        : null
+                                  "
+                                  [queryParams]="
+                                    cashRegister.canOpen && cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId
+                                      ? { sessionId: cashRegister.sessionId }
+                                      : null
+                                  "
+                                >
+                                  {{ cashRegister.actionLabel }}
+                                </a>
+                              }
+
+                              @if (cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId && hasPermission('CAJA_CERRAR')) {
+                                <a
+                                  class="btn btn-sm btn-secondary"
+                                  [routerLink]="[
+                                    '/company',
+                                    companyId,
+                                    'branch',
+                                    branchId,
+                                    'cash-register',
+                                    cashRegister.id,
+                                    'close-cash-register',
+                                  ]"
+                                  [queryParams]="{ sessionId: cashRegister.sessionId }"
+                                >
+                                  Cerrar caja
+                                </a>
+                              }
+
+                              @if (hasPermission('CAJA_EDITAR')) {
+                                <button class="btn btn-secondary btn-sm" type="button" (click)="abrirEdicion(cashRegister)">
+                                  Editar
+                                </button>
+                              }
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            }
+          } @else if (activeTab === 'register') {
+            <form
+              class="cash-register-form"
+              aria-label="Formulario para registrar caja"
+              (submit)="registrarCaja($event)"
+            >
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="label" for="register-code">Codigo</label>
+                  <input
+                    class="input"
+                    id="register-code"
+                    name="register-code"
+                    type="text"
+                    placeholder="CJ-003"
+                    required
+                    [(ngModel)]="registerForm.codigo"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="label" for="register-name">Nombre</label>
+                  <input
+                    class="input"
+                    id="register-name"
+                    name="register-name"
+                    type="text"
+                    placeholder="Caja mostrador"
+                    required
+                    [(ngModel)]="registerForm.nombre"
+                  />
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit" [disabled]="cargandoRegistro">
+                  {{ cargandoRegistro ? 'Registrando...' : 'Registrar' }}
+                </button>
+              </div>
+            </form>
+          } @else {
+            <form
+              class="cash-register-form"
+              aria-label="Formulario para editar caja"
+              (submit)="guardarCambios($event)"
+            >
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="label" for="edit-code">Codigo</label>
+                  <input
+                    class="input"
+                    id="edit-code"
+                    name="edit-code"
+                    type="text"
+                    required
+                    [(ngModel)]="editForm.codigo"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="label" for="edit-name">Nombre</label>
+                  <input
+                    class="input"
+                    id="edit-name"
+                    name="edit-name"
+                    type="text"
+                    required
+                    [(ngModel)]="editForm.nombre"
+                  />
+                </div>
+
+                <div class="form-group status-field">
+                  <span class="label">Activo</span>
+                  <label class="switch">
+                    <input type="checkbox" name="edit-active" [(ngModel)]="editForm.activo" />
+                    <span class="switch-track" aria-hidden="true">
+                      <span class="switch-thumb"></span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit" [disabled]="cargandoEdicion">
+                  {{ cargandoEdicion ? 'Guardando...' : 'Guardar cambios' }}
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+

@@ -46,7 +46,6 @@ export class Login {
         this.cargandoLogin = false;
         this.authService.saveSession(response.access_token);
 
-        const rol = this.route.snapshot.queryParamMap.get('rol');
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
 
         if (returnUrl) {
@@ -54,17 +53,7 @@ export class Login {
           return;
         }
 
-        if (rol === 'administrador') {
-          void this.router.navigate(['/administrator/my-companies']);
-          return;
-        }
-
-        if (rol === 'empleado') {
-          void this.router.navigate(['/employee/my-companies']);
-          return;
-        }
-
-        void this.router.navigate(['/']);
+        void this.router.navigate(['/my-companies']);
       },
       error: () => {
         this.cargandoLogin = false;
