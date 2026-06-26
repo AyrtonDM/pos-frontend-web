@@ -5,18 +5,12 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { CompanyService } from '../services/company.service';
 import { ApiService } from '../services/api.service';
+import { environments } from '../../environments/environments';
 
 @Injectable({ providedIn: 'root' })
 export class FcmService {
-  private vapidKey = 'REPLACE_WITH_VAPID_KEY';
-  private firebaseConfig = {
-    apiKey: 'AIzaSyA-wTcvwf5gh8mtYFaYXN8VeY-kxYiQ8v8',
-    authDomain: 'pos-si2.firebaseapp.com',
-    projectId: 'pos-si2',
-    storageBucket: 'pos-si2.firebasestorage.app',
-    messagingSenderId: '181449830908',
-    appId: '1:181449830908:web:eab5f979040782aa218279'
-  };
+  private vapidKey = environments.firebaseVapidKey;
+  private firebaseConfig = environments.firebase;
 
   constructor(
     private readonly authService: AuthService,
