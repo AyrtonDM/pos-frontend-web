@@ -20,6 +20,7 @@ export class FcmService {
 
   async registerToken(apiBase?: string, idEmpresa?: number | null) {
     const base = apiBase ?? this.apiService.getBaseUrl();
+
     // request permission
     if (!('Notification' in window)) return null;
     const permission = await Notification.requestPermission();
@@ -28,7 +29,7 @@ export class FcmService {
     // load firebase scripts dynamically
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const { initializeApp } = await import('firebase/app');
+    const { initializeApp, getApps, getApp } = await import('firebase/app');
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const { getMessaging, getToken, onMessage, isSupported } = await import('firebase/messaging');
@@ -36,15 +37,20 @@ export class FcmService {
     // Salir silenciosamente en browsers que no soportan FCM (Safari antiguo, Firefox sin Push API, etc.)
     const supported = await isSupported().catch(() => false);
     if (!supported) {
-      console.warn('[FCM] Firebase Messaging no soportado en este navegador.');
+      console.warn('[FCM WEB] Firebase Messaging no soportado en este navegador.');
       return null;
     }
 
-    const app = initializeApp(this.firebaseConfig);
+    // Bug fix #1: guard against duplicate-app error when registerToken() is
+    // called multiple times in the same session (e.g. navbar re-mount).
+    const app = getApps().length ? getApp() : initializeApp(this.firebaseConfig);
+    console.log('[FCM WEB] Firebase inicializado');
+
     const messaging = getMessaging(app);
     const serviceWorkerRegistration = 'serviceWorker' in navigator
       ? await navigator.serviceWorker.register('/firebase-messaging-sw.js')
       : null;
+
     onMessage(messaging, (payload: any) => {
       window.dispatchEvent(
         new CustomEvent('stock-notification', {
@@ -52,29 +58,60 @@ export class FcmService {
         }),
       );
     });
+
     try {
       const currentToken = await getToken(messaging, {
         vapidKey: this.vapidKey,
         serviceWorkerRegistration: serviceWorkerRegistration || undefined,
       });
-      if (currentToken) {
-        const idsEmpresa = await this.obtenerEmpresasContexto(idEmpresa);
-        if (idsEmpresa.length === 0) {
-          return currentToken;
-        }
 
-        await Promise.all(
-          idsEmpresa.map((empresaId) =>
-            axios.post(`${base}/notifications/register-token`, {
-              token: currentToken,
-              id_empresa: empresaId,
-            }),
-          ),
-        );
+      if (!currentToken) {
+        console.warn('[FCM WEB] getToken() no devolvió token — permisos denegados o VAPID inválido.');
+        return null;
+      }
+
+      console.log('[FCM WEB] Token obtenido');
+
+      // Bug fix #2: obtain uid_usuario from the JWT before registering.
+      // The JWT claim "sub" contains the user_id as a string.
+      const uid_usuario = this.obtenerUidUsuario();
+      if (!uid_usuario) {
+        console.warn('[FCM WEB] uid_usuario no disponible — token no se registrará hasta que el usuario inicie sesión.');
         return currentToken;
       }
+
+      // Obtain the primary role from the JWT claim "rol" or first of "roles".
+      const rol = this.obtenerRolUsuario();
+
+      const idsEmpresa = await this.obtenerEmpresasContexto(idEmpresa);
+      if (idsEmpresa.length === 0) {
+        // No company context yet — return the raw token anyway.
+        return currentToken;
+      }
+
+      await Promise.all(
+        idsEmpresa.map((empresaId) => {
+          console.log(`[FCM WEB] Registrando token uid_usuario=${uid_usuario} id_empresa=${empresaId}`);
+          return axios
+            .post(`${base}/notifications/register-token`, {
+              token: currentToken,
+              uid_usuario: uid_usuario,
+              rol: rol,
+              plataforma: 'web',
+              id_empresa: empresaId,
+            })
+            .then(() => {
+              console.log(`[FCM WEB] Token registrado OK para id_empresa=${empresaId}`);
+            })
+            .catch((err: unknown) => {
+              console.error(`[FCM WEB] Error registrando token para id_empresa=${empresaId}:`, err);
+            });
+        }),
+      );
+
+      return currentToken;
     } catch (err) {
-      console.error('FCM getToken error', err);
+      console.error('[FCM WEB] Error en getToken:', err);
     }
     return null;
   }
@@ -103,6 +140,40 @@ export class FcmService {
     }
 
     return Array.from(idsEmpresa);
+  }
+
+  /**
+   * Decodifica el JWT almacenado en sessionStorage y retorna el campo "sub"
+   * (user_id como string) o null si no está disponible / el token es inválido.
+   */
+  private obtenerUidUsuario(): string | null {
+    const rawToken = this.authService.getAccessToken();
+    if (!rawToken) return null;
+
+    const parts = rawToken.split('.');
+    if (parts.length !== 3) return null;
+
+    try {
+      const padded = parts[1]
+        .replace(/-/g, '+')
+        .replace(/_/g, '/')
+        .padEnd(Math.ceil(parts[1].length / 4) * 4, '=');
+      const payload = JSON.parse(atob(padded)) as { sub?: string; id?: string | number };
+      const uid = payload.sub ?? (payload.id != null ? String(payload.id) : null);
+      return uid && uid.trim() !== '' ? uid : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Extrae el rol principal del JWT. Usa el claim "rol" (string) o el primer
+   * elemento del claim "roles" (array). Retorna null si no hay rol.
+   */
+  private obtenerRolUsuario(): string | null {
+    const roles = this.authService.getUserRoles();
+    if (roles.length > 0) return roles[0];
+    return null;
   }
 
   private extraerIdEmpresa(company: {
