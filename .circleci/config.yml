@@ -5,29 +5,32 @@ orbs:
 
 jobs:
   test-node:
-    executor: node/default
+    docker:
+      - image: cimg/node:20.18
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
+      - run:
+          name: Install dependencies
+          command: npm ci
       - run:
           name: Run tests
           command: npm test --passWithNoTests
 
   build-node:
-    executor: node/default
+    docker:
+      - image: cimg/node:20.18
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
+      - run:
+          name: Install dependencies
+          command: npm ci
       - run:
           name: Build Angular App
           command: npx ng build --configuration production
-      # Es VITAL guardar la carpeta compilada para pasarla al trabajo de despliegue
       - persist_to_workspace:
           root: .
           paths:
-            - dist/ 
+            - dist/
 
   deploy-to-ec2:
     docker:
