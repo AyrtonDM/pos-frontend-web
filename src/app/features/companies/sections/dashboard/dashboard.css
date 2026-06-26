@@ -31,16 +31,6 @@
 	gap: var(--space-sm);
 }
 
-.dashboard-filter-group {
-	display: grid;
-	gap: var(--space-xs);
-	min-width: 260px;
-}
-
-.dashboard-filter {
-	min-height: 44px;
-}
-
 .kpi-grid {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -85,92 +75,6 @@
 	font-weight: var(--font-weight-bold);
 }
 
-.dashboard-chart-grid {
-	display: grid;
-	grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-	gap: var(--space-md);
-}
-
-.chart-card {
-	display: grid;
-	gap: var(--space-md);
-	padding: var(--space-xl);
-}
-
-.line-chart-wrapper {
-	display: grid;
-	gap: var(--space-sm);
-}
-
-.line-chart {
-	width: 100%;
-	height: 280px;
-	border-radius: var(--radius-md);
-	background: linear-gradient(180deg, rgba(19, 76, 44, 0.06), rgba(19, 76, 44, 0));
-	border: 1px solid var(--color-border);
-}
-
-.line-chart-grid {
-	fill: none;
-	stroke: rgba(45, 45, 45, 0.18);
-	stroke-width: 0.3;
-}
-
-.line-chart-series {
-	fill: none;
-	stroke: #134c2c;
-	stroke-width: 1.5;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-}
-
-.line-chart-labels {
-	display: flex;
-	justify-content: space-between;
-	color: var(--color-text-soft);
-	font-size: var(--font-size-sm);
-}
-
-.bar-list {
-	display: grid;
-	gap: var(--space-md);
-}
-
-.bar-item {
-	display: grid;
-	gap: var(--space-xs);
-}
-
-.bar-meta {
-	display: flex;
-	justify-content: space-between;
-	gap: var(--space-md);
-}
-
-.bar-name {
-	color: var(--color-text);
-	font-weight: var(--font-weight-semibold);
-}
-
-.bar-value {
-	color: var(--color-text-soft);
-	font-weight: var(--font-weight-semibold);
-}
-
-.bar-track {
-	height: 12px;
-	border-radius: 999px;
-	background: var(--color-surface-2);
-	overflow: hidden;
-}
-
-.bar-fill {
-	display: block;
-	height: 100%;
-	border-radius: 999px;
-	background: linear-gradient(90deg, #f4a62a, #f97316);
-}
-
 .dashboard-state,
 .dashboard-loading {
 	display: grid;
@@ -196,9 +100,6 @@
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
-	.dashboard-chart-grid {
-		grid-template-columns: 1fr;
-	}
 }
 
 @media (max-width: 780px) {
@@ -212,9 +113,6 @@
 		padding: var(--space-lg);
 	}
 
-	.dashboard-filter-group {
-		min-width: 0;
-	}
 }
 
 @media (max-width: 640px) {
@@ -226,7 +124,6 @@
 		grid-template-columns: 1fr;
 	}
 
-	.chart-card,
 	.dashboard-state,
 	.dashboard-loading {
 		padding: var(--space-lg);
@@ -318,102 +215,6 @@
 	color: var(--color-text);
 }
 
-.chart-grid {
-	display: grid;
-	grid-template-columns: 1.45fr 1fr;
-	gap: var(--space-md);
-}
-
-.chart-panel {
-	display: grid;
-	gap: var(--space-md);
-	padding: var(--space-xl);
-}
-
-.line-chart-shell {
-	display: grid;
-	gap: var(--space-sm);
-}
-
-.line-chart {
-	width: 100%;
-	min-height: 250px;
-	border-radius: var(--radius-md);
-	background:
-		linear-gradient(
-			to bottom,
-			transparent 0,
-			transparent 24%,
-			rgba(16, 24, 40, 0.06) 25%,
-			transparent 26%,
-			transparent 49%,
-			rgba(16, 24, 40, 0.06) 50%,
-			transparent 51%,
-			transparent 74%,
-			rgba(16, 24, 40, 0.06) 75%,
-			transparent 76%,
-			transparent 100%
-		);
-}
-
-.line-chart-path {
-	fill: none;
-	stroke: var(--color-primary);
-	stroke-width: 1.4;
-}
-
-.line-chart-dot {
-	fill: var(--color-primary-hover);
-}
-
-.line-axis-labels {
-	display: flex;
-	justify-content: space-between;
-	color: var(--color-text-soft);
-	font-size: var(--font-size-sm);
-}
-
-.bar-chart-list {
-	display: grid;
-	gap: var(--space-md);
-}
-
-.bar-row {
-	display: grid;
-	gap: 8px;
-}
-
-.bar-row-meta {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: var(--space-sm);
-}
-
-.bar-label {
-	color: var(--color-text);
-	font-weight: var(--font-weight-semibold);
-}
-
-.bar-value {
-	color: var(--color-text-soft);
-	font-size: var(--font-size-sm);
-}
-
-.bar-track {
-	width: 100%;
-	height: 12px;
-	border-radius: 999px;
-	background: var(--color-surface-2);
-	overflow: hidden;
-}
-
-.bar-fill {
-	height: 100%;
-	border-radius: inherit;
-	background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
-}
-
 .state-panel {
 	display: grid;
 	gap: var(--space-sm);
@@ -477,9 +278,6 @@
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
-	.chart-grid {
-		grid-template-columns: 1fr;
-	}
 }
 
 @media (max-width: 780px) {
@@ -494,7 +292,6 @@
 	}
 
 	.dashboard-header,
-	.chart-panel,
 	.state-panel,
 	.kpi-card {
 		padding: var(--space-lg);
