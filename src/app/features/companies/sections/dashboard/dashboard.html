@@ -15,7 +15,7 @@
 
       @if (shouldShowLoadingState) {
         <section class="dashboard-loading panel" aria-live="polite">
-          <p class="text-muted">Cargando informacion del dashboard...</p>
+          <p class="text-muted">Esperando informacion del dashboard...</p>
           <div class="kpi-grid">
             @for (_ of [1,2,3,4,5,6,7,8,9]; track $index) {
               <article class="kpi-card kpi-skeleton"></article>
@@ -27,14 +27,14 @@
       @if (shouldShowErrorState) {
         <section class="dashboard-state panel" aria-live="assertive">
           <h2 class="title-md">No pudimos cargar el dashboard</h2>
-          <p class="text-muted">Intenta nuevamente o recarga la pagina. Este estado es mock y se activa con ?mockState=error.</p>
+          <p class="text-muted">Intenta nuevamente o recarga la pagina.</p>
         </section>
       }
 
       @if (shouldShowEmptyState) {
         <section class="dashboard-state panel" aria-live="polite">
           <h2 class="title-md">Sin datos para mostrar</h2>
-          <p class="text-muted">Aun no hay informacion consolidada disponible. Este estado es mock y se activa con ?mockState=empty.</p>
+          <p class="text-muted">Aun no hay informacion consolidada disponible.</p>
         </section>
       }
 
