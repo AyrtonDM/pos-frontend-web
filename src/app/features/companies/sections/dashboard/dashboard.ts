@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -15,9 +16,31 @@ interface KpiCard {
   icon: string;
 }
 
+interface RankedClient {
+  posicion: number;
+  id_cliente: number;
+  nombre: string;
+  total_comprado: number;
+  cantidad_compras: number;
+  ticket_promedio: number;
+  ultima_compra: string | null;
+  categoria: 'Oro' | 'Plata' | 'Bronce';
+  puntaje: number;
+}
+
+interface Recommendation {
+  tipo: string;
+  titulo: string;
+  mensaje: string;
+  prioridad: 'alta' | 'media' | 'baja';
+  metrica?: string;
+  valor?: number | string;
+}
+
 @Component({
   selector: 'app-dashboard',
-  imports: [Navbar, Sidebar],
+  standalone: true,
+  imports: [CommonModule, Navbar, Sidebar],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -131,5 +154,17 @@ export class Dashboard implements OnInit, OnDestroy {
     return new Intl.NumberFormat('es-BO', {
       maximumFractionDigits: 0,
     }).format(value);
+  }
+
+  protected get rankingClientes(): RankedClient[] {
+    return Array.isArray(this.receivedDashboardData?.ranking_clientes)
+      ? this.receivedDashboardData.ranking_clientes
+      : [];
+  }
+
+  protected get recomendaciones(): Recommendation[] {
+    return Array.isArray(this.receivedDashboardData?.recomendaciones_ia)
+      ? this.receivedDashboardData.recomendaciones_ia
+      : [];
   }
 }

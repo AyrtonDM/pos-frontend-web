@@ -291,3 +291,50 @@ textarea {
   background: rgba(239, 68, 68, 0.12);
   color: var(--color-danger);
 }
+
+/* =========================
+   TEMA OSCURO GLOBAL
+   ========================= */
+body.dark-theme,
+html.dark-theme {
+  --color-bg: #121212;
+  --color-bg-soft: #1e1e1e;
+  --color-surface: #1e1e1e;
+  --color-surface-2: #2d2d2d;
+  --color-text: #f3f4f6;
+  --color-text-soft: #9ca3af;
+  --color-border: #374151;
+  --color-border-rgb: 55, 65, 81;
+}
+
+body.dark-theme .panel {
+  background: #1e1e1e;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-theme .card {
+  background: #252525;
+  border-color: #374151;
+}
+
+body.dark-theme .input,
+body.dark-theme .select,
+body.dark-theme .textarea {
+  background: #2d2d2d;
+  color: #fff;
+  border-color: #4b5563;
+}
+
+body.dark-theme .table {
+  background: #1e1e1e;
+}
+
+body.dark-theme .table thead {
+  background: #252525;
+}
+
+body.dark-theme .table td,
+body.dark-theme .table th {
+  border-bottom: 1px solid #374151;
+}
+

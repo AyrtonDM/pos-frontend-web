@@ -49,6 +49,75 @@
           }
         </section>
 
+        <div class="dashboard-extended-grid">
+          <!-- Ranking de clientes -->
+          <section class="dashboard-section panel">
+            <h2 class="title-md">Ranking de clientes</h2>
+            @if (rankingClientes.length > 0) {
+              <div class="table-responsive">
+                <table class="table ranking-table">
+                  <thead>
+                    <tr>
+                      <th>Pos</th>
+                      <th>Cliente</th>
+                      <th>Categoría</th>
+                      <th class="text-right">Total Comprado</th>
+                      <th>Última Compra</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (cliente of rankingClientes; track cliente.id_cliente) {
+                      <tr>
+                        <td><strong>#{{ cliente.posicion }}</strong></td>
+                        <td>
+                          <div class="client-name">{{ cliente.nombre }}</div>
+                          <div class="text-muted text-sm">{{ cliente.cantidad_compras }} compras (TP: Bs {{ cliente.ticket_promedio | number:'1.2-2' }})</div>
+                        </td>
+                        <td>
+                          <span class="badge" [ngClass]="'badge-' + cliente.categoria.toLowerCase()">{{ cliente.categoria }}</span>
+                        </td>
+                        <td class="text-right"><strong>Bs {{ cliente.total_comprado | number:'1.2-2' }}</strong></td>
+                        <td>{{ cliente.ultima_compra ? (cliente.ultima_compra | date:'dd/MM/yyyy') : '-' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <div class="empty-state-section">
+                <p class="text-muted">No hay ventas suficientes para generar un ranking.</p>
+              </div>
+            }
+          </section>
+
+          <!-- Recomendaciones -->
+          <section class="dashboard-section panel">
+            <h2 class="title-md">Recomendaciones Inteligentes</h2>
+            @if (recomendaciones.length > 0) {
+              <div class="recommendations-list">
+                @for (rec of recomendaciones; track rec.titulo) {
+                  <div class="recommendation-card" [ngClass]="'rec-card-' + rec.prioridad">
+                    <div class="rec-header">
+                      <h3 class="rec-title">{{ rec.titulo }}</h3>
+                      <span class="badge" [ngClass]="'badge-priority-' + rec.prioridad">{{ rec.prioridad | uppercase }}</span>
+                    </div>
+                    <p class="rec-message">{{ rec.mensaje }}</p>
+                    @if (rec.valor !== undefined) {
+                      <div class="rec-meta">
+                        <span class="text-muted text-sm">Registro detectado: <strong>{{ rec.valor }}</strong></span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-state-section">
+                <p class="text-muted">No hay recomendaciones importantes en este momento.</p>
+              </div>
+            }
+          </section>
+        </div>
+
       }
     </section>
   </main>

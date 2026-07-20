@@ -305,3 +305,149 @@
 		min-width: 100%;
 	}
 }
+
+/* Dashboard Extended Sections */
+.dashboard-extended-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: var(--space-lg);
+	margin-top: var(--space-lg);
+}
+
+@media (min-width: 1024px) {
+	.dashboard-extended-grid {
+		grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+	}
+}
+
+.dashboard-section {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-md);
+	padding: var(--space-lg);
+}
+
+.empty-state-section {
+	padding: var(--space-xl);
+	text-align: center;
+	background: var(--color-surface-2);
+	border-radius: var(--radius-sm);
+	border: 1px dashed var(--color-border);
+}
+
+/* Ranking Table */
+.ranking-table {
+	width: 100%;
+}
+
+.ranking-table th {
+	color: var(--color-text-soft);
+	font-size: var(--font-size-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding-bottom: var(--space-sm);
+	border-bottom: 1px solid var(--color-border);
+}
+
+.ranking-table td {
+	padding: var(--space-md) var(--space-sm);
+	vertical-align: middle;
+	border-bottom: 1px solid var(--color-border);
+}
+
+.ranking-table tr:last-child td {
+	border-bottom: none;
+}
+
+.client-name {
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text);
+}
+
+/* Categorias de Cliente */
+.badge-oro {
+	background: rgba(255, 215, 0, 0.15);
+	color: #ffd700;
+	border-color: rgba(255, 215, 0, 0.3);
+}
+
+.badge-plata {
+	background: rgba(192, 192, 192, 0.15);
+	color: #c0c0c0;
+	border-color: rgba(192, 192, 192, 0.3);
+}
+
+.badge-bronce {
+	background: rgba(205, 127, 50, 0.15);
+	color: #cd7f32;
+	border-color: rgba(205, 127, 50, 0.3);
+}
+
+/* Recommendations */
+.recommendations-list {
+	display: grid;
+	gap: var(--space-md);
+}
+
+.recommendation-card {
+	padding: var(--space-md);
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--color-border);
+	background: var(--color-surface-2);
+	display: grid;
+	gap: var(--space-xs);
+	transition: all 0.2s ease;
+}
+
+.recommendation-card:hover {
+	border-color: var(--color-primary-hover);
+}
+
+.rec-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: var(--space-sm);
+}
+
+.rec-title {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: var(--font-weight-bold);
+	color: var(--color-text);
+}
+
+.rec-message {
+	margin: 0;
+	font-size: var(--font-size-sm);
+	color: var(--color-text-soft);
+	line-height: 1.5;
+}
+
+.rec-meta {
+	margin-top: var(--space-xs);
+}
+
+/* Prioridades */
+.rec-card-alta {
+	border-left: 3px solid #ef4444;
+}
+.rec-card-media {
+	border-left: 3px solid #f59e0b;
+}
+.rec-card-baja {
+	border-left: 3px solid #10b981;
+}
+
+.badge-priority-alta {
+	background: rgba(239, 68, 68, 0.15);
+	color: #ef4444;
+}
+.badge-priority-media {
+	background: rgba(245, 158, 11, 0.15);
+	color: #f59e0b;
+}
+.badge-priority-baja {
+	background: rgba(16, 185, 129, 0.15);
+	color: #10b981;
+}

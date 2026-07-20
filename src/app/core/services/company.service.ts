@@ -502,4 +502,30 @@ export class CompanyService {
   getTiposMovimientoCaja(): Observable<CashRegisterMovementType[]> {
     return this.apiService.get<CashRegisterMovementType[]>('/api/empresas/tipos-movimiento-caja');
   }
+
+  getConfiguracionSistema(idEmpresa: string | number): Observable<SystemConfiguration> {
+    return this.apiService.get<SystemConfiguration>(`/api/configuracion-sistema/empresas/${idEmpresa}`);
+  }
+
+  actualizarConfiguracionSistema(idEmpresa: string | number, payload: SystemConfiguration): Observable<SystemConfiguration> {
+    return this.apiService.put<SystemConfiguration, SystemConfiguration>(`/api/configuracion-sistema/empresas/${idEmpresa}`, payload);
+  }
+}
+
+export interface SystemConfiguration {
+  id_configuracion?: number;
+  id_empresa?: number;
+  tema: string;
+  idioma: string;
+  zona_horaria: string;
+  moneda: string;
+  activar_notificaciones_push: boolean;
+  activar_sonido: boolean;
+  activar_vibracion: boolean;
+  confirmar_antes_de_eliminar: boolean;
+  cerrar_sesion_por_inactividad: boolean;
+  minutos_inactividad: number;
+  imprimir_automaticamente: boolean;
+  numero_copias: number;
+  tamano_ticket: string;
 }

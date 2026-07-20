@@ -194,6 +194,11 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
             },
           ]
         : []),
+      {
+        label: 'Configuración',
+        link: ['/administrator/settings'],
+        permission: 'EMPRESA_EDITAR',
+      },
     ];
   }
 

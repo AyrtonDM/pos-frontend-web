@@ -34,6 +34,7 @@ import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
 import { HomePage } from './features/landing/home_page/home_page';
 import { authGuard } from './core/guards/auth.guard';
+import { Settings } from './features/companies/pages/settings/settings';
 
 export const routes: Routes = [
   {
@@ -209,6 +210,11 @@ export const routes: Routes = [
   {
     path: 'company/:id/category/:categoryId/edit-category',
     component: EditCategory,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'administrator/settings',
+    component: Settings,
     canActivate: [authGuard],
   },
   {
