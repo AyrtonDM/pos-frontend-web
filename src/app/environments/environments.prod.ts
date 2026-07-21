@@ -1,6 +1,6 @@
 export const environments = {
     production: true,
-    apiBaseUrl: 'http://localhost:8000',
+    apiBaseUrl: 'https://pos-backend-ricardo.duckdns.org',
     firebase: {
         apiKey: "AIzaSyA-wTcvwf5gh8mtYFaYXN8VeY-kxYiQ8v8",
         authDomain: "pos-si2.firebaseapp.com",
