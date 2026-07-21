@@ -14,6 +14,7 @@ import {
 } from '../../../../../../../core/services/product.service';
 import { Navbar } from '../../../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../../../shared/components/sidebar/sidebar';
+import { environments } from '../../../../../../../environments/environments';
 
 @Component({
   selector: 'app-productos-catalog',
@@ -32,6 +33,7 @@ export class ProductosPanel implements OnInit {
   protected readonly companyId = this.route.snapshot.paramMap.get('id') ?? '';
   protected companyName = 'Empresa';
   protected activeTab: 'register' | 'list' = this.hasPermission('PRODUCTO_CREAR') ? 'register' : 'list';
+  protected readonly apiBaseUrl = environments.apiBaseUrl;
 
   protected readonly productoForm: CrearProductoRequest = {
     id_subcategoria: 0,

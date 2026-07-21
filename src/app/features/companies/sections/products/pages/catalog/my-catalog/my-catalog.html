@@ -187,7 +187,7 @@
                         <td>Bs {{ product.precio }}</td>
                         <td>
                           @if (product.imagen) {
-                            <img class="product-image-thumb" [src]="product.imagen" [alt]="'Sin imagen'" loading="lazy" />
+                            <img class="product-image-thumb" [src]="apiBaseUrl + product.imagen" [alt]="'Sin imagen'" loading="lazy" />
                           } @else {
                             <span class="text-muted">Sin imagen</span>
                           }
