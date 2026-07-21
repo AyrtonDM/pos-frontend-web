@@ -1,12 +1,12 @@
 {
   "/api": {
-    "target": "http://localhost:8000",
+    "target": "http://pos-backend-ricardo.duckdns.org:8000",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
   },
   "/media": {
-    "target": "http://localhost:8000",
+    "target": "http://pos-backend-ricardo.duckdns.org:8000",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
