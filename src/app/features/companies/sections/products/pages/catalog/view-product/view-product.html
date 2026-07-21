@@ -52,7 +52,7 @@
               <dt>Imagen</dt>
               <dd>
                 @if (producto.imagen) {
-                  <img class="product-image" [src]="producto.imagen" [alt]="producto.nombre" loading="lazy" />
+                  <img class="product-image" [src]="producto.imagen.startsWith('http') ? producto.imagen : apiBaseUrl + producto.imagen" [alt]="producto.nombre" loading="lazy" />
                 } @else {
                   <span>Sin imagen</span>
                 }
