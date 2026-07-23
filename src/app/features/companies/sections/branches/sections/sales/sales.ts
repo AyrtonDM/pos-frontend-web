@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -125,11 +127,12 @@ type ProductStockRecord = StockSucursalProducto & {
 
 @Component({
   selector: 'app-sales',
-  imports: [FormsModule, Navbar, Sidebar],
+  imports: [CommonModule, FormsModule, Navbar, Sidebar],
   templateUrl: './sales.html',
   styleUrl: './sales.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
+
 export class Sales implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -219,6 +222,20 @@ export class Sales implements OnInit {
         }
 
         this.cdr.detectChanges();
+      }
+
+      // Check if pedido_id was passed
+      const pedidoIdParam = params.get('pedido_id');
+      if (pedidoIdParam) {
+        const orderIdNum = parseInt(pedidoIdParam, 10);
+        this.orderService.getOrderForPOS(parseInt(this.companyId, 10), parseInt(this.branchId, 10), orderIdNum).subscribe({
+          next: (order) => {
+            this.loadOrderIntoCart(order);
+          },
+          error: (err) => {
+            console.error('Error loading order from queryParam', err);
+          }
+        });
       }
     });
 

@@ -27,8 +27,11 @@ export const COMPANY_PERMISSION_CODES = [
   'ALERTA_VER',
   'CAJA_VER',
   'CAJA_EDITAR',
+  'CAJA_CREAR',
   'CAJA_ABRIR',
   'CAJA_CERRAR',
+  'PEDIDO_VER',
+  'PEDIDO_GESTIONAR',
   'VENTA_VER',
   'VENTA_CREAR',
   'VENTA_ANULAR',
@@ -39,6 +42,7 @@ export const COMPANY_PERMISSION_CODES = [
   'REPORTE_EXPORTAR',
   'DASHBOARD_VER',
 ] as const;
+
 
 export type CompanyPermissionCode = (typeof COMPANY_PERMISSION_CODES)[number];
 export type CompanyPermissionsByCode = Record<CompanyPermissionCode, boolean>;

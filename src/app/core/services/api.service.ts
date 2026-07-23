@@ -23,6 +23,11 @@ export class ApiService {
     return this.http.put<TResponse>(this.buildUrl(endpoint), body);
   }
 
+  patch<TResponse, TBody = any>(endpoint: string, body: TBody): Observable<TResponse> {
+    return this.http.patch<TResponse>(this.buildUrl(endpoint), body);
+  }
+
+
   delete<TResponse>(endpoint: string): Observable<TResponse> {
     return this.http.delete<TResponse>(this.buildUrl(endpoint));
   }

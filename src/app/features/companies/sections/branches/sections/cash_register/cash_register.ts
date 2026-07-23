@@ -364,29 +364,6 @@ export class CashRegister implements OnInit {
   }
 
 
-
-    try {
-      const parsedPolicy = JSON.parse(rawPolicy) as Partial<CashRegisterOpenPolicy>;
-      return {
-        mode: parsedPolicy.mode === 'single-allowed' ? 'single-allowed' : 'none',
-        allowedCashRegisterId:
-          typeof parsedPolicy.allowedCashRegisterId === 'number' ? parsedPolicy.allowedCashRegisterId : null,
-        sessionId: typeof parsedPolicy.sessionId === 'number' ? parsedPolicy.sessionId : null,
-        blockedCashRegisterIds: Array.isArray(parsedPolicy.blockedCashRegisterIds)
-          ? parsedPolicy.blockedCashRegisterIds.filter((id): id is number => typeof id === 'number')
-          : [],
-        message: typeof parsedPolicy.message === 'string' ? parsedPolicy.message : undefined,
-      };
-    } catch {
-      return {
-        mode: 'none',
-        allowedCashRegisterId: null,
-        sessionId: null,
-        blockedCashRegisterIds: [],
-      };
-    }
-  }
-
   private formatDate(date?: string): string {
     if (!date) {
       return this.getCurrentDate();

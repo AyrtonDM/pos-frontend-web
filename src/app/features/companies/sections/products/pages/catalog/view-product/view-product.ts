@@ -24,6 +24,8 @@ export class ViewProduct implements OnInit {
   protected cargandoProducto = false;
   protected errorProducto = '';
   protected producto: Producto | null = null;
+  protected readonly apiBaseUrl = 'http://localhost:8000';
+
 
   ngOnInit(): void {
     this.cargarProducto();

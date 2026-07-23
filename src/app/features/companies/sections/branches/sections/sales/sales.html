@@ -679,7 +679,7 @@
                   @for (order of availableOrders; track order.id_pedido) {
                     <tr>
                       <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">#{{ order.id_pedido }}</td>
-                      <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{{ order.fecha_pedido | date:'short' }}</td>
+                      <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{{ order.fecha_creacion | date:'short' }}</td>
                       <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{{ order.estado }}</td>
                       <td class="px-4 py-2 whitespace-nowrap text-right text-sm">
                         <button type="button" class="btn btn-primary btn-sm" (click)="loadOrderIntoCart(order)">Cargar</button>

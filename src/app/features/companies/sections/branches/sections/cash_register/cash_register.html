@@ -25,7 +25,7 @@
           >
             Cajas Registradoras
           </button>
-          @if (hasPermission('CAJA_EDITAR')) {
+          @if (hasPermission('CAJA_CREAR')) {
             <button
               class="tab-button"
               [class.active]="activeTab === 'register'"
@@ -37,6 +37,7 @@
               Registrar nueva caja
             </button>
           }
+
 
           @if (editingCashRegisterId !== null && hasPermission('CAJA_EDITAR')) {
             <button
