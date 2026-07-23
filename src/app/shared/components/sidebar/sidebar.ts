@@ -184,6 +184,11 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
           },
         ],
       },
+      {
+        label: 'Pedidos',
+        link: ['/company', context.companyId, 'orders'],
+        permission: 'PRODUCTO_VER', // Can use a more specific permission later if needed, but keeping it simple for now as it's part of sales/catalog.
+      },
       ...(reportItems.length > 0
         ? [
             {
@@ -286,6 +291,11 @@ export class SidebarComponent implements OnChanges, OnInit, OnDestroy {
         label: 'Cajas',
         link: ['/company', context.companyId, 'branch', context.branchId, 'cash-register'],
         permission: 'CAJA_VER',
+      },
+      {
+        label: 'Pedidos de clientes',
+        link: ['/company', context.companyId, 'branch', context.branchId, 'orders'],
+        permission: 'PEDIDO_VER',
       },
       {
         label: 'Inventario',

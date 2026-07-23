@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import {
@@ -27,6 +27,7 @@ import {
   TipoVenta,
 } from '../../../../../../core/services/product.service';
 import { ApiService } from '../../../../../../core/services/api.service';
+import { OrderService, Order } from '../../../../../../core/services/order.service';
 import { Navbar } from '../../../../../../shared/components/navbar/navbar';
 import { Sidebar } from '../../../../../../shared/components/sidebar/sidebar';
 
@@ -131,11 +132,13 @@ type ProductStockRecord = StockSucursalProducto & {
 })
 export class Sales implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly productService = inject(ProductService);
   private readonly apiService = inject(ApiService);
   private readonly companyService = inject(CompanyService);
   private readonly cashRegisterService = inject(CashRegisterService);
   private readonly companyPermissionsService = inject(CompanyPermissionsService);
+  private readonly orderService = inject(OrderService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -178,6 +181,11 @@ export class Sales implements OnInit {
   protected movementMessage = '';
   protected salesHistoryError = '';
 
+  protected isLoadOrderModalOpen = false;
+  protected loadingOrders = false;
+  protected availableOrders: Order[] = [];
+  protected loadedOrderId: number | null = null;
+
   protected products: ProductSearchItem[] = [];
   protected recommendedProducts: ProductSearchItem[] = [];
   protected clients: ClientOption[] = [];
@@ -190,8 +198,12 @@ export class Sales implements OnInit {
   protected movementItems: CashMovementItem[] = [];
 
   ngOnInit(): void {
+    this.validarSesionActiva();
+
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-      this.cashRegisterSessionId = params.get('sessionId') ?? '';
+      if (params.get('sessionId')) {
+        this.cashRegisterSessionId = params.get('sessionId') ?? '';
+      }
       const nextMode = this.resolveViewMode(params.get('section'));
 
       if (nextMode !== this.viewMode) {
@@ -217,6 +229,34 @@ export class Sales implements OnInit {
       this.loadPaymentMethods();
       this.loadMovementItems();
     }
+  }
+
+  private validarSesionActiva(): void {
+    if (!this.companyId || !this.branchId || !this.cashRegisterId) return;
+
+    this.cashRegisterService.getCajasSucursal(this.companyId, this.branchId).subscribe({
+      next: (response) => {
+        const cajas = Array.isArray(response) ? response : ((response as any).cajas || (response as any).items || (response as any).data?.cajas || (response as any).data?.items || []);
+        const caja = cajas.find((c: any) => String(c.id_caja) === this.cashRegisterId || String(c.id) === this.cashRegisterId);
+        
+        if (caja && caja.estado_operativo === 'abierta_por_mi' && caja.sesion_activa) {
+          this.cashRegisterSessionId = String(caja.sesion_activa.id_caja_sesion);
+          
+          // Actualizar URL sin recargar para mantener sessionId
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { sessionId: this.cashRegisterSessionId },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+          });
+        } else {
+          this.router.navigate(['/company', this.companyId, 'branch', this.branchId, 'cash-register']);
+        }
+      },
+      error: () => {
+        this.router.navigate(['/company', this.companyId, 'branch', this.branchId, 'cash-register']);
+      }
+    });
   }
 
   protected setActiveTab(tab: SalesTab): void {
@@ -602,6 +642,7 @@ export class Sales implements OnInit {
         monto: row.monto,
       })),
       detalles: this.buildSaleDetailPayload(),
+      id_pedido: this.loadedOrderId,
     };
 
     this.chargingSale = true;
@@ -650,6 +691,7 @@ export class Sales implements OnInit {
     this.selectedSaleTypeId = this.getDefaultAllowedSaleTypeId();
     this.onlineInvoice = false;
     this.saleDiscount = 0;
+    this.loadedOrderId = null;
   }
 
   private createPaymentRow(id = this.nextPaymentRowId++, monto: number | null = null): SalePaymentRow {
@@ -1327,4 +1369,57 @@ export class Sales implements OnInit {
     return this.companyPermissionsService.permissions()[permission] === true;
   }
 
+  protected openLoadOrderModal(): void {
+    this.isLoadOrderModalOpen = true;
+    this.loadingOrders = true;
+    this.availableOrders = [];
+
+    const companyIdNum = parseInt(this.companyId, 10);
+    this.orderService.getOrdersByCompany(companyIdNum).subscribe({
+      next: (orders) => {
+        // Filter orders for this branch that are ready or in prep
+        const branchIdNum = parseInt(this.branchId, 10);
+        this.availableOrders = orders.filter(
+          (o) => o.id_sucursal === branchIdNum && (o.estado === 'listo_para_recoger' || o.estado === 'en_preparacion' || o.estado === 'confirmado')
+        );
+        this.loadingOrders = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading orders', err);
+        this.loadingOrders = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  protected closeLoadOrderModal(): void {
+    this.isLoadOrderModalOpen = false;
+  }
+
+  protected loadOrderIntoCart(order: Order): void {
+    this.resetSaleForm();
+    this.loadedOrderId = order.id_pedido;
+    if (order.id_cliente) {
+      this.selectedClientId = order.id_cliente;
+    }
+    
+    // Add each detail to the cart if the product exists in this branch's stock
+    for (const detalle of order.detalles) {
+      const productFound = this.products.find(p => p.idProducto === detalle.id_producto);
+      if (productFound) {
+        // We simulate adding the product
+        this.addProduct(productFound);
+        // We set the correct quantity
+        const addedItem = this.saleDetails.find(d => d.idProducto === detalle.id_producto);
+        if (addedItem) {
+          // Adjust quantity
+          addedItem.cantidad = detalle.cantidad;
+        }
+      }
+    }
+    
+    this.closeLoadOrderModal();
+    this.cdr.detectChanges();
+  }
 }

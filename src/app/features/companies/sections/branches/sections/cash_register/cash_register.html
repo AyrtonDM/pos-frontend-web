@@ -80,6 +80,7 @@
                         <th>Codigo</th>
                         <th>Nombre</th>
                         <th>Estado</th>
+                        <th>Estado operativo</th>
                         <th class="cash-register-actions-header">Acciones</th>
                       </tr>
                     </thead>
@@ -96,48 +97,58 @@
                               <span class="badge badge-danger">Inactivo</span>
                             }
                           </td>
+                          <td>
+                            @switch (cashRegister.estadoOperativo) {
+                              @case ('inactiva') { <span class="text-muted">No disponible</span> }
+                              @case ('disponible') { <span class="badge badge-success">Disponible</span> }
+                              @case ('abierta_por_mi') { <span class="badge badge-primary">Abierta por mí</span> }
+                              @case ('en_uso') { <span class="badge badge-warning">En uso</span> }
+                            }
+                          </td>
                           <td class="cash-register-actions-cell">
                             <div class="cash-register-actions">
-                              @if (hasPermission('CAJA_ABRIR')) {
+                              @if (hasPermission('CAJA_ABRIR') && cashRegister.estadoOperativo === 'disponible') {
                                 <a
                                   class="btn btn-primary btn-sm"
-                                  [class.disabled]="!cashRegister.canOpen"
-                                  [class.conflict-disabled]="cashRegister.activo && !cashRegister.canOpen"
-                                  [attr.aria-disabled]="!cashRegister.canOpen"
-                                  [routerLink]="
-                                    cashRegister.canOpen && cashRegister.actionLabel === 'Abrir Caja'
-                                      ? [
-                                          '/company',
-                                          companyId,
-                                          'branch',
-                                          branchId,
-                                          'cash-register',
-                                          cashRegister.id,
-                                          'open-cash-register',
-                                        ]
-                                      : cashRegister.canOpen && cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId
-                                        ? [
-                                            '/company',
-                                            companyId,
-                                            'branch',
-                                            branchId,
-                                            'cash-register',
-                                            cashRegister.id,
-                                            'sales',
-                                          ]
-                                        : null
-                                  "
-                                  [queryParams]="
-                                    cashRegister.canOpen && cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId
-                                      ? { sessionId: cashRegister.sessionId }
-                                      : null
-                                  "
+                                  [routerLink]="[
+                                    '/company',
+                                    companyId,
+                                    'branch',
+                                    branchId,
+                                    'cash-register',
+                                    cashRegister.id,
+                                    'open-cash-register'
+                                  ]"
                                 >
-                                  {{ cashRegister.actionLabel }}
+                                  Abrir caja
                                 </a>
                               }
 
-                              @if (cashRegister.actionLabel === 'Continuar Sesion' && cashRegister.sessionId && hasPermission('CAJA_CERRAR')) {
+                              @if (hasPermission('CAJA_ABRIR') && cashRegister.estadoOperativo === 'abierta_por_mi') {
+                                <a
+                                  class="btn btn-primary btn-sm"
+                                  [routerLink]="[
+                                    '/company',
+                                    companyId,
+                                    'branch',
+                                    branchId,
+                                    'cash-register',
+                                    cashRegister.id,
+                                    'sales'
+                                  ]"
+                                  [queryParams]="{ sessionId: cashRegister.sessionId }"
+                                >
+                                  Ingresar al POS
+                                </a>
+                              }
+
+                              @if (cashRegister.estadoOperativo === 'en_uso') {
+                                <button class="btn btn-primary btn-sm disabled conflict-disabled" disabled>
+                                  Acción deshabilitada
+                                </button>
+                              }
+
+                              @if (cashRegister.estadoOperativo === 'abierta_por_mi' && hasPermission('CAJA_CERRAR')) {
                                 <a
                                   class="btn btn-sm btn-secondary"
                                   [routerLink]="[
@@ -147,7 +158,7 @@
                                     branchId,
                                     'cash-register',
                                     cashRegister.id,
-                                    'close-cash-register',
+                                    'close-cash-register'
                                   ]"
                                   [queryParams]="{ sessionId: cashRegister.sessionId }"
                                 >
@@ -163,8 +174,7 @@
                             </div>
                           </td>
                         </tr>
-                      }
-                    </tbody>
+                      }</tbody>
                   </table>
                 </div>
               </section>

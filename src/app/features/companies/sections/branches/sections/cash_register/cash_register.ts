@@ -23,8 +23,8 @@ interface CashRegisterItem {
   nombre: string;
   fechaCreacion: string;
   activo: boolean;
-  canOpen: boolean;
-  actionLabel: 'Abrir Caja' | 'Continuar Sesion';
+  estadoOperativo: 'inactiva' | 'disponible' | 'abierta_por_mi' | 'en_uso';
+  actionLabel: 'Abrir caja' | 'Ingresar al POS' | 'Acción deshabilitada' | 'Caja inactiva';
   sessionId: number | null;
 }
 
@@ -34,14 +34,6 @@ interface CashRegisterForm {
   activo: boolean;
 }
 
-interface CashRegisterOpenPolicy {
-  mode: 'none' | 'single-allowed';
-  allowedCashRegisterId: number | null;
-  sessionId: number | null;
-  blockedCashRegisterIds: number[];
-  message?: string;
-}
-
 @Component({
   selector: 'app-cash-register',
   imports: [FormsModule, Navbar, RouterLink, Sidebar],
@@ -49,8 +41,6 @@ interface CashRegisterOpenPolicy {
   styleUrl: './cash_register.css',
 })
 export class CashRegister implements OnInit {
-  private static readonly OPEN_POLICY_STORAGE_PREFIX = 'cash-register-open-policy';
-
   private readonly route = inject(ActivatedRoute);
   private readonly cashRegisterService = inject(CashRegisterService);
   private readonly companyPermissionsService = inject(CompanyPermissionsService);
@@ -80,16 +70,9 @@ export class CashRegister implements OnInit {
 
   protected cashRegisters: CashRegisterItem[] = [];
 
-  private openPolicy: CashRegisterOpenPolicy = {
-    mode: 'none',
-    allowedCashRegisterId: null,
-    sessionId: null,
-    blockedCashRegisterIds: [],
-  };
+
 
   ngOnInit(): void {
-    this.openPolicy = this.getOpenPolicy();
-    this.mensaje = this.openPolicy.message ?? '';
     this.cargarCajas();
   }
 
@@ -133,10 +116,7 @@ export class CashRegister implements OnInit {
 
         this.cashRegisters = cashRegisters.map((cashRegister) =>
           this.mapCashRegisterResponse(cashRegister),
-        ).map((cashRegister) => ({
-          ...cashRegister,
-          ...this.getCashRegisterActionState(cashRegister),
-        }));
+        );
       },
       error: () => {
         this.cashRegisters = [];
@@ -327,15 +307,31 @@ export class CashRegister implements OnInit {
   }
 
   private mapCashRegisterResponse(cashRegister: CashRegisterResponse): CashRegisterItem {
+    const estadoOperativo = cashRegister.estado_operativo ?? (cashRegister.activo ? 'disponible' : 'inactiva');
+    
+    let actionLabel: CashRegisterItem['actionLabel'] = 'Abrir caja';
+    let sessionId: number | null = null;
+    
+    if (estadoOperativo === 'inactiva') {
+      actionLabel = 'Caja inactiva';
+    } else if (estadoOperativo === 'disponible') {
+      actionLabel = 'Abrir caja';
+    } else if (estadoOperativo === 'abierta_por_mi') {
+      actionLabel = 'Ingresar al POS';
+      sessionId = cashRegister.sesion_activa?.id_caja_sesion ?? null;
+    } else if (estadoOperativo === 'en_uso') {
+      actionLabel = 'Acción deshabilitada';
+    }
+
     return {
       id: cashRegister.id_caja ?? cashRegister.id ?? this.getNextId(),
       codigo: cashRegister.codigo,
       nombre: cashRegister.nombre,
       fechaCreacion: this.formatDate(cashRegister.fecha_creacion ?? cashRegister.fecha_registro),
       activo: cashRegister.activo ?? true,
-      canOpen: cashRegister.activo ?? true,
-      actionLabel: 'Abrir Caja',
-      sessionId: null,
+      estadoOperativo,
+      actionLabel,
+      sessionId,
     };
   }
 
@@ -367,45 +363,7 @@ export class CashRegister implements OnInit {
     return [];
   }
 
-  private getCashRegisterActionState(cashRegister: CashRegisterItem): Pick<CashRegisterItem, 'canOpen' | 'actionLabel' | 'sessionId'> {
-    if (!cashRegister.activo) {
-      return {
-        canOpen: false,
-        actionLabel: 'Abrir Caja',
-        sessionId: null,
-      };
-    }
 
-    if (this.openPolicy.mode === 'single-allowed') {
-      const isAllowedCashRegister = this.openPolicy.allowedCashRegisterId === cashRegister.id;
-
-      return {
-        canOpen: isAllowedCashRegister,
-        actionLabel: isAllowedCashRegister ? 'Continuar Sesion' : 'Abrir Caja',
-        sessionId: isAllowedCashRegister ? this.openPolicy.sessionId : null,
-      };
-    }
-
-    const isBlocked = this.openPolicy.blockedCashRegisterIds.includes(cashRegister.id);
-
-    return {
-      canOpen: !isBlocked,
-      actionLabel: 'Abrir Caja',
-      sessionId: null,
-    };
-  }
-
-  private getOpenPolicy(): CashRegisterOpenPolicy {
-    const rawPolicy = sessionStorage.getItem(this.getPolicyStorageKey());
-
-    if (!rawPolicy) {
-      return {
-        mode: 'none',
-        allowedCashRegisterId: null,
-        sessionId: null,
-        blockedCashRegisterIds: [],
-      };
-    }
 
     try {
       const parsedPolicy = JSON.parse(rawPolicy) as Partial<CashRegisterOpenPolicy>;
@@ -427,10 +385,6 @@ export class CashRegister implements OnInit {
         blockedCashRegisterIds: [],
       };
     }
-  }
-
-  private getPolicyStorageKey(): string {
-    return `${CashRegister.OPEN_POLICY_STORAGE_PREFIX}:${this.companyId}:${this.branchId}`;
   }
 
   private formatDate(date?: string): string {

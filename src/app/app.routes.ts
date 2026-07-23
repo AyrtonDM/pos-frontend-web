@@ -10,6 +10,7 @@ import { CashRegister } from './features/companies/sections/branches/sections/ca
 import { CloseCashRegister } from './features/companies/sections/branches/sections/close_cash_register/close_cash_register';
 import { Staff } from './features/companies/sections/users/staff/staff';
 import { Rols } from './features/companies/sections/users/rols/rols';
+import { OrdersInbox } from './features/companies/sections/orders/orders-inbox/orders-inbox';
 
 import { Inventario } from './features/companies/sections/branches/sections/inventario/inventario';
 import { OpenCashRegister } from './features/companies/sections/branches/sections/open_cash_register/open_cash_register';
@@ -130,6 +131,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'company/:id/branch/:branchId/orders',
+    component: OrdersInbox,
+    canActivate: [authGuard],
+  },
+  {
     path: 'company/:id/dashboard',
     component: Dashboard,
     canActivate: [authGuard],
@@ -210,6 +216,14 @@ export const routes: Routes = [
   {
     path: 'company/:id/category/:categoryId/edit-category',
     component: EditCategory,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'company/:id/orders',
+    loadComponent: () =>
+      import('./features/companies/sections/orders/orders-inbox/orders-inbox').then(
+        (m) => m.OrdersInbox
+      ),
     canActivate: [authGuard],
   },
   {

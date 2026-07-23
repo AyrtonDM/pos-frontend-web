@@ -143,6 +143,7 @@ export interface CreateSaleRequest {
   id_tipo_venta: number;
   id_cliente: number | null;
   id_metodo_pago: number | null;
+  id_pedido?: number | null;
   factura_linea: boolean;
   subtotal: number;
   descuento_total: number;
@@ -263,6 +264,13 @@ export interface RegisterCreditPaymentResponse {
   movimientos_caja: CreditPaymentMovement[];
 }
 
+export interface CashRegisterSessionActiveInfo {
+  id_caja_sesion: number;
+  id_usuario_apertura: number;
+  fecha_apertura: string;
+  es_usuario_actual: boolean;
+}
+
 export interface CashRegisterResponse {
   id?: number;
   id_caja: number;
@@ -272,6 +280,8 @@ export interface CashRegisterResponse {
   fecha_creacion: string;
   fecha_registro?: string;
   activo: boolean;
+  estado_operativo?: 'inactiva' | 'disponible' | 'abierta_por_mi' | 'en_uso';
+  sesion_activa?: CashRegisterSessionActiveInfo | null;
 }
 
 export type CashRegisterListResponse =
